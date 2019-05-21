@@ -12,7 +12,7 @@ import datetime
 import glob
 
 ###### Version and Date
-occupancy_version = 'v4.0_0B'
+occupancy_version = 'v4.1_0A'
 prog_date = '2018-09-17'
 
 ###### Usage
@@ -90,8 +90,6 @@ class OccupancyAnalysis(object):
             self.bypass.pop('calculate_split_percentage', False)
         self.neighbor_analysis_bypass['plot_multicalls'] = \
             self.bypass.pop('plot_multicalls', False)
-        self.neighbor_analysis_bypass['plot_normCBI'] = \
-            self.bypass.pop('plot_normCBI', False)
         self.neighbor_analysis_bypass['plot_nonCBI'] = \
             self.bypass.pop('plot_nonCBI', False)
         self.neighbor_analysis_bypass['plot_chastity'] = \
@@ -233,14 +231,13 @@ class OccupancyAnalysis(object):
             self.rho_results, self.snr_results, self.thresholds_summary, self.cbi_bypassed = self.int_analysis.complete_bypass()
         else:
             self.rho_results, self.snr_results, self.thresholds_summary, self.cbi_bypassed = self.int_analysis.run()
-        self.nonCBI_quartiles = self.int_analysis.nonCBI_quartiles
         return
 
     def run_neighbor_clustering(self, int_analysis, neighbors_fp, report_name):
         from neighbors_clustering import NeighborClustering
         block_bool = int_analysis.load_block_bool()
         nc = NeighborClustering(int_analysis, neighbors_fp, block_bool, report_name)
-        nc.run(subsets='mixed')
+        nc.run(subsets='Mixed')
         return
 
     def run_neighbor_analysis(self, int_analysis, coords_fp, neighbors_fp, blocks_fp, fastq_fp, bypass):
@@ -301,7 +298,6 @@ class OccupancyAnalysis(object):
 
     def output_reports(self):
         from sap_funcs import output_table
-        from sap_funcs import output_df
 
         logger.debug('Outputting reports...')
         summary_fp = os.path.join(self.fov_dp, '%s_Summary.csv' % self.report_name)
@@ -338,12 +334,9 @@ class OccupancyAnalysis(object):
             snr2_quartiles_fp = os.path.join(self.fov_dp, '%s_SNR2_Quartiles.csv' % self.report_name)
             output_table(snr2_quartiles_fp, self.snr2_quartile_results, quartiles_header)
 
-            nonCBI_quartiles_fp = os.path.join(self.fov_dp, '%s_nonCBI_Quartiles.csv' % self.report_name)
-            index_list = ['%s nonCBI %s %dth' % (base, non_base, q) for base in 'ACGT' for q in [25, 50, 75] for non_base in 'ACGT']
-            output_df(nonCBI_quartiles_fp, self.nonCBI_quartiles, index_list)
             logger.debug('Output completed.')
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
-                   cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, nonCBI_quartiles_fp, center_summary_fp
+                   cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, center_summary_fp
         else:
             size_results_fp = os.path.join(self.fov_dp, '%s_Size_Results.csv' % self.report_name)
             results_data = self.size_results + self.snr_results
@@ -367,13 +360,9 @@ class OccupancyAnalysis(object):
 
             snr2_quartiles_fp = os.path.join(self.fov_dp, '%s_SNR2_Quartiles.csv' % self.report_name)
             output_table(snr2_quartiles_fp, self.snr2_quartile_results, quartiles_header)
-
-            nonCBI_quartiles_fp = os.path.join(self.fov_dp, '%s_nonCBI_Quartiles.csv' % self.report_name)
-            index_list = ['%s nonCBI %s %dth' % (base, non_base, q) for base in 'ACGT' for q in [25, 50, 75] for non_base in 'ACGT']
-            output_df(nonCBI_quartiles_fp, self.nonCBI_quartiles, index_list)
             logger.debug('Output completed.')
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
-                   cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, nonCBI_quartiles_fp
+                   cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp
 
     def copy_temps(self):
         path_parameters = {
@@ -406,16 +395,16 @@ class OccupancyAnalysis(object):
 
         if not bool(self.blocks):
             summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
-            cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, nonCBI_quartiles_fp, center_summary_fp = self.output_reports()
+            cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, center_summary_fp = self.output_reports()
             self.copy_temps()
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, cbi_quartiles_fp, snr1_quartiles_fp, \
-                   snr2_quartiles_fp, nonCBI_quartiles_fp, center_summary_fp
+                   snr2_quartiles_fp, center_summary_fp
         else:
             summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
-            cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, nonCBI_quartiles_fp = self.output_reports()
+            cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp = self.output_reports()
             self.copy_temps()
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, cbi_quartiles_fp, snr1_quartiles_fp, \
-                   snr2_quartiles_fp, nonCBI_quartiles_fp
+                   snr2_quartiles_fp
 
 
 

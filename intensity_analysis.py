@@ -65,10 +65,8 @@ class IntensityAnalysis(object):
             self.start_cycle, self.start_cycle + self.cycle_range - 1))
         self.labels_fp = os.path.join(self.output_dp, '%s_Labels.npy' % self.prefix)
         self.snr_fp = os.path.join(self.output_dp, '%s_SNR_Values.npy' % self.prefix)
-        self.nonCBI_quartiles_fp = os.path.join(self.output_dp, '%s_nonCBI_Quartiles.npy' % self.prefix)
 
         # output pickle paths
-        self.nonCBI_cycles_fp = os.path.join(self.output_dp, '%s_nonCBI_Cyclewise.p' % self.prefix)
         self.rho_results_fp = os.path.join(self.output_dp, '%s_RHO_Results.p' % self.prefix)
         self.snr_results_fp = os.path.join(self.output_dp, '%s_SNR_Results.p' % self.prefix)
         self.thresholds_summary_fp = os.path.join(self.output_dp, '%s_Thresholds_Summary.p' % self.prefix)
@@ -232,31 +230,7 @@ class IntensityAnalysis(object):
         CBI_proportion[max_ints] = np.nan
         average_nonCBI = np.nanmean(CBI_proportion, 2)
         average_nonCBI[np.isnan(average_nonCBI)] = 1
-
-        logger.info('%s - Calculating nonCBI cyclewise...' % self.fov)
-        nonCBI = {'A': [], 'C': [], 'G': [], 'T': []}
-        quartiles = []
-        q = [25, 50, 75]
-        for i, base in enumerate('ACGT'):
-            quarts, cycle_wise = [], []
-            for j in range(self.cycle_range):
-                data = non_neg_norm_data[max_ints[:, i, j], :, j]
-                cycle_wise.append(data.T)
-                quarts.append(np.percentile(data, q, axis=0))
-            nonCBI[base] = cycle_wise
-            quarts = np.swapaxes(np.array(quarts).T, 0, 1)
-            quarts[:, i, :] = np.nan
-            quartiles.extend(quarts)
-        quartiles = np.vstack(quartiles)
-        return average_nonCBI * 100., nonCBI, quartiles
-
-    def save_nonCBI(self, nonCBI_cycles, nonCBI_quartiles):
-        import cPickle as pickle
-        np.save(self.nonCBI_quartiles_fp, nonCBI_quartiles)
-
-        with open(self.nonCBI_cycles_fp, 'w') as f:
-            pickle.dump(nonCBI_cycles, f)
-        return
+        return average_nonCBI * 100.
     
     def load_npy(self):
         data = np.load(self.int_fp, mmap_mode='r')
@@ -370,7 +344,6 @@ class IntensityAnalysis(object):
         np.save(self.cyndexes_fp, cyndexes)
         return
 
-
     def save_outputs(self, thresholds_summary, snr_results, rho_results):
         import cPickle as pickle
         #np.save(self.thresholds_summary_fp, np.asarray(thresholds_summary))
@@ -411,7 +384,6 @@ class IntensityAnalysis(object):
             # USING GMM_NORM TO NORMALIZE AND SAVE DATA
             data, self.num_dnbs, self.major_count = self.load_npy()
 
-
             normalized_data, self.called_signals, self.cyndexes, \
             self.empty_th, self.small_th, self.large_th, self.outlier_th = \
                 self.calculate_thresholds(data)
@@ -421,18 +393,13 @@ class IntensityAnalysis(object):
             self.save_thresholds(self.empty_th, self.small_th, self.large_th, self.outlier_th)
             del data
 
-        nonCBI, nonCBI_cycles, nonCBI_quartiles = self.calculate_nonCBI(normalized_data)
-        self.save_nonCBI(nonCBI_cycles, nonCBI_quartiles)
-        del nonCBI_cycles
-
         rho = self.calculate_RHO(label_mask=None)
 
         multicall_data = self.count_multiple_calls(self.called_signals)
 
         snr = self.calculate_SNR(normalized_data)
 
-        # nonCBI, self.nonCBI_cycles, nonCBI_quartiles = self.calculate_nonCBI(normalized_data)
-        # self.save_nonCBI(self.nonCBI_cycles, nonCBI_quartiles)
+        nonCBI = self.calculate_nonCBI(normalized_data)
 
         sorted_data = np.sort(normalized_data, 1)
         non_neg_sorted_data = sorted_data.copy()
@@ -587,7 +554,6 @@ class IntensityAnalysis(object):
             self.naCBI_data = np.load(self.naCBI_fp, mmap_mode='r')
             self.called_signals = np.load(self.calls_fp, mmap_mode='r')
             self.label_arr = np.load(self.labels_fp)
-            self.nonCBI_quartiles = np.load(self.nonCBI_quartiles_fp)
             self.empty_fth, self.small_fth, self.large_fth, self.outlier_fth = self.load_final_thresholds()
             with open(self.snr_results_fp, 'r') as p:
                 snr_results = pickle.load(p)
@@ -595,8 +561,7 @@ class IntensityAnalysis(object):
                 thresholds_summary = pickle.load(p)
             with open(self.rho_results_fp, 'r') as p:
                 rho_results = pickle.load(p)
-            with open(self.nonCBI_cycles_fp, 'r') as p:
-                nonCBI_cycles = pickle.load(p)
+
             logger.info('%s - Bypass successful.' % self.fov)
             cbi_bypassed = True
         except:

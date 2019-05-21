@@ -164,8 +164,6 @@ class NeighborAnalysis(object):
         self.neighbors_fp = neighbors_fp
         self.blocks_fp = blocks_fp
         self.fastq_fp = fastq_fp
-        self.normCBI_cycles_fp = int_analysis.normCBI_fp
-        self.nonCBI_cycles_fp = int_analysis.nonCBI_cycles_fp
 
         self.output_dp = output_dp if output_dp else os.path.dirname(int_analysis.int_fp)
         make_dir(self.output_dp)
@@ -1581,48 +1579,6 @@ class NeighborAnalysis(object):
         logger.debug('%s - plot_nonCBI completed.' % self.fov)
         return
 
-    def plot_nonCBI_boxplot(self):
-        import cPickle as pickle
-        with open(self.nonCBI_cycles_fp, 'r') as p:
-            nonCBI_cycles = pickle.load(p)
-            
-        bases = 'ACGT'
-        for i, base in enumerate(bases):
-            data = nonCBI_cycles[base]
-            fig, axes = plt.subplots(3, 1, figsize=(8, 12))
-            non_base = [b for b in bases if b != base]
-            for nb, ax in zip(non_base, axes.flatten()):
-                dd = [d[bases.index(nb)] for d in data]
-                perc = max([np.percentile(d[bases.index(nb)], 90) for d in data])
-                ax.boxplot(dd, showfliers=False)
-                ax.set_ylim(-0.01, perc)
-                ax.set_xlabel('Cycle')
-                ax.set_ylabel('Normalized Intensity')
-                ax.set_title('nonCBI %s' % nb)
-            fig.suptitle('%s: %s' % (self.prefix, base), fontsize=18)
-            plt.tight_layout(rect=[0, 0, 1, 0.96])
-            fig.savefig(os.path.join(self.output_dp, self.prefix + '_boxplot_nonCBI_%s.png' % base))
-            plt.gcf().clear()
-            plt.close()
-        return
-
-    def plot_CBI_boxplot(self):
-        normalized_data = np.load(self.normCBI_cycles_fp)
-        normalized_data = np.sort(normalized_data, 1)
-        normalized_data[normalized_data < 0] = 0
-        normalized_data = normalized_data[:, -1, :]
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.boxplot(normalized_data)
-        ax.set_ylim(-0.01, np.percentile(normalized_data, 90))
-        ax.set_xlabel('Cycle')
-        ax.set_ylabel('Normalized CBI')
-        fig.suptitle('%s' % self.prefix, fontsize=18)
-        plt.tight_layout(rect=[0, 0, 1, 0.96])
-        fig.savefig(os.path.join(self.output_dp, self.prefix + '_boxplot_normCBI.png'))
-        plt.gcf().clear()
-        plt.close()
-        return
-
     def plot_chastity(self):
         logger.debug('%s - plot_chastity initiated.' % self.fov)
         fig = plt.figure(figsize=(60, 60))
@@ -2065,10 +2021,7 @@ class NeighborAnalysis(object):
                 self.get_fov_min_max()
                 logger.debug('%s - coords: %s' % (self.fov, self.coords))
                 logger.debug('%s - bypass: %s' % (self.fov, self.bypass))
-                if not self.bypass['plot_normCBI']:
-                    self.plot_CBI_boxplot()
                 if not self.bypass['plot_nonCBI']:
-                    self.plot_nonCBI_boxplot()
                     self.plot_nonCBI()
                 if not self.bypass['plot_multicalls']:
                     self.plot_multicalls()

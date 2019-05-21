@@ -19,7 +19,7 @@ import time
 import numpy as np
 
 ###### Version and Date
-occupancy_version = 'v4.0_0B'
+occupancy_version = 'v4.1_0A'
 prog_date = '2018-09-17'
 
 ###### Usage
@@ -184,6 +184,8 @@ def consolidate_reports(report_lists):
     final_report_fps = generate_final_paths(grouped_reports)
     for g, report_group in enumerate(grouped_reports):
         final_report_fp = final_report_fps[g]
+        if final_report_fp.endswith('Cluster_Mixed_Summary.csv'):
+            continue
 
         fovs = []
         data = []

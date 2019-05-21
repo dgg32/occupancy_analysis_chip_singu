@@ -140,10 +140,10 @@ class NeighborClustering(object):
         cols = ['%dnbs_of_inner',
                 'neighbors', 'neighbors_shuffled', 'neighbors_ratios']
         df = pd.DataFrame(np.array(values), index=names, columns=cols).T
-        df.T.to_csv(os.path.join(self.output_dp, '%s_clustering_%s_summary.csv') % (self.report_name, subsets))
+        df.T.to_csv(os.path.join(self.output_dp, '%s_Cluster_%s_Summary.csv') % (self.report_name, subsets))
         return
 
-    def run(self, subsets='mixed'):
+    def run(self, subsets='Mixed'):
         np.random.seed(1000)
         dnb_pos = get_dnb_pos(self.posinfo_fp)
         self.subset_data(dnb_pos)
