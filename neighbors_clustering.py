@@ -31,7 +31,7 @@ np.random.seed(1000)
 
 
 class NeighborClustering(object):
-    def __init__(self, int_analysis, neighbors_fp, blocks, report_name):
+    def __init__(self, int_analysis, neighbors_fp, blocks, report_name, subsets='Mixed'):
         self.report_name = report_name
         self.output_dp = int_analysis.output_dp
         self.prefix = int_analysis.prefix
@@ -53,6 +53,8 @@ class NeighborClustering(object):
         self.posinfo_fp = posinfo_fp
         self.neighbors_fp = neighbors_fp
         self.neighbors_arr = np.load(self.neighbors_fp)
+
+        self.output_fp = os.path.join(self.output_dp, '%s_Cluster_%s_Summary.csv') % (self.report_name, subsets)
         return
 
     def output_data(self, data_dp):
@@ -138,9 +140,9 @@ class NeighborClustering(object):
 
     def save_outputs(self, values, names, subsets):
         cols = ['%dnbs_of_inner',
-                'neighbors', 'neighbors_shuffled', 'neighbors_ratios']
+                'neighbors', 'neighbors_shuffled', self.fov]
         df = pd.DataFrame(np.array(values), index=names, columns=cols).T
-        df.T.to_csv(os.path.join(self.output_dp, '%s_Cluster_%s_Summary.csv') % (self.report_name, subsets))
+        df.T.to_csv(self.output_fp)
         return
 
     def run(self, subsets='Mixed'):
@@ -197,7 +199,7 @@ class NeighborClustering(object):
             mixed_dnb_pos, mixed_neighbors_arr, neighbors_stats = self.get_mixed_dnbs(mixed)
             values.append(neighbors_stats)
         self.save_outputs(values, names, subsets)
-        return
+        return self.output_fp
 
 
 def plot_dnbs_scatter(dnb_pos, xyminmax, num_dnbs, output_dp, prefix, name, neighbors=None):

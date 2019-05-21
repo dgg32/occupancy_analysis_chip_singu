@@ -75,13 +75,13 @@ class OccupancyAnalysis(object):
         elif self.platform == 'blackbird':
             self.bypass['nanocall_conversion'] = self.bypass.pop('nanocall_conversion', False)
         else:
-            self.bypass['int2npy'] = self.bypass.pop('int2npy', False)
-        self.bypass['intensity_analysis'] = self.bypass.pop('intensity_analysis', False)
-        self.bypass['neighbor_analysis'] = self.bypass.pop('neighbor_analysis', False)
+            self.bypass['int2npy'] = self.bypass.pop('int2npy', True)
+        self.bypass['intensity_analysis'] = self.bypass.pop('intensity_analysis', True)
+        self.bypass['neighbor_analysis'] = self.bypass.pop('neighbor_analysis', True)
         self.bypass['label_analysis'] = self.bypass.pop('label_analysis', False)
 
         self.intensity_analysis_bypass = {}
-        self.intensity_analysis_bypass['calculate_thresholds'] = self.bypass.pop('calculate_thresholds', False)
+        self.intensity_analysis_bypass['calculate_thresholds'] = self.bypass.pop('calculate_thresholds', True)
 
         self.neighbor_analysis_bypass = {}
         self.neighbor_analysis_bypass['get_possible_split_groups'] =  \
@@ -237,7 +237,7 @@ class OccupancyAnalysis(object):
         from neighbors_clustering import NeighborClustering
         block_bool = int_analysis.load_block_bool()
         nc = NeighborClustering(int_analysis, neighbors_fp, block_bool, report_name)
-        nc.run(subsets='Mixed')
+        self.mixed_clustering_fp = nc.run(subsets='Mixed')
         return
 
     def run_neighbor_analysis(self, int_analysis, coords_fp, neighbors_fp, blocks_fp, fastq_fp, bypass):
@@ -392,19 +392,19 @@ class OccupancyAnalysis(object):
         self.run_neighbor_clustering(self.int_analysis, neighbors_fp, self.report_name)
         self.run_neighbor_analysis(self.int_analysis, coords_fp, neighbors_fp, blocks_fp, fastq_fp, self.neighbor_analysis_bypass)
         self.run_label_analysis(self.int_analysis, self.label_analysis_bypass)
-
+        mixed_clustering_fp = self.mixed_clustering_fp
         if not bool(self.blocks):
             summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
             cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, center_summary_fp = self.output_reports()
             self.copy_temps()
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, cbi_quartiles_fp, snr1_quartiles_fp, \
-                   snr2_quartiles_fp, center_summary_fp
+                   snr2_quartiles_fp, mixed_clustering_fp, center_summary_fp
         else:
             summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
             cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp = self.output_reports()
             self.copy_temps()
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, cbi_quartiles_fp, snr1_quartiles_fp, \
-                   snr2_quartiles_fp
+                   snr2_quartiles_fp, mixed_clustering_fp
 
 
 

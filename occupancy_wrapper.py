@@ -184,22 +184,28 @@ def consolidate_reports(report_lists):
     final_report_fps = generate_final_paths(grouped_reports)
     for g, report_group in enumerate(grouped_reports):
         final_report_fp = final_report_fps[g]
-        if final_report_fp.endswith('Cluster_Mixed_Summary.csv'):
-            continue
 
         fovs = []
         data = []
         for r, report_fp in enumerate(report_group):
             with open(report_fp, 'r') as report_f:
-                report_table = [line.split(',') for line in report_f.read().split('\r\n') if line]
+                if final_report_fp.endswith('Cluster_Mixed_Summary.csv'):
+                    report_table = [line.split(',') for line in report_f.read().split('\n') if line]
+                    print report_table
+                else:
+                    report_table = [line.split(',') for line in report_f.read().split('\r\n') if line]
+
             if r == 0:
                 metrics = [row[0] for row in report_table[1:]]
-            fov = report_table[0][1]
+            fov = report_table[0][-1] if final_report_fp.endswith('Cluster_Mixed_Summary.csv') else report_table[0][1]
             fovs.append(fov)
 
             values = [row[1] if len(row) == 2 else row[1:] for row in report_table[1:]]
+            if final_report_fp.endswith('Cluster_Mixed_Summary.csv'):
+                values = [row[-1] for row in report_table[1:]]
+                print values
             data.append(values)
-        data = [y for x,y in sorted(zip(fovs, data))]
+        data = [y for x, y in sorted(zip(fovs, data))]
         if final_report_fp.endswith('Quartiles.csv'):
             avg_data = calculate_quartiles_averages(data)
             data_table = zip(metrics, *avg_data)
