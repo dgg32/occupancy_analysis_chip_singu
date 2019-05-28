@@ -191,7 +191,6 @@ def consolidate_reports(report_lists):
             with open(report_fp, 'r') as report_f:
                 if final_report_fp.endswith('Cluster_Mixed_Summary.csv'):
                     report_table = [line.split(',') for line in report_f.read().split('\n') if line]
-                    print report_table
                 else:
                     report_table = [line.split(',') for line in report_f.read().split('\r\n') if line]
 

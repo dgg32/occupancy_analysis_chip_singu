@@ -1614,7 +1614,7 @@ class NeighborAnalysis(object):
         fig = plt.figure(figsize=(60, 60))
         plt.style.use('dark_background')
         plt.axis(self.xyminmax)
-        colors = ['C3', 'r', 'y', 'c', 'C1', 'C5', 'C4', 'C2', 'b', 'w', 'g'][::-1]
+        colors = ['w', 'r', 'y', 'c', 'g', 'C1', 'C5', 'C4', 'C2', 'C3', 'b'][::-1]
         for i in range(11):
             label = '100% SHI' if i == 10 else ('[%d - %d)' % (i * 10, (i + 1) * 10) + '% SHI')
             mask = self.label_arr[label_dict['SHI']] == i

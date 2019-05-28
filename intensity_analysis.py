@@ -225,7 +225,11 @@ class IntensityAnalysis(object):
         non_neg_norm_data = normalized_data.copy()
         non_neg_norm_data[non_neg_norm_data < 0] = 0
         CBI_proportion = np.apply_along_axis(lambda x: x / max(x), 1, non_neg_norm_data)
-        max_ints = np.apply_along_axis(lambda x: x == max(x), 1, non_neg_norm_data)
+        argmax_ints = np.argmax(non_neg_norm_data, 1)
+        max_ints = np.zeros_like(non_neg_norm_data, dtype=bool)
+        for i in range(4):
+            max_ints[:, i, :] = argmax_ints == i
+        # max_ints = np.apply_along_axis(lambda x: x == max(x), 1, non_neg_norm_data)
         # nan out 1 (CBI) values
         CBI_proportion[max_ints] = np.nan
         average_nonCBI = np.nanmean(CBI_proportion, 2)
