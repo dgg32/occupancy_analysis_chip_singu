@@ -1,0 +1,677 @@
+<html>
+
+<head>
+    <style>
+    .collapsible {
+      background-color: #777;
+      color: white;
+      cursor: pointer;
+      padding: 18px;
+      width: 90%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 20px;
+    }
+
+    .active, .collapsible:hover {
+      background-color: #555;
+    }
+
+    .content-text {
+      padding: 0 18px;
+      width: 90%;
+      background-color: #f1f1f1;
+    }
+    .content {
+      padding: 0 18px;
+      width: 90%;
+      display: none;
+      overflow: hidden;
+      background-color: #f1f1f1;
+    }
+    </style>
+</head>
+
+
+<body style="font-family:Arial">
+    <H1><center>v4.1_0A Occupancy Terms</center></H1>
+    <p>Hover over <i>italicized</i> for brief description. </p>
+    <H2>General Terms</H2>
+    <div class="context-text">
+        <p>
+        Majority of cycles: Calculated as floor((cycles / 2) + 0.5) + 1 -- e.g., 6 for 10 cycles<br>
+        CBI: Called Base Intensity (highest intensity of the 4 channels; average CBI refers to average across number of cycles analyzed)<br>
+        SHI: ratio of Second Highest Intensity to the highest intensity<br>
+        Chastity: ratio of the highest intensity to the top two intensities<br>
+        MultiCall: DNBs with at least two intensities above the <span title="Calculated by measuring the distribution of noise/background in each channel of each cycle"><i>empty threshold</i></span><br>
+        Mixed: DNBs with multiple calls above background and/or are of low chastity (<0.7) for <span title="Calculated as floor((cycles / 2) + 0.5) + 1 -- e.g., 6 for 10 cycles"><i>majority of cycles</i></span><br>
+        Splits: DNBs that belong to a cluster/family of adjacent DNBs that share a common sequence or intensity pattern (across <span title="Calculated as floor((cycles / 2) + 0.5) + 1 -- e.g., 6 for 10 cycles"><i>majority of cycles</i></span>)<br>
+        SNR: Signal-to-Noise Ratio<br>
+        Valid: Non-<span title="DNBs with a mean avg CBI less than the empty threshold are declared empty"><i>Empty</i></span>, Non-<span title="DNBs with an avg CBI greater than or equal to the outlier threshold are declared outliers"><i>Outlier</i></span> DNBs<br>
+        </p>
+    </div>
+
+    <button class="collapsible">Summary Metrics</button>
+    <div class="content">
+        <DL>
+            <DT>Seeds+Singular (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), smSeeds+smSingular (<span title="Percent of Small"><i>%ofSmall</i></span>)</DT>
+            <DD>Seeds and singular DNBs. A seed is the DNB with the highest avg CBI of a splits cluster/family. Singular DNBs are not split, mixed, empty or an outlier. Seeds and singular DNBs should be exclusive. </DD>
+        </DL>
+        <DL>
+            <DT>Singular (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), smSingular (<span title="Percent of Small"><i>%ofSmall</i></span>)</DT>
+            <DD>Singular DNBs are not split, mixed, empty or an outlier.</DD>
+        </DL>
+        <DL>
+            <DT>Empty (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with a mean average Called Base Intensity (CBI) less than the empty threshold are declared empty. The
+                empty threshold is calculated by measuring the distribution of noise/background in each channel of each cycle.
+                See Empty Threshold.
+            </DD>
+        </DL>
+        <DL>
+            <DT><0.20 (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with an avg CBI less than 0.20.
+            </DD>
+        </DL>
+        <DL>
+            <DT>NE<0.25 (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>Non-Empty DNBs with an avg CBI less than 0.25.</DD>
+        </DL>
+        <DL>
+            <DT>NE<0.50 (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>Non-Empty DNBs with an avg CBI less than 0.50.</DD>
+        </DL>
+        <DL>
+            <DT>Mixed (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vMixed (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Mixed DNBs either have multiple calls above background or are of low chastity (or both). See MultiCall,
+                LowChastity.
+            </DD>
+        </DL>
+        <DL>
+            <DT>MultiCall (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vMultiCall (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>MultiCall DNBs have at least two intensities above the empty threshold (in a given cycle) for the majority of
+                the cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>LowChastity (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vLowChastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Chastity is calculated as the ratio of the highest intensity to the top two intensities (in a given cycle). 
+                A DNB is declared to have low chastity if it has a chastity lower than 0.7 for the majority of cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Spatial Duplicates (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>) </DT>
+            <DD>Splits sequences that are duplicates 
+            </DD>
+        </DL>
+
+        <DL>
+            <DT>Seq Splits (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vSeq Splits (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Non-seed splits that match at least one neighbor by sequence (may be reduntant).
+            </DD>
+        </DL>
+        <DL>
+            <DT>Int Splits (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vInt Splits (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Non-seed splits that are also hidden splits, which are intensity-based matches previously undiscovered by sequence-based matching.
+            </DD>
+        </DL>
+        <!--
+        <DL>
+            <DT>splits (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vsplits <span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>splits are all the redundant/extra DNBs that belong to a (split/split) "cluster", which is a grouping of
+                adjacent DNBs that share a common sequence or intensity pattern. The primary DNB (or seed) of a cluster is the
+                one with the highest avg CBI - all others in that cluster would be considered splits.
+            </DD>
+        </DL>
+        -->
+        <DL>
+            <DT>Normalization Factor</DT>
+            <DD>The inverse of which is used to multiply the avg CBI distribution so that the 50th percentile becomes 1.0.
+                Thresholds are scaled accordingly as well.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Total # DNBs</DT>
+            <DD>Count of DNBs in that particular FOV.</DD>
+        </DL>
+        <DL>
+            <DT>Empty Threshold</DT>
+            <DD>Gaussian mixture models are used to characterize the distribution of noise/background in a given channel. An
+                indivual empty threshold is 3 sigma above the mean of the determined distribution. The value reported here is
+                the mean average of all channels/cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Small Threshold</DT>
+            <DD>A small threshold is calculated as the 25th percentile of intensities above the empty threshold in a given
+                cycle. The value reported here is the mean average of all channels/cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Large Threshold</DT>
+            <DD>A large threshold is calculated as the 75th percentile of intensities above the empty threshold in a given
+                cycle. The value reported here is the mean average of all channels/cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Outlier Threshold</DT>
+            <DD>An outlier threshold is calculated as the 75th percentile of intensities above the empty threshold plus 3 times
+                the difference between the 75th percentile and the 25th percentile in a given cycle (Q3 + 3 (Q3-Q1). The value
+                reported here is the mean average of all channels/cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>RHO Avg/A/C/G/T Intercept</DT>
+            <DD>RHO intensities are computed by transforming the normalized intensities (crosstalk, phasing correction) back to raw intensities scale. 
+                The RHO intensity values for the cycle range are fitted and the intercept is reported. RHO Avg Intercept is the intercept of the fitted average line of channels A, C, G, and T.
+            </DD>
+        </DL>
+        <DL>
+            <DT>RHO Avg/A/C/G/T C01</DT>
+            <DD>The RHO intensity value of the first cycle of the cycle range.
+            </DD>
+        </DL>
+    </div>
+
+    <button class="collapsible">Size Results Metrics</button>
+    <div class="content">
+        <DL>
+            <DT><0.15 (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with an avg CBI rank less than 15%.
+            </DD>
+        </DL>
+        <DL>
+            <DT><0.20 (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with an avg CBI rank less than 20%.
+            </DD>
+        </DL>
+        <DL>
+            <DT><0.25 (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with an avg CBI rank less than 25%.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Empty (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with an mean average Called Base Intensity (CBI) less than the empty threshold are declared empty. The
+                empty threshold is calculated by measuring the distribution of noise/background in each channel of each cycle.
+                See Empty Threshold.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Small (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with an avg CBI greater than or equal to the empty threshold but less than the small threshold are declared small. See Empty Threshold, Small Threshold.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Med (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with an avg CBI greater than or equal to the small threshold but less than the large threshold are declared large. See Small Threshold, Large Threshold.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Large (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with an avg CBI greater than or equal to the larger threshold but less than the outlier threshold are declared large. See Large Threshold, Outlier Threshold.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Outlier (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs with an avg CBI greater than or equal to the outlier threshold are declared outliers. See Outlier Threshold.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Avg SNR</DT>
+            <DD>Average signal-to-noise ratio (SNR) for all 4 channels. SNR is calculated as the trimmed (2%) mean of called
+                (maximum) intensities (in a given channel) divided by the standard deviation of the non-called (not maximum)
+                intensities.
+            </DD>
+        </DL>
+        <DL>
+            <DT>SNR A</DT>
+            <DD>Average signal-to-noise ratio (SNR) for A channel.</DD>
+        </DL>
+        <DL>
+            <DT>SNR C</DT>
+            <DD>Average signal-to-noise ratio (SNR) for C channel.</DD>
+        </DL>
+        <DL>
+            <DT>SNR G</DT>
+            <DD>Average signal-to-noise ratio (SNR) for G channel.</DD>
+        </DL>
+        <DL>
+            <DT>SNR T</DT>
+            <DD>Average signal-to-noise ratio (SNR) for T channel.</DD>
+        </DL>
+    </div>
+
+    <button class="collapsible">Mixed Results Metrics</button>
+    <div class="content">
+        <DL>
+            <DT>0-Call (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v0-Call (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>0-Call DNBs have 0 intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>1-Call (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v1-Call (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>1-Call DNBs have 1 intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>2-Call (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v2-Call (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>2-Call DNBs have 2 intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>3-Call (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v3-Call (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>3-Call DNBs have 3 intensities above the empty threshold (in a given cycle) for the majority of the cycles being
+                analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>4-Call (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v4-Call (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>4-Call DNBs have all 4 intensities above the empty threshold (in a given cycle) for the majority of the cycles being
+                analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>[n  n+10)% SHI (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), [n  n+10)% vSHI (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with average Second Highest Intensity proportion of highest intensity in the range of [n, n + 10)% for the majority of cycles being analyzed. The ranges include decile groups from [0, 10)% to [90, 100)%. </DD>
+        </DL>
+        <DL>
+            <DT>100% SHI (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), 100% vSHI (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with 100% SHI for the majority of cycles being analyzed. This would occur if the top two intensities are equal -- i.e., there is no highest intensity. </DD>
+        </DL>
+        <DL>
+            <DT>NaN-Chastity (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vNaN-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values with NaN for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>0.5-Chastity (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v0.5-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values in the range of [0.5, 0.6) for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>0.6-Chastity (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v0.6-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values in the range of [0.6, 0.7) for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>0.7-Chastity (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v0.7-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values in the range of [0.7, 0.8) for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>0.8-Chastity (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v0.8-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values in the range of [0.8, 0.9) for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>0.9-Chastity (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v0.9-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values in the range of [0.9, 1.0) for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>1.0-Chastity (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), v1.0-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values above 1.0 for the majority of cycles being analyzed. (Chastity is greater than 1.0 in
+                the case that the 2nd highest intensity is negative).
+            </DD>
+        </DL>
+    </div>
+
+    <button class="collapsible">Cluster Mixed Summary Metrics</button>
+    <div class="content">
+        <DL>
+            <b>%dnbs_of_inner</b>: Percent of DNBs excluding the 36 edge blocks<br>
+            <b>neighbors</b>: Number of labeled DNBs that are neighbors for that label<br>
+            <b>neighbors_shuffled</b>: Number of labeled DNBs that are neighbors for that label, after randomly shuffling<br>
+            <b>neighbors_ratio</b>: Ratio of neighbors_shuffled to neighbors
+            <p>
+                The value in the cluster mixed summary table is the <b>neighbors_ratio</b>. A low ratio would indicate non-random co-localization / clustering of the labeled DNBs. A ratio close to 1.0 would indicate that the labeled DNBs are randomly distributed across the FOV. A ratio of -1 means there are 0% DNBs in the inner blocks for that label.
+            </p>
+        </DL>
+        <H2>Labels</H2>
+        <DL>
+            <DT>Empty (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>DNBs with a mean average Called Base Intensity (CBI) less than the empty threshold are declared empty. The empty threshold is calculated by measuring the distribution of noise/background in each channel of each cycle.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Multicall or Low Chastity (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>MultiCall DNBs have at least two intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed. Chastity is calculated as the ratio of the highest intensity to the top two intensities (in a given cycle). A DNB is declared to have low chastity if it has a chastity lower than 0.7 for the majority of cycles being analyzed. This label includes DNBs with multiple call counts OR low chastity, and may include empty DNBs with low chastity. 
+            </DD>
+        </DL>
+        <DL>
+            <DT>Multicall or Low Chastity Non-Empty (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>MultiCall DNBs have at least two intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed. A DNB is declared to have low chastity if it has a chastity lower than 0.7 for the majority of cycles being analyzed. This label includes DNBs with multiple call counts OR low chastity, excluding empty DNBs with low chastity. 
+            </DD>
+        </DL> 
+        <DL>
+            <DT>Multicall and Low Chastity (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>MultiCall DNBs have at least two intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed. A DNB is declared to have low chastity if it has a chastity lower than 0.7 for the majority of cycles being analyzed. This label includes DNBs with multiple call counts AND low chastity.
+            </DD>
+        </DL>  
+        <DL>
+            <DT>Multicall (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>MultiCall DNBs have at least two intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed.
+            </DD>
+        </DL>     
+        <DL>
+            <DT>2-Call (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>2-Call DNBs have 2 intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>3-Call (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>3-Call DNBs have 3 intensities above the empty threshold (in a given cycle) for the majority of the cycles being
+                analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>4-Call (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>4-Call DNBs have all 4 intensities above the empty threshold (in a given cycle) for the majority of the cycles being
+                analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>Low Chastity (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>A DNB is declared to have low chastity if it has a chastity lower than 0.7 for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>0.6-Chastity (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>DNBs with chastity values in the range of [0.6, 0.7) for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>0.5-Chastity (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>DNBs with chastity values in the range of [0.5, 0.6) for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>NaN-Chastity (<span title="Percent of Inner DNBs"><i>ofInner</i></span>)</DT>
+            <DD>DNBs with chastity values with NaN for the majority of cycles being analyzed.</DD>
+        </DL>
+
+    </div>
+
+    <button class="collapsible">Split Results Metrics</button>
+    <div class="content">
+        <DL>
+            <DT>Splits (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vSplits (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Splits are any DNB that matches (either by sequence or intensity pattern) any of its neighbors.</DD>
+        </DL>
+        <DL>
+            <DT>Children (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vChildren (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Splits that have lower avg CBI than all matched neighbors. They are both a Parent and a Child.</DD>
+        </DL>
+        <DL>
+            <DT>Parents (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vParents (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Splits that have higher avg CBI than all matched neighbors.</DD>
+        </DL>
+        <DL>
+            <DT>MidParent (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), vMidParent (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Splits that have both a lower and higher avg CBI matched neighbor.</DD>
+        </DL>
+        <DL>
+            <DT>Horizontal Split (<span title="Percent of Split DNBs"><i>%ofSplits</i></span>)</DT>
+            <DD>Proportion of splits that are from single, horizontal splits.</DD>
+        </DL>
+        <DL>
+            <DT>Vertical Split (<span title="Percent of Split DNBs"><i>%ofSplits</i></span>)</DT>
+            <DD>Proportion of splits that are from single, vertical splits.</DD>
+        </DL>
+        <DL>
+            <DT>Diagonal Split (<span title="Percent of Split DNBs"><i>%ofSplits</i></span>)</DT>
+            <DD>Proportion of splits that are from single, diagonal splits.</DD>
+        </DL>
+        <DL>
+            <DT>Multiple Split (<span title="Percent of Split DNBs"><i>%ofSplits</i></span>)</DT>
+            <DD>Proportion of splits that are from multiple splits.</DD>
+        </DL>
+        <DL>
+            <DT>Most Frequent 10-mer</DT>
+            <DD>10bp sequence with the highest count of split DNBs that have that exact sequence.</DD>
+        </DL>
+        <DL>
+            <DT>Frequency of 10-mer</DT>
+            <DD>Counts of split DNBs with the most frequent 10bp sequence.</DD>
+        </DL>
+        <DL>
+            <DT>Left Parent Count</DT>
+            <DD>Count of left parents.</DD>
+        </DL>
+        <DL>
+            <DT>Right Parent Count</DT>
+            <DD>Count of right parents.</DD>
+        </DL>
+        <DL>
+            <DT>Up Parent Count</DT>
+            <DD>Count of up parents.</DD>
+        </DL>
+        <DL>
+            <DT>Down Parent Count</DT>
+            <DD>Count of down parents.</DD>
+        </DL>
+        <DL>
+            <DT>Empty Parents (<span title="Percent of SingleParents">%ofSingleParents</span>), Empty Parents (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>Proportion of parents that are classified as empty.</DD>
+        </DL>
+        <DL>
+            <DT>Empty Children (<span title="Percent of SingleChildren">%ofSingleChildren</span>), Empty Children (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>Proportion of children that are classified as empty.</DD>
+        </DL>
+        <DL>
+            <DT>Empty Splits (%ofSingleSplits)</DT>
+            <DD>Proportion of splits/splits that are classified as empty.</DD>
+        </DL>
+        <DL>
+            <DT>0-Call Parents (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>Parents that are classified as 0-Call.</DD>
+        </DL>
+        <DL>
+            <DT>0-Call Children (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>Children that are classified as 0-Call.</DD>
+        </DL>
+        <DL>
+            <DT>NonSplit Mixed (<span title="Percent of Mixed DNBs"><i>%ofMixed</i></span>), vNonSplit Mixed (<span title="Percent of Valid Mixed DNBs">%ofValidMixed</span>)</DT>
+            <DD>Proportion of Mixed DNBs that are not Split DNBs.</DD>
+        </DL>
+        <DL>
+            <DT>Mixed Children (<span title="Percent of Mixed DNBs"><i>%ofMixed</i></span>), vMixed Children (<span title="Percent of Valid Mixed DNBs">%ofValidMixed</span>)</DT>
+            <DD>Proportion of Mixed DNBs that are Children.</DD>
+        </DL>
+        <DL>
+            <DT>Mixed Parents (<span title="Percent of Mixed DNBs"><i>%ofMixed</i></span>), vMixed Parents (<span title="Percent of Valid Mixed DNBs">%ofValidMixed</span>)</DT>
+            <DD>Proprotion of Mixed DNBs that are Parents.</DD>
+        </DL>
+        <DL>
+            <DT>Mixed MidParent (<span title="Percent of Mixed DNBs"><i>%ofMixed</i></span>), vMixed MidParent (<span title="Percent of Valid Mixed DNBs">%ofValidMixed</span>)</DT>
+            <DD>Proprotion of Mixed DNBs that are both a Parent and a Child.</DD>
+        </DL>
+
+        <DL>
+            <DT>NonSplit (<span title="Percent of MultiCall DNBs"><i>%ofMultiCall</i></span>), vNonSplit (<span title="Percent of Valid MultiCall DNBs"><i>%ofValidMultiCall</i></span>)</DT>
+            <DD>Proportion of MultiCall DNBs that are not Split DNBs.</DD>
+        </DL>
+        <DL>
+            <DT>mcChildren (<span title="Percent of MultiCall DNBs"><i>%ofMultiCall</i></span>), vmcChildren (<span title="Percent of Valid MultiCall DNBs"><i>%ofValidMultiCall</i></span>)</DT>
+            <DD>Proportion of MultiCall DNBs that are Children.</DD>
+        </DL>
+        <DL>
+            <DT>mcParents (<span title="Percent of MultiCall DNBs"><i>%ofMultiCall</i></span>), vmcParents (<span title="Percent of Valid MultiCall DNBs"><i>%ofValidMultiCall</i></span>)</DT>
+            <DD>Proprotion of MultiCall DNBs that are Parents.</DD>
+        </DL>
+        <DL>
+            <DT>mcMidParent (<span title="Percent of MultiCall DNBs"><i>%ofMultiCall</i></span>), vmcMidParent (<span title="Percent of Valid MultiCall DNBs"><i>%ofValidMultiCall</i></span>)</DT>
+            <DD>Proprotion of MultiCall DNBs that are both a Parent and a Child.</DD>
+        </DL>
+
+        <DL>
+            <DT>lcNonSplit (<span title="Percent of Low Chastity DNBs">%ofLowChastity</span>), vlcNonSplit (<span title="Percent of Valid Low Chastity DNBs"><i>%ofValidLowChastity</i></span>)</DT>
+            <DD>Proportion of LowChastity DNBs that are not Split DNBs.</DD>
+        </DL>
+        <DL>
+            <DT>lcChildren (<span title="Percent of Low Chastity DNBs">%ofLowChastity</span>), vlcChildren (<span title="Percent of Valid Low Chastity DNBs"><i>%ofValidLowChastity</i></span>)</DT>
+            <DD>Proportion of LowChastity DNBs that are Children.</DD>
+        </DL>
+        <DL>
+            <DT>lcParents (<span title="Percent of Low Chastity DNBs">%ofLowChastity</span>), vlcParents (<span title="Percent of Valid Low Chastity DNBs"><i>%ofValidLowChastity</i></span>)</DT>
+            <DD>Proprotion of LowChastity DNBs that are Parents.</DD>
+        </DL>
+        <DL>
+            <DT>lcMidParent (<span title="Percent of Low Chastity DNBs">%ofLowChastity</span>), vlcMidParent (<span title="Percent of Valid Low Chastity DNBs"><i>%ofValidLowChastity</i></span>)</DT>
+            <DD>Proportion of LowChastity DNBs that are both a Parent and a Child.</DD>
+        </DL>
+        <DL>
+            <DT>Families Count</DT>
+            <DD>Total number of clusters. Adjacent DNBs that share the same sequence or intensity pattern define a cluster.
+            </DD>
+        </DL>
+        <DL>
+            <DT>2n DNBs (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>), 2n DNBs (<span title="Percent of Families Count"><i>%ofFamilies</i></span>)</DT>
+            <DD>DNBs that belong to clusters with only 2 DNBs in the cluster.</DD>
+        </DL>
+        <DL>
+            <DT>3n DNBs (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs that belong to clusters with only 3 DNBs in the cluster.</DD>
+        </DL>
+        <DL>
+            <DT>4n DNBs (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs that belong to clusters with only 4 DNBs in the cluster.</DD>
+        </DL>
+        <DL>
+            <DT>5n DNBs (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs that belong to clusters with only 5 DNBs in the cluster.</DD>
+        </DL>
+        <DL>
+            <DT>6n DNBs (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs that belong to clusters with only 6 DNBs in the cluster.</DD>
+        </DL>
+        <DL>
+            <DT>7n DNBs (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs that belong to clusters with only 7 DNBs in the cluster.</DD>
+        </DL>
+        <DL>
+            <DT>8n DNBs (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs that belong to clusters with only 8 DNBs in the cluster.</DD>
+        </DL>
+        <DL>
+            <DT>9+n DNBs (<span title="Percent of Total DNBs"><i>%ofTotal</i></span>)</DT>
+            <DD>DNBs that belong to clusters with 9 or more DNBs in the cluster.</DD>
+        </DL>
+    </div>
+
+    <button class="collapsible">(CBI, SNR1, SNR2) Quartiles Metrics</button>
+    <div class="content">
+        <p>
+            <b>CBI</b>: Percentile rankings for normalized average called base intensity. 1 to 100 are positive (non-empty, non-outlier) DNBs broken up into 100 subsets of equal size. Outliers are labeled 101 and empties are evenly split from -10 to -1. Nans are considered 0.<br>
+            <b>SNR1</b>: Percentile rankings for SNR1, calculated using all cycles altogether (ReadWise)<br>
+            <b>SNR2</b>: Percentile rankings for SNR2, calculated per cycle then averaged across all (CycleWise)<br>
+            The Q1, Q2, Q3, and Q4 of CBI, SNR1, or SNR2 are reported for each of the labels.
+        </p>
+        <H2>Labels</H2>
+        <DL>
+            <DT>vMixed (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Mixed DNBs either have multiple calls above background or are of low chastity (or both). See MultiCall,
+                LowChastity.
+            </DD>
+        </DL>
+        <DL>
+            <DT>vMultiCall (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>MultiCall DNBs have at least two intensities above the empty threshold (in a given cycle) for the majority of
+                the cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>vLowChastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Chastity is calculated as the ratio of the highest intensity to the top two intensities (in a given cycle). 
+                A DNB is declared to have low chastity if it has a chastity lower than 0.7 for the majority of cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>v1-Call (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>1-Call DNBs have 1 intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>v2-Call (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>2-Call DNBs have 2 intensities above the empty threshold (in a given cycle) for the majority of the cycles being analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>v3-Call (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>3-Call DNBs have 3 intensities above the empty threshold (in a given cycle) for the majority of the cycles being
+                analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>v4-Call (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>4-Call DNBs have all 4 intensities above the empty threshold (in a given cycle) for the majority of the cycles being
+                analyzed.
+            </DD>
+        </DL>
+        <DL>
+            <DT>vNaN-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values with NaN for the majority of cycles being analyzed.</DD>
+        </DL>
+        <DL>
+            <DT>v<b>n</b>-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values in the range of [n, n + 0.1) for the majority of cycles being analyzed. The ranges include decile groups from [0.5, 0.6) to [0.9, 1.0). </DD>
+        </DL>
+            <DT>v1.0-Chastity (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with chastity values above 1.0 for the majority of cycles being analyzed. (Chastity is greater than 1.0 in
+                the case that the 2nd highest intensity is negative).
+            </DD>
+        </DL>
+        <DL>
+            <DT><b>[n  n+10)%</b> vSHI (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with average Second Highest Intensity proportion of highest intensity in the range of [n, n + 10)% for the majority of cycles being analyzed. The ranges include decile groups from [0, 10)% to [90, 100)%. </DD>
+        </DL>
+        <DL>
+            <DT>100% vSHI (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>DNBs with 100% SHI for the majority of cycles being analyzed. This would occur if the top two intensities are equal -- i.e., there is no highest intensity. </DD>
+        </DL>
+        <DL>
+            <DT>vNonSplit(<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Proportion of Valid DNBs that are not Split DNBs.</DD>
+        </DL>
+        <DL>
+            <DT>vChildren (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Splits that have lower avg CBI than all matched neighbors.</DD>
+        </DL>
+        <DL>
+            <DT>vParents (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Splits that have higher avg CBI than all matched neighbors.</DD>
+        </DL>
+        <DL>
+            <DT>vParent&Child (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs"><i>%ofValid</i></span>)</DT>
+            <DD>Proportion of Valid DNBs that have both a lower and higher avg CBI matched neighbor. They are both a Parent and a Child.</DD>
+        </DL>
+        <DL>
+            <DT>vNon-Split-Mixed (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs">%ofValid</span>)</DT>
+            <DD>Proportion of Valid DNBs that are not Split DNBs and mixed.</DD>
+        </DL>
+        <DL>
+            <DT>vMixed Children (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs">%ofValid</span>)</DT>
+            <DD>Proportion of Valid DNBs that are Children and mixed.</DD>
+        </DL>
+        <DL>
+            <DT>vMixed Parents (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs">%ofValid</span>)</DT>
+            <DD>Proprotion of Valid DNBs that are Parents and mixed.</DD>
+        </DL>
+        <DL>
+            <DT>vMixed Parent&Child (<span title="Percent of Valid (Non-Empty, Non-Outlier) DNBs">%ofValid</span>)</DT>
+            <DD>Proprotion of Valid DNBs that are both a Parent and a Child and mixed.</DD>
+        </DL>        
+    </div>
+
+
+    <script>
+        var coll = document.getElementsByClassName("collapsible");
+        var i;
+
+        for (i = 0; i < coll.length; i++) {
+          coll[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+              content.style.display = "none";
+            } else {
+              content.style.display = "block";
+            }
+          });
+        }
+    </script>
+</body>
+</html>
