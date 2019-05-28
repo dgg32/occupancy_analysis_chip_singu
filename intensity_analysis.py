@@ -129,7 +129,11 @@ class IntensityAnalysis(object):
         signal = {'A': [], 'C': [], 'G': [], 'T': []}
         noise = {'A': [], 'C': [], 'G': [], 'T': []}
 
-        max_ints = np.apply_along_axis(lambda x: x == max(x), 1, normalized_data)
+        # max_ints = np.apply_along_axis(lambda x: x == max(x), 1, normalized_data)
+        argmax_ints = np.argmax(normalized_data, 1)
+        max_ints = np.zeros_like(normalized_data, dtype=bool)
+        for i in range(4):
+            max_ints[:, i, :] = argmax_ints == i
 
         for i, base in enumerate('ACGT'):
             signal[base] = normalized_data[:,i, self.cyndexes][max_ints[:,i, self.cyndexes]]
