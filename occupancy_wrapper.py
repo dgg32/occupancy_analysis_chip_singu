@@ -222,19 +222,17 @@ def consolidate_reports(report_lists):
     return
 
 
-def consolidate_lane_reports(slide_dp):
+def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
     import pandas as pd
     report_names = ['CBI_Quartiles', 'Center2x2_Summary', 'Cluster_Mixed_Summary', 'Mixed_Results', 'Size_Results',
                     'SNR1_Quartiles', 'SNR2_Quartiles', 'Split_Results', 'Summary']
-    f = glob.glob(os.path.join(slide_dp, 'L01', '*Occupancy_Analysis*CBI_Quartiles.csv'))[0]
-    slide, lane, occ, analysis, cycles = os.path.basename(f).replace('_CBI_Quartiles.csv', '').split('_')
-    prefix = '%s_%s_%s_%s' % (slide, occ, analysis, cycles)
+    cycles = prefix.split('_')[-1]
     for report in report_names:
         writer = pd.ExcelWriter(os.path.join(slide_dp, '%s_%s.xlsx' % (prefix, report)), engine='xlsxwriter')
-        # index_format = writer.book.add_format({'bold': True, 'text_wrap': True, 'align': 'left', 'border': 1})
         for i, lane in enumerate(['L01', 'L02', 'L03', 'L04']):
             r, c = 0, 0
-            f = glob.glob(os.path.join(slide_dp, lane, '*%s_%s.csv' % (cycles, report)))
+            lane_dp = os.path.join(os.path.split(slide_dp)[0], lane, occupancy_fn)
+            f = glob.glob(os.path.join(lane_dp, '*%s_%s.csv' % (cycles, report)))
             if len(f) == 1:
                 df = pd.read_csv(f[0], index_col=0)
                 if i in [1, 3]:
@@ -334,15 +332,22 @@ def main(arguments):
     """
 
     if 'consolidate_lanes' in occupancy_parameters:
-        slide_output_dp = occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], '')
+        time.sleep(15)
+        final_report_fps = generate_final_paths(zip(*occupancy_results))
+        f = final_report_fps[0]
+        lane_dp, occupancy_fn = os.path.split(os.path.dirname(f))
+        slide, lane, occ, analysis, cycles = os.path.basename(f).split('_')[:5]
+        prefix = '%s_%s_%s_%s' % (slide, occ, analysis, cycles)
+
+        slide_output_dp = os.path.join(os.path.split(lane_dp)[0], occupancy_fn)
         if not os.path.isdir(slide_output_dp):
             os.makedirs(slide_output_dp)
 
-        if os.path.isdir(occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], 'L01')) and \
-                os.path.isdir(occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], 'L02')) and \
-                os.path.isdir(occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], 'L03')) and \
-                os.path.isdir(occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], 'L04')):
-            consolidate_lane_reports(slide_output_dp)
+        if os.path.exists(f.replace(occupancy_parameters['lane'], 'L01')) and \
+                os.path.exists(f.replace(occupancy_parameters['lane'], 'L02')) and \
+                os.path.exists(f.replace(occupancy_parameters['lane'], 'L03')) and \
+                os.path.exists(f.replace(occupancy_parameters['lane'], 'L04')):
+            consolidate_lane_reports(slide_output_dp, occupancy_fn, prefix)
 
     end_time = datetime.datetime.now()
     ela_time = end_time - start_time
