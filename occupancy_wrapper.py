@@ -334,10 +334,15 @@ def main(arguments):
     """
 
     if 'consolidate_lanes' in occupancy_parameters:
-        slide_dp = occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], '')
-        if os.path.isdir(os.path.join(slide_dp, 'L01')) and os.path.isdir(os.path.join(slide_dp, 'L02')) and \
-                os.path.isdir(os.path.join(slide_dp, 'L03')) and os.path.isdir(os.path.join(slide_dp, 'L04')):
-            consolidate_lane_reports(slide_dp)
+        slide_output_dp = occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], '')
+        if not os.path.isdir(slide_output_dp):
+            os.makedirs(slide_output_dp)
+
+        if os.path.isdir(occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], 'L01')) and \
+                os.path.isdir(occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], 'L02')) and \
+                os.path.isdir(occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], 'L03')) and \
+                os.path.isdir(occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], 'L04')):
+            consolidate_lane_reports(slide_output_dp)
 
     end_time = datetime.datetime.now()
     ela_time = end_time - start_time
