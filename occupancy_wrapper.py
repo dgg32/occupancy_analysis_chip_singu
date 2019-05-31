@@ -60,7 +60,8 @@ def parse_arguments(arguments):
                            help="Emails to notify upon report completion.")
     ArgParser.add_argument("-d", "--data", action="store", dest="data_dp", default='',
                            help="Emails to notify upon report completion.")
-
+    ArgParser.add_argument("-L", "--consolidate_lanes", action="store_true", dest="compile_lanes", default='',
+                           help="Flag to compile all lanes to single workbook.")
     para, args = ArgParser.parse_known_args()
 
     # if len(args) != 1:
@@ -106,6 +107,10 @@ def populate_default_parameters(occupancy_parameters):
         occupancy_parameters['output_dp'] = 'Output'
     if 'blocks' not in occupancy_parameters or not bool(occupancy_parameters['output_dp']):
         occupancy_parameters['blocks'] = []
+
+    if 'consolidate_lanes' not in occupancy_parameters or not bool(occupancy_parameters['consolidate_lanes']):
+        occupancy_parameters['consolidate_lanes'] = True
+
     return occupancy_parameters
 
 ###### To-Do List
@@ -217,6 +222,31 @@ def consolidate_reports(report_lists):
     return
 
 
+def consolidate_lane_reports(slide_dp):
+    import pandas as pd
+    report_names = ['CBI_Quartiles', 'Center2x2_Summary', 'Cluster_Mixed_Summary', 'Mixed_Results', 'Size_Results',
+                    'SNR1_Quartiles', 'SNR2_Quartiles', 'Split_Results', 'Summary']
+    f = glob.glob(os.path.join(slide_dp, 'L01', '*Occupancy_Analysis*CBI_Quartiles.csv'))[0]
+    slide, lane, occ, analysis, cycles = os.path.basename(f).replace('_CBI_Quartiles.csv', '').split('_')
+    prefix = '%s_%s_%s_%s' % (slide, occ, analysis, cycles)
+    for report in report_names:
+        writer = pd.ExcelWriter(os.path.join(slide_dp, '%s_%s.xlsx' % (prefix, report)), engine='xlsxwriter')
+        # index_format = writer.book.add_format({'bold': True, 'text_wrap': True, 'align': 'left', 'border': 1})
+        for i, lane in enumerate(['L01', 'L02', 'L03', 'L04']):
+            r, c = 0, 0
+            f = glob.glob(os.path.join(slide_dp, lane, '*%s_%s.csv' % (cycles, report)))
+            if len(f) == 1:
+                df = pd.read_csv(f[0], index_col=0)
+                if i in [1, 3]:
+                    c = df.shape[1] + 3
+                if i in [2, 3]:
+                    r = df.shape[0] + 2
+                df.index.name = lane
+                df.to_excel(writer, sheet_name=report, startcol=c, startrow=r)
+        writer.save()
+    return
+
+
 def main(arguments):
     print('starting occupancy')
     start_time = datetime.datetime.now()
@@ -300,8 +330,15 @@ def main(arguments):
     occupancy_outputs = list(occupancy_outputs)
     occupancy_exceptions = [output for output in occupancy_outputs if output != None]
     # email exceptions?
-    
+
     """
+
+    if 'consolidate_lanes' in occupancy_parameters:
+        slide_dp = occupancy_parameters['output_dp'].replace(occupancy_parameters['lane'], '')
+        if os.path.isdir(os.path.join(slide_dp, 'L01')) and os.path.isdir(os.path.join(slide_dp, 'L02')) and \
+                os.path.isdir(os.path.join(slide_dp, 'L03')) and os.path.isdir(os.path.join(slide_dp, 'L04')):
+            consolidate_lane_reports(slide_dp)
+
     end_time = datetime.datetime.now()
     ela_time = end_time - start_time
     logger.info('Occupancy analysis complete! (%s)' % ela_time)

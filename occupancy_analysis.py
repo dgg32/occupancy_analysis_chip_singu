@@ -75,13 +75,13 @@ class OccupancyAnalysis(object):
         elif self.platform == 'blackbird':
             self.bypass['nanocall_conversion'] = self.bypass.pop('nanocall_conversion', False)
         else:
-            self.bypass['int2npy'] = self.bypass.pop('int2npy', True)
-        self.bypass['intensity_analysis'] = self.bypass.pop('intensity_analysis', True)
-        self.bypass['neighbor_analysis'] = self.bypass.pop('neighbor_analysis', True)
+            self.bypass['int2npy'] = self.bypass.pop('int2npy', False)
+        self.bypass['intensity_analysis'] = self.bypass.pop('intensity_analysis', False)
+        self.bypass['neighbor_analysis'] = self.bypass.pop('neighbor_analysis', False)
         self.bypass['label_analysis'] = self.bypass.pop('label_analysis', False)
 
         self.intensity_analysis_bypass = {}
-        self.intensity_analysis_bypass['calculate_thresholds'] = self.bypass.pop('calculate_thresholds', True)
+        self.intensity_analysis_bypass['calculate_thresholds'] = self.bypass.pop('calculate_thresholds', False)
 
         self.neighbor_analysis_bypass = {}
         self.neighbor_analysis_bypass['get_possible_split_groups'] =  \
