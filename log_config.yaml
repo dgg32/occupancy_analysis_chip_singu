@@ -1,0 +1,165 @@
+---
+version: 1
+disable_existing_loggers: False
+formatters:
+    simple:
+        format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+handlers:
+    console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: simple
+        stream: ext://sys.stdout
+
+    info_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: simple
+        filename: instance_info.log
+        maxBytes: 20971520 # 20MB
+        backupCount: 20
+        encoding: utf8
+
+    error_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: ERROR
+        formatter: simple
+        filename: instance_errors.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf8
+
+    sub_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: simple
+        filename: sub.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf8
+
+    remote_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: simple
+        filename: remote.log
+        maxBytes: 20971520 # 20MB
+        backupCount: 20
+        encoding: utf8
+
+    remote_error_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: ERROR
+        formatter: simple
+        filename: remote_errors.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf8
+
+    sub_error_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: ERROR
+        formatter: simple
+        filename: sub_errors.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf8
+
+loggers:
+    zebra_cal2fastq:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    analysisAndMapping:
+        level: INFO
+        handlers: [console, remote_file_handler, remote_error_file_handler, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    intensity_index_multi:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    V2_Single:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    mapOneFq:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    fq2sam:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    splitSamFile:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    summaryReport:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    samStatReport:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    heatmapReport:
+        level: INFO
+        handlers: [console, remote_file_handler, remote_error_file_handler]
+        propagate: no
+    mergeSingleCycleHeatmap:
+        level: INFO
+        handlers: [console, remote_file_handler, remote_error_file_handler]
+        propagate: no
+    bin2npy:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    occupancy_analysis:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    split_DNBs:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    intensity_analysis:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    GMM_norm_outliers_3IQR:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    neighbor_analysis:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    label_analysisV4:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    json_data_parser:
+        level: INFO
+        handlers: [console, remote_file_handler, remote_error_file_handler]
+        propagate: no
+    validate_standards:
+        level: INFO
+        handlers: [console, info_file_handler, error_file_handler]
+        propagate: no
+    cat:
+        level: INFO
+        handlers: [console, info_file_handler, error_file_handler]
+        propagate: no
+    signal_phasing:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+    color_matrix_correction:
+        level: INFO
+        handlers: [console, sub_file_handler, sub_error_file_handler]
+        propagate: no
+root:
+    level: INFO
+    handlers: [console, info_file_handler, error_file_handler, remote_file_handler, remote_error_file_handler]
+...

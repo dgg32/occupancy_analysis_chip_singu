@@ -45,7 +45,6 @@ class OccupancyAnalysis(object):
         self.lane = parameter_overrides.pop('lane', lane)
         self.fov = parameter_overrides.pop('fov', fov)
         self.blocks = parameter_overrides.pop('blocks', blocks)
-        print(self.blocks)
         if bool(self.blocks):
             self.blocks = eval(self.blocks)
         self.start_cycle = parameter_overrides.pop('cycle_start', int(cycle_start))
@@ -63,7 +62,6 @@ class OccupancyAnalysis(object):
             self.fov_dp = os.path.join(output_dp, self.fov)
 
         self.log_overrides = parameter_overrides.pop('log_overrides', log_overrides)
-
         # report name can be specified in parameter_overrides
         self.report_name = parameter_overrides.pop('report_name', '%s_%s_%s_Occupancy_Analysis_C%02d-C%02d' %
                                                    (self.slide, self.lane, self.fov, self.start_cycle,
@@ -125,7 +123,6 @@ class OccupancyAnalysis(object):
         override_dict.update(self.log_overrides)
         setup_logging(config_path='log_occupancy.yaml', overrides=override_dict)
         logger.info('Initiating Occupancy Analysis for %s...' % self.fov)
-
         for k, v in parameter_overrides.items():
             logger.warning('Extraneous parameter found - %s: %s' % (k, v))
 
@@ -202,7 +199,8 @@ class OccupancyAnalysis(object):
 
     def run_int2npy(self, data_dp, fov, start_cycle, occupancy_range, temp_dp):
         from occuint2npy import Int2npy
-        i2n = Int2npy(data_dp, fov, start_cycle, occupancy_range, temp_dp)
+        i2n = Int2npy(data_dp, fov, start_cycle, occupancy_range, temp_dp,
+                      log_dp=self.log_dp, log_overrides=self.log_overrides)
         if self.bypass['int2npy']:
             int_fp, posinfo_fp, norm_paras_fp, background_fp = i2n.complete_bypass()
         else:
@@ -215,7 +213,7 @@ class OccupancyAnalysis(object):
         except:
             from v2cal2fastq import V2Cal2Fastq
             c2f = V2Cal2Fastq(self.data_dp, fov, self.start_cycle, self.occupancy_range, blocks_fp,
-                              output_dp=self.temp_dp)
+                              output_dp=self.temp_dp, log_dp=self.log_dp, log_overrides=self.log_overrides)
             fastq_fp = c2f.run()
         return fastq_fp
 
@@ -226,7 +224,7 @@ class OccupancyAnalysis(object):
         cal_fp = os.path.join(self.data_dp, 'calFile', '%s.cal' % fov)
         self.int_analysis = IntensityAnalysis(slide, lane, fov, start_cycle, occupancy_range,
                                               cal_fp, int_fp, norm_paras_fp, background_fp, blocks_fp,
-                                              temp_dp, bypass, self.log_dp)
+                                              temp_dp, bypass, log_dp=self.log_dp, log_overrides=self.log_overrides)
         if self.bypass['intensity_analysis']:
             self.rho_results, self.snr_results, self.thresholds_summary, self.cbi_bypassed = self.int_analysis.complete_bypass()
         else:
@@ -244,7 +242,7 @@ class OccupancyAnalysis(object):
         from neighbor_analysis import NeighborAnalysis
 
         nbr_analysis = NeighborAnalysis(int_analysis, coords_fp, neighbors_fp, blocks_fp, fastq_fp, bypass=bypass,
-                                        log_dp=self.log_dp)
+                                        log_dp=self.log_dp, log_overrides=self.log_overrides)
         # neighbor_analysis can only be bypassed if int_analysis was since the latter recreates the label array
         if self.bypass['neighbor_analysis'] and self.cbi_bypassed:
             self.neighbors_summary, self.neighbors_results = nbr_analysis.complete_bypass()
@@ -255,8 +253,7 @@ class OccupancyAnalysis(object):
     def run_label_analysis(self, int_analysis, bypass):
         from label_analysis import LabelAnalysis
 
-        lbl_analysis = LabelAnalysis(int_analysis, bypass,
-                                     log_dp=self.log_dp)
+        lbl_analysis = LabelAnalysis(int_analysis, bypass, log_dp=self.log_dp, log_overrides=self.log_overrides)
 
         if self.bypass['label_analysis']:
             self.size_summary, self.size_results, \
@@ -426,6 +423,7 @@ def main(arguments):
         print usage
 
     return
+
 
 if __name__ == '__main__':
     logging.info("Starting logger...")

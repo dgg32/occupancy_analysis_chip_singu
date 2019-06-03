@@ -109,9 +109,9 @@ def populate_default_parameters(occupancy_parameters):
         occupancy_parameters['blocks'] = []
 
     if 'consolidate_lanes' not in occupancy_parameters or not bool(occupancy_parameters['consolidate_lanes']):
-        occupancy_parameters['consolidate_lanes'] = True
+        consolidate_lanes = True
 
-    return occupancy_parameters
+    return occupancy_parameters, consolidate_lanes
 
 ###### To-Do List
 # - completely wrap v1 process
@@ -191,13 +191,11 @@ def consolidate_reports(report_lists):
         final_report_fp = final_report_fps[g]
 
         fovs = []
-        data = []
+        metrics, data = [], []
         for r, report_fp in enumerate(report_group):
             with open(report_fp, 'r') as report_f:
-                if final_report_fp.endswith('Cluster_Mixed_Summary.csv'):
-                    report_table = [line.split(',') for line in report_f.read().split('\n') if line]
-                else:
-                    report_table = [line.split(',') for line in report_f.read().split('\r\n') if line]
+                sp = '\n' if final_report_fp.endswith('Cluster_Mixed_Summary.csv') else '\r\n'
+                report_table = [line.split(',') for line in report_f.read().split(sp) if line]
 
             if r == 0:
                 metrics = [row[0] for row in report_table[1:]]
@@ -207,7 +205,6 @@ def consolidate_reports(report_lists):
             values = [row[1] if len(row) == 2 else row[1:] for row in report_table[1:]]
             if final_report_fp.endswith('Cluster_Mixed_Summary.csv'):
                 values = [row[-1] for row in report_table[1:]]
-                print values
             data.append(values)
         data = [y for x, y in sorted(zip(fovs, data))]
         if final_report_fp.endswith('Quartiles.csv'):
@@ -219,7 +216,19 @@ def consolidate_reports(report_lists):
             data = zip(metrics, avg_data, *data)
             fovs = sorted(fovs)
             output_table(final_report_fp, data, header=['', 'AVG'] + fovs)
-    return
+    return final_report_fps
+
+
+def get_parent_report_names(f):
+    lane_dp, occupancy_fn = os.path.split(os.path.dirname(f))
+    slide, lane, occ, analysis, cycles = os.path.basename(f).split('_')[:5]
+    prefix = '%s_%s_%s_%s' % (slide, occ, analysis, cycles)
+
+    slide_output_dp = os.path.join(os.path.split(lane_dp)[0], occupancy_fn)
+    if not os.path.isdir(slide_output_dp):
+        os.makedirs(slide_output_dp)
+
+    return slide_output_dp, occupancy_fn, prefix
 
 
 def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
@@ -256,7 +265,7 @@ def main(arguments):
     else:
         occupancy_parameters = parse_arguments(arguments)
 
-    occupancy_parameters = populate_default_parameters(occupancy_parameters)
+    occupancy_parameters, consolidate_lanes = populate_default_parameters(occupancy_parameters)
 
     bypass = dict(occupancy_parameters['bypass']) if ('bypass' in occupancy_parameters) else {}
     bypass['temp_deletion'] = bypass.pop('temp_deletion', True)
@@ -278,7 +287,6 @@ def main(arguments):
     else:
         occupancy_parameters['log_overrides'] = override_dict
     setup_logging(config_path='log_occupancy.yaml', overrides=occupancy_parameters['log_overrides'])
-
     logger.info('Python Version: %s' % sys.version)
 
     fov_list = occupancy_parameters.pop('fov_list', [])
@@ -309,7 +317,7 @@ def main(arguments):
         logger.error('%s' % exception)
     occupancy_results = [oo for oo in occupancy_outputs if type(oo) == tuple]
 
-    consolidate_reports(occupancy_results)
+    final_report_fps = consolidate_reports(occupancy_results)
 
     if os.name == 'posix':
         os.system('rsync -zarv --include="*/" --include="*.png" --include="*.csv" '
@@ -331,18 +339,10 @@ def main(arguments):
 
     """
 
-    if 'consolidate_lanes' in occupancy_parameters:
+    if consolidate_lanes:
         time.sleep(15)
-        final_report_fps = generate_final_paths(zip(*occupancy_results))
         f = final_report_fps[0]
-        lane_dp, occupancy_fn = os.path.split(os.path.dirname(f))
-        slide, lane, occ, analysis, cycles = os.path.basename(f).split('_')[:5]
-        prefix = '%s_%s_%s_%s' % (slide, occ, analysis, cycles)
-
-        slide_output_dp = os.path.join(os.path.split(lane_dp)[0], occupancy_fn)
-        if not os.path.isdir(slide_output_dp):
-            os.makedirs(slide_output_dp)
-
+        slide_output_dp, occupancy_fn, prefix = get_parent_report_names(f)
         if os.path.exists(f.replace(occupancy_parameters['lane'], 'L01')) and \
                 os.path.exists(f.replace(occupancy_parameters['lane'], 'L02')) and \
                 os.path.exists(f.replace(occupancy_parameters['lane'], 'L03')) and \
@@ -353,6 +353,7 @@ def main(arguments):
     ela_time = end_time - start_time
     logger.info('Occupancy analysis complete! (%s)' % ela_time)
     return
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
