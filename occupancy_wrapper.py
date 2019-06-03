@@ -60,8 +60,8 @@ def parse_arguments(arguments):
                            help="Emails to notify upon report completion.")
     ArgParser.add_argument("-d", "--data", action="store", dest="data_dp", default='',
                            help="Emails to notify upon report completion.")
-    ArgParser.add_argument("-L", "--consolidate_lanes", action="store_true", dest="compile_lanes", default='',
-                           help="Flag to compile all lanes to single workbook.")
+    ArgParser.add_argument("-L", "--consolidate_lanes", action="store_false", dest="consolidate_lanes", default=True,
+                           help="Flag to not compile all lanes to single workbook. Default true.")
     para, args = ArgParser.parse_known_args()
 
     # if len(args) != 1:
@@ -71,12 +71,11 @@ def parse_arguments(arguments):
 
     occupancy_parameters = vars(para)
     # occupancy_parameters['data_dp'] = args[0]
-    return vars(para)
+    return occupancy_parameters
 
 
 def populate_default_parameters(occupancy_parameters):
     import re
-
     if 'platform' not in occupancy_parameters or not bool(occupancy_parameters['platform']):
         occupancy_parameters['platform'] = 'v1'
 
@@ -108,9 +107,8 @@ def populate_default_parameters(occupancy_parameters):
     if 'blocks' not in occupancy_parameters or not bool(occupancy_parameters['output_dp']):
         occupancy_parameters['blocks'] = []
 
-    if 'consolidate_lanes' not in occupancy_parameters or not bool(occupancy_parameters['consolidate_lanes']):
-        consolidate_lanes = True
-
+    consolidate_lanes = occupancy_parameters['consolidate_lanes']
+    occupancy_parameters.pop('consolidate_lanes')
     return occupancy_parameters, consolidate_lanes
 
 ###### To-Do List

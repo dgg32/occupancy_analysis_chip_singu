@@ -153,11 +153,9 @@ class OccupancyAnalysis(object):
     def run_bin2npy(self, data_dp, fov, start_cycle, occupancy_range, temp_dp):
         from bin2npy import Bin2npy
 
-        b2n = Bin2npy(data_dp, fov, start_cycle, occupancy_range, temp_dp)
-        if self.bypass['bin2npy']:
-            int_fp = b2n.complete_bypass()
-        else:
-            int_fp = b2n.run()
+        b2n = Bin2npy(data_dp, fov, start_cycle, occupancy_range, temp_dp,
+                      log_dp=self.log_dp, log_overrides=self.log_overrides)
+        int_fp = b2n.run()
         return int_fp
 
     def run_pos2neighbors(self, data_dp, temp_dp, fov, blocks, v1=True):
