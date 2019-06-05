@@ -235,19 +235,61 @@ def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
                     'SNR1_Quartiles', 'SNR2_Quartiles', 'Split_Results', 'Summary']
     cycles = prefix.split('_')[-1]
     for report in report_names:
-        writer = pd.ExcelWriter(os.path.join(slide_dp, '%s_%s.xlsx' % (prefix, report)), engine='xlsxwriter')
-        for i, lane in enumerate(['L01', 'L02', 'L03', 'L04']):
-            r, c = 0, 0
+        metrics = []
+        lanes, dfs, avgs = [], [], []
+        for lane in ['L01', 'L02', 'L03', 'L04']:
             lane_dp = os.path.join(os.path.split(slide_dp)[0], lane, occupancy_fn)
             f = glob.glob(os.path.join(lane_dp, '*%s_%s.csv' % (cycles, report)))
             if len(f) == 1:
                 df = pd.read_csv(f[0], index_col=0)
-                if i in [1, 3]:
-                    c = df.shape[1] + 3
-                if i in [2, 3]:
-                    r = df.shape[0] + 2
-                df.index.name = lane
-                df.to_excel(writer, sheet_name=report, startcol=c, startrow=r)
+                metrics = df.index
+                if 'AVG' in df.columns.tolist():
+                    avgs.append(df['AVG'].values)
+                    # assuming AVG column is always first?
+                    df = df[df.columns.tolist()[1:]]
+                dfs.append(df)
+                lanes.append(lane)
+
+        writer = pd.ExcelWriter(os.path.join(slide_dp, '%s_%s.xlsx' % (prefix, report)), engine='xlsxwriter')
+        workbook = writer.book
+        lane_border = workbook.add_format()
+        lane_border.set_right()
+
+        c = 0
+        index = True
+        if len(avgs) > 0:
+            avgs = np.array(avgs).T
+            df_avgs = pd.DataFrame(avgs, index=metrics, columns=['AVG'] * len(lanes))
+            df_avgs.to_excel(writer, sheet_name=report, startcol=c, startrow=1, index=index)
+            c += len(lanes) + 1
+            worksheet = writer.sheets[report]
+            worksheet.set_column(c - 1, c - 1, None, lane_border)
+            for i in range(len(lanes)):
+                worksheet.write(0, i + 1, lanes[i])
+            index = False
+
+        for i, lane in enumerate(lanes):
+            df = dfs[i]
+            df.to_excel(writer, sheet_name=report, startcol=c, startrow=1, index=index)
+            index = False
+            c += df.shape[1]
+            if i == 0 and len(avgs) == 0:
+                c += 1
+            worksheet = writer.sheets[report]
+            worksheet.set_column(c - 1, c - 1, None, lane_border)
+            for col_num in range(df.shape[1]):
+                cc = c - df.shape[1]
+                worksheet.write(0, col_num + cc, lane)
+        worksheet = writer.sheets[report]
+        worksheet.freeze_panes(0, 1)
+        worksheet.set_column(0, 0, 30)
+        if report == 'Summary' or report == 'Center2x2_Summary':
+            worksheet.conditional_format(2, 1, 2, c, {'type': '3_color_scale'})
+            for col in [6, 11, 15, 19]:
+                worksheet.conditional_format(col, 1, col, c, {'type': '3_color_scale',
+                                                              'min_color': '#63BE7B',
+                                                              'mid_color': '#FFEB84',
+                                                              'max_color': '#F8696B'})
         writer.save()
     return
 
@@ -338,13 +380,14 @@ def main(arguments):
     """
 
     if consolidate_lanes:
-        time.sleep(15)
+        time.sleep(10)
         f = final_report_fps[0]
-        slide_output_dp, occupancy_fn, prefix = get_parent_report_names(f)
-        if os.path.exists(f.replace(occupancy_parameters['lane'], 'L01')) and \
-                os.path.exists(f.replace(occupancy_parameters['lane'], 'L02')) and \
-                os.path.exists(f.replace(occupancy_parameters['lane'], 'L03')) and \
-                os.path.exists(f.replace(occupancy_parameters['lane'], 'L04')):
+        completed_lanes = [os.path.exists(f.replace(occupancy_parameters['lane'], 'L01')),
+                           os.path.exists(f.replace(occupancy_parameters['lane'], 'L02')),
+                           os.path.exists(f.replace(occupancy_parameters['lane'], 'L03')),
+                           os.path.exists(f.replace(occupancy_parameters['lane'], 'L04'))]
+        if np.sum(completed_lanes) > 1:
+            slide_output_dp, occupancy_fn, prefix = get_parent_report_names(f)
             consolidate_lane_reports(slide_output_dp, occupancy_fn, prefix)
 
     end_time = datetime.datetime.now()
