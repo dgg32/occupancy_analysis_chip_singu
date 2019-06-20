@@ -151,6 +151,7 @@ class NeighborAnalysis(object):
         self.start_time = datetime.datetime.now()
 
         self.prefix = int_analysis.prefix
+        self.lane = int_analysis.lane
         self.fov = int_analysis.fov
         self.start_cycle = int_analysis.start_cycle
         self.cycle_range = int_analysis.cycle_range
@@ -182,6 +183,10 @@ class NeighborAnalysis(object):
         self.ACGT_dist_fp = os.path.join(self.output_dp, '%s_ACGT_dist.p' % self.prefix)
         self.sequence_strings_fp = os.path.join(self.output_dp, '%s_Sequence_Strings.npy' % self.prefix)
 
+        self.ACGT_dist_csv = os.path.join(self.output_dp, '%s_%s_%s_Occupancy_Analysis_%s_ACGT_splits.csv' % tuple(self.prefix.split('_')))
+        self.split_cbi_ratio_dist_npy = os.path.join(self.output_dp, '%s_Split_CBI-Ratio_Distributions.npy' % self.prefix)
+        self.parent_cbi_dist_npy = os.path.join(self.output_dp, '%s_Parents_CBI_Distributions.npy' % self.prefix)
+        self.children_cbi_dist_npy = os.path.join(self.output_dp, '%s_Children_CBI_Distributions.npy' % self.prefix)
         self.bypass = bypass
         """
         self.bypass['get_possible_split_groups'] = self.bypass.pop('get_possible_split_groups', False)
@@ -856,7 +861,7 @@ class NeighborAnalysis(object):
         # return seq, 100.*ht[seq]/len(idx)
         return seqs[0], counts[0]
 
-    def split_CBI_arr(self, naCBI_data, arr, multiplicity, mixed_indices):
+    def split_CBI_arr(self, naCBI_data, arr, multiplicity, direction, mixed_indices):
         """
         Input format: naCBI_data = np.array containing the 4 signals of the average of 10 cycles for each positional index
                       arr = array-like containing arrays/lists of groups of positional indices that share the same 10mer
@@ -866,18 +871,26 @@ class NeighborAnalysis(object):
 
         Output format: list of lists containing the 4 signal intensities of each mirage category
         """
-        CBI_arr = []
 
-        if multiplicity == 'single':
-            for pair in arr:
-                if np.isin(pair, mixed_indices).any(): continue
-                assert (len(pair) == 2), "Single splits must be in pairs"
-                CBI_arr.append([naCBI_data[pair[0]], naCBI_data[pair[1]]])
+        save_path = os.path.join(self.output_dp, '%s_%s_%s.npy' % (self.prefix, multiplicity, direction))
+        if not os.path.exists(save_path):
+            CBI_arr = []
 
-        elif multiplicity == 'multiple':
-            for i in arr:
-                if i in mixed_indices: continue
-                CBI_arr.append(naCBI_data[i])
+            if multiplicity == 'single':
+                for pair in arr:
+                    if np.isin(pair, mixed_indices).any(): continue
+                    assert (len(pair) == 2), "Single splits must be in pairs"
+                    CBI_arr.append([naCBI_data[pair[0]], naCBI_data[pair[1]]])
+
+            elif multiplicity == 'multiple':
+                for i in arr:
+                    if i in mixed_indices: continue
+                    CBI_arr.append(naCBI_data[i])
+
+            CBI_arr = np.array(CBI_arr)
+            np.save(save_path, CBI_arr)
+        else:
+            CBI_arr = np.load(save_path)
         return CBI_arr
 
     def calculate_single_split_CBI_ratio(self, CBI_arr, direction):
@@ -894,27 +907,46 @@ class NeighborAnalysis(object):
         res = {}
         res['ratio'] = []
         if direction == 'horizontal' or direction == 'vertical':
-            res[direction] = []
-            for pair in CBI_arr:
-                lu = pair[0]
-                rd = pair[1]
-                if lu > 0.0001 or rd > 0.0001:
-                    if lu < 0.0001:
-                        lu = 0.0001
-                    if rd < 0.0001:
-                        rd = 0.0001
-                    res[direction].append(lu / rd)  # left/right or up/down
-                    res['ratio'].append(min([lu, rd]) / max([lu, rd]))
+            # res[direction] = []
+            CBI_arr[CBI_arr < 0.0001] = 0.0001
+            res['ratio'] = np.min(CBI_arr, axis=1) / np.max(CBI_arr, axis=1)
+            res[direction] = CBI_arr[:, 0] / CBI_arr[:, 1]
         else:
+            CBI_arr = CBI_arr.tolist()
             for pair in CBI_arr:
-                p1 = pair[0]
-                p2 = pair[1]
-                if p1 > 0.0001 or p2 > 0.0001:
-                    if p1 < 0.0001:
-                        p1 = 0.0001
-                    if p2 < 0.0001:
-                        p2 = 0.0001
-                    res['ratio'].append(min([p1, p2]) / max([p1, p2]))
+                    p1 = pair[0]
+                    p2 = pair[1]
+                    if p1 > 0.0001 or p2 > 0.0001:
+                        if p1 < 0.0001:
+                            p1 = 0.0001
+                        if p2 < 0.0001:
+                            p2 = 0.0001
+                        res['ratio'].append(min([p1, p2]) / max([p1, p2]))
+
+
+        # res['ratio'] = []
+        # if direction == 'horizontal' or direction == 'vertical':
+        #     res[direction] = []
+        #     for pair in CBI_arr:
+        #         lu = pair[0]
+        #         rd = pair[1]
+        #         if lu > 0.0001 or rd > 0.0001:
+        #             if lu < 0.0001:
+        #                 lu = 0.0001
+        #             if rd < 0.0001:
+        #                 rd = 0.0001
+        #             res[direction].append(lu / rd)  # left/right or up/down
+        #             res['ratio'].append(min([lu, rd]) / max([lu, rd]))
+        # else:
+        #     for pair in CBI_arr:
+        #         p1 = pair[0]
+        #         p2 = pair[1]
+        #         if p1 > 0.0001 or p2 > 0.0001:
+        #             if p1 < 0.0001:
+        #                 p1 = 0.0001
+        #             if p2 < 0.0001:
+        #                 p2 = 0.0001
+        #             res['ratio'].append(min([p1, p2]) / max([p1, p2]))
         return res
 
     def plot_single_split_CBI_ratio(self, CBI_arr, direction):
@@ -963,6 +995,7 @@ class NeighborAnalysis(object):
 
         Output format: 2 lists, each one containing signal values corresponding to parent or children respectively
         """
+        CBI_arr = CBI_arr.tolist()
         parents = []
         children = []
         for group in CBI_arr:
@@ -980,12 +1013,15 @@ class NeighborAnalysis(object):
 
         Output format: a list of ints [left, right] or [up, down]
         """
-        lu = rd = 0
-        for pair in CBI_arr:
-            if pair[0] > pair[1]:
-                lu += 1
-            else:
-                rd += 1
+        lu = np.sum(CBI_arr[:, 0] > CBI_arr[:, 1])
+        rd = len(CBI_arr) - lu
+
+        # lu = rd = 0
+        # for pair in CBI_arr:
+        #     if pair[0] > pair[1]:
+        #         lu += 1
+        #     else:
+        #         rd += 1
         return [lu, rd]
 
     def calculate_multi_split_CBI_ratio(self, CBI_arr):
@@ -1038,14 +1074,15 @@ class NeighborAnalysis(object):
         th = float(self.empty_fth)
         f, axarr = plt.subplots(2, 2)
         ax = [axarr[0, 0], axarr[0, 1], axarr[1, 0], axarr[1, 1]]
-
+        x = np.linspace(0, 4, 500)
         num_empty = 0
         num_total = 0
 
+        data = np.zeros((4, 500))
         for i in range(len(ax)):
             if len(arr[i]) > 1:
-                x = np.linspace(0, 4, 500)
                 p = gaussian_kde(arr[i])(x)
+                data[i] = p
                 ax[i].plot(x, p)
                 ax[i].set_title(directions[i] + ' ' + relation + ': Intensity')
 
@@ -1075,7 +1112,7 @@ class NeighborAnalysis(object):
                 num_total += len(arr[i])
                 num_empty += less_than_th / 100 * len(arr[i])
 
-        plt.title('%s CBI Distributions (w/o Mixed Splits)')
+        f.suptitle('%s CBI Distributions (w/o Mixed Splits)')
         plt.tight_layout()
         png_path = os.path.join(self.output_dp, '%s_%s_CBI_Distributions.png' % (self.prefix, relation))
         try:
@@ -1084,6 +1121,10 @@ class NeighborAnalysis(object):
             plt.savefig('\\\\?\\' + png_path)
         plt.gcf().clear()
         plt.close()
+
+        npy_path = os.path.join(self.output_dp, '%s_%s_CBI_Distributions.npy' % (self.prefix, relation))
+        data = np.array(data)
+        np.save(npy_path, data)
         return num_empty, num_total
 
     def plot_CBI_ratios(self, horiz, vert, diag, mult, hvd):
@@ -1113,8 +1154,8 @@ class NeighborAnalysis(object):
         gridspec.GridSpec(9, 9)
         mpl.rcParams.update({'font.size': 6})
 
+        mMs = np.zeros((12, 500))
         mM = np.linspace(0, 1, 500)
-
         if len(horiz['ratio']) > 1:
             # horiz small/large subplot
             horiz_mM = gaussian_kde(horiz['ratio'])
@@ -1125,6 +1166,8 @@ class NeighborAnalysis(object):
             plt.xlabel('Ratio')
             plt.ylabel('Density')
             plt.plot(mM, horiz_mM)
+            mMs[0] = mM
+            mMs[1] = horiz_mM
 
         if len(horiz['horizontal']) > 1:
             # horiz L/R subplot
@@ -1132,6 +1175,8 @@ class NeighborAnalysis(object):
             LR = np.linspace(0, 4 * np.median(horiz['horizontal']), 500)
             horiz_LR = horiz_LR(LR)
             less_than, greater_than = area_under_curve(LR, horiz_LR)
+            mMs[2] = LR
+            mMs[3] = horiz_LR
 
             plt.subplot2grid((9, 9), (0, 6), rowspan=3, colspan=3)
             plt.title('Horizontal Split:\nLeft/Right CBI', size=8, weight='bold')
@@ -1152,6 +1197,8 @@ class NeighborAnalysis(object):
             plt.xlabel('Ratio')
             plt.ylabel('Density')
             plt.plot(mM, vert_mM)
+            mMs[4] = mM
+            mMs[5] = vert_mM
 
         if len(vert['vertical']) > 1:
             # vertical U/D subplot
@@ -1159,6 +1206,8 @@ class NeighborAnalysis(object):
             UD = np.linspace(0, 4 * np.median(vert['vertical']), 500)
             vert_UD = vert_UD(UD)
             less_than, greater_than = area_under_curve(UD, vert_UD)
+            mMs[6] = UD
+            mMs[7] = vert_UD
 
             plt.subplot2grid((9, 9), (3, 6), rowspan=3, colspan=3)
             plt.title('Vertical Split:\nUp/Down CBI', size=8, weight='bold')
@@ -1179,12 +1228,16 @@ class NeighborAnalysis(object):
             plt.xlabel('Ratio')
             plt.ylabel('Density')
             plt.plot(mM, diag_mM)
+            mMs[8] = mM
+            mMs[9] = diag_mM
 
         if len(mult) > 1:
             # multi small/large subplot
             multi_mM = gaussian_kde(mult)
             m_mM = np.linspace(0, max(mult), 500)
             multi_mM = multi_mM(m_mM)
+            mMs[10] = m_mM
+            mMs[11] = multi_mM
 
             plt.subplot2grid((9, 9), (6, 6), rowspan=3, colspan=3)
             plt.title('Multi Split:\nSum(Small)/Large CBI', size=8, weight='bold')
@@ -1204,7 +1257,9 @@ class NeighborAnalysis(object):
         p3 = plt.bar([1], hvd[2], bottom=hvd[1] + hvd[0], color='g')
         x1, x2, y1, y2 = plt.axis()
         plt.axis((x1, x2, 0, 100))
-        plt.legend((p1[0], p2[0], p3[0]), ('Horizontal', 'Vertical', 'Diagonal'), loc='center left',
+        plt.legend((p1[0], p2[0], p3[0]), ('{0:.3}% Horizontal'.format(hvd[0]),
+                                           '{0:.3}% Vertical'.format(hvd[1]),
+                                           '{0:.3}% Diagonal'.format(hvd[2])), loc='center left',
                    bbox_to_anchor=(1, 0.5))
 
         fig.tight_layout()
@@ -1215,6 +1270,9 @@ class NeighborAnalysis(object):
             fig.savefig('\\\\?\\' + png_path)
         plt.gcf().clear()
         plt.close()
+
+        mMs = np.array(mMs)
+        np.save(self.split_cbi_ratio_dist_npy, mMs)
         return
 
     def plot_splits(self, horiz, vert, diag, multi, tag=''):
@@ -1637,7 +1695,7 @@ class NeighborAnalysis(object):
         logger.debug('%s - plot_shi completed.' % self.fov)
         return
 
-    def ACGT_split(self, horiz, vert, diag, multi, ACGT_dist):
+    def ACGT_split(self, horiz, vert, diag, multi, ACGT_dist, rates):
         A = C = G = T = 0
 
         horiz = unpack(horiz)
@@ -1684,6 +1742,52 @@ class NeighborAnalysis(object):
         for base in ACGT_dist:
             num_bases += ACGT_dist[base]
 
+        # fig = plt.figure(1)
+        # gridspec.GridSpec(9, 12)
+        # mpl.rcParams.update({'font.size': 6})
+        #
+        # # Total Plot
+        # plt.subplot2grid((9, 12), (0, 0), rowspan=9, colspan=2)
+        # plt.rcParams.update(mpl.rcParamsDefault)
+        # plt.style.use('seaborn-muted')
+        # plt.title('A:C:G:T Ratio in \nAll Split DNBs', size=8, weight='bold')
+        # plt.ylabel('%')
+        # plt.xticks([1], ' ')
+
+        combined_split = {}
+        for key in h_split:
+            combined_split[key] = h_split[key] + v_split[key] + d_split[key] + m_split[key]
+        total = 0
+        for key in combined_split:
+            total += combined_split[key]
+        for key in combined_split:
+            combined_split[key] *= 100. / total if total else 1.0
+
+        splits = [combined_split, h_split, v_split, d_split, m_split]
+        self.plot_ACGT_split(splits, total, num_bases, ACGT_dist)
+        self.save_ACGT_split(splits, rates)
+        return
+
+    def save_ACGT_split(self, splits, rates):
+        import pandas as pd
+        all_rates = [100.]
+        all_rates.extend(rates)
+
+        names = ['All Split', 'Horizontal', 'Vertical', 'Diagonal', 'Multi']
+        lane = [self.lane] * len(names)
+        fov = [self.fov] * len(names)
+        arrays = [lane, fov, names]
+        tuples = list(zip(*arrays))
+        idx = pd.MultiIndex.from_tuples(tuples, names=['Lane', 'FOV', 'Split Type'])
+        df = pd.DataFrame(splits, index=idx)
+        df['%ofSplits'] = all_rates
+        df = df[['%ofSplits', 'A', 'C', 'G', 'T']]
+        df.to_csv(self.ACGT_dist_csv)
+        return
+
+    def plot_ACGT_split(self, splits, total, num_bases, ACGT_dist):
+        combined_split, h_split, v_split, d_split, m_split = splits
+
         fig = plt.figure(1)
         gridspec.GridSpec(9, 12)
         mpl.rcParams.update({'font.size': 6})
@@ -1695,15 +1799,6 @@ class NeighborAnalysis(object):
         plt.title('A:C:G:T Ratio in \nAll Split DNBs', size=8, weight='bold')
         plt.ylabel('%')
         plt.xticks([1], ' ')
-
-        combined_split = {}
-        for key in h_split:
-            combined_split[key] = h_split[key] + v_split[key] + d_split[key] + m_split[key]
-        total = 0
-        for key in combined_split:
-            total += combined_split[key]
-        for key in combined_split:
-            combined_split[key] *= 100. / total if total else 1.0
 
         p1 = plt.bar([1], combined_split['A'], color='r')
         p2 = plt.bar([1], combined_split['T'], bottom=combined_split['A'], color='b')
@@ -2038,10 +2133,10 @@ class NeighborAnalysis(object):
                     #self.plot_splits_alt(horizontal_splits, vertical_splits, diagonal_splits, multiple_splits)
                 #self.plot_cbi_thr_random()
 
-            h_CBI_arr = self.split_CBI_arr(self.naCBI_data, horizontal_splits, 'single', mixed_indices)
-            v_CBI_arr = self.split_CBI_arr(self.naCBI_data, vertical_splits, 'single', mixed_indices)
-            d_CBI_arr = self.split_CBI_arr(self.naCBI_data, diagonal_splits, 'single', mixed_indices)
-            m_CBI_arr = self.split_CBI_arr(self.naCBI_data, multiple_splits, 'multiple', mixed_indices)
+            h_CBI_arr = self.split_CBI_arr(self.naCBI_data, horizontal_splits, 'single', 'horizontal', mixed_indices)
+            v_CBI_arr = self.split_CBI_arr(self.naCBI_data, vertical_splits, 'single', 'vertical', mixed_indices)
+            d_CBI_arr = self.split_CBI_arr(self.naCBI_data, diagonal_splits, 'single', 'diagonal', mixed_indices)
+            m_CBI_arr = self.split_CBI_arr(self.naCBI_data, multiple_splits, 'multiple', '', mixed_indices)
 
             left = right = up = down = 0
 
@@ -2084,7 +2179,8 @@ class NeighborAnalysis(object):
                 self.plot_CBI_ratios(h, v, d, m, hvd)
                 logger.info('%s - plotted ratios' % self.fov)
 
-                self.ACGT_split(horizontal_splits, vertical_splits, diagonal_splits, multiple_splits, ACGT_dist)
+                rates = [horiz_rate, vert_rate, diag_rate, multi_rate]
+                self.ACGT_split(horizontal_splits, vertical_splits, diagonal_splits, multiple_splits, ACGT_dist, rates)
 
                 empty_parents_rate = 100. * empty_parents / total_parents if total_parents else 'NA'
                 empty_children_rate = 100. * empty_children / total_children if total_children else 'NA'
@@ -2168,9 +2264,9 @@ class NeighborAnalysis(object):
 
 def main(slide, lane, fov, start_cycle, occupancy_range, int_fp, posinfo_fp, fastq_fp):
     inta = IntensityAnalysis(slide, lane, fov, start_cycle, occupancy_range, int_fp)
-    inta.load_data()
+    # inta.load_data()
 
-    ma = NeighborAnalysis(inta, posinfo_fp, [fastq_fp])
+    ma = NeighborAnalysis(inta, posinfo_fp, fastq_fp=fastq_fp)
     summary, results = ma.run()
     print summary, results
     return summary, results

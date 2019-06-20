@@ -45,6 +45,9 @@ class LabelAnalysis(object):
         self.output_dp = int_analysis.output_dp
         self.prefix = int_analysis.prefix
 
+        # output histogram npy paths
+        self.avgCBI_hist_npy = os.path.join(self.output_dp, self.center_str + '%s_avgCBI_Hist.npy' % self.prefix)
+
         # output pickle paths
         self.size_results_fp = os.path.join(self.output_dp, self.center_str + '%s_Size_Results.p' % self.prefix)
         self.size_summary_fp = os.path.join(self.output_dp, self.center_str + '%s_Size_Summary.p' % self.prefix)
@@ -56,6 +59,7 @@ class LabelAnalysis(object):
         self.chastity_summary_fp = os.path.join(self.output_dp, self.center_str + '%s_Chastity_Summary.p' % self.prefix)
 
         self.SHI_results_fp = os.path.join(self.output_dp, self.center_str + '%s_SHI_Results.p' % self.prefix)
+        self.SHI_summary_fp = os.path.join(self.output_dp, self.center_str + '%s_SHI_Summary.p' % self.prefix)
         self.mixed_summary_fp = os.path.join(self.output_dp, self.center_str + '%s_Mixed_Summary.p' % self.prefix)
 
         self.empty_splits_results_fp = os.path.join(self.output_dp,
@@ -327,8 +331,8 @@ class LabelAnalysis(object):
         fig, ax = plt.subplots(2, sharex=True, figsize=(12.8, 9.6))
         mpl.rcParams.update({'font.size': 10})
 
-        ax[0].hist(full_density, xs, color='C0', histtype='step', label='All DNBs')
-        ax[0].hist(singular_density, xs, color='C1', histtype='step', label='Singular DNBs')
+        full_counts, _, _ = ax[0].hist(full_density, xs, color='C0', histtype='step', label='All DNBs')
+        singular_counts, _, _ = ax[0].hist(singular_density, xs, color='C1', histtype='step', label='Singular DNBs')
 
         ax[0].axvline(x=self.empty_fth, color='red', linestyle='--')
         ax[0].axvline(x=self.small_fth, color='blue', linestyle='--')
@@ -385,6 +389,7 @@ class LabelAnalysis(object):
         nsplit_density = self.naCBI_data[self.non_split]
 
         # mixed breakdown
+        lowshi_density = self.naCBI_data[self.label_arr[label_dict['SHI']] < 3]
         highchastity_density = self.naCBI_data[self.label_arr[label_dict['Chastity']] >= 7]
         singlecall_density = self.naCBI_data[self.label_arr[label_dict['Multicall']] == 1]
         nmixed_density = self.naCBI_data[self.non_mixed]
@@ -396,19 +401,19 @@ class LabelAnalysis(object):
         mpl.rcParams.update({'font.size': 10})
 
         ax[0].hist(full_density, xs, histtype='step', color='C0', label='All DNBs')
-        ax[0].hist(nchildren_density, xs, histtype='step', color='C1', label='Non-Children DNBs')
-        ax[0].hist(nparent_density, xs, histtype='step', color='C2', label='Non-Parent DNBs')
-        ax[0].hist(nsplit_density, xs, histtype='step', color='C4', label='Non-Split DNBs')
+        nchildren_counts, _, _ = ax[0].hist(nchildren_density, xs, histtype='step', color='C1', label='Non-Children DNBs')
+        nparent_counts, _, _ = ax[0].hist(nparent_density, xs, histtype='step', color='C2', label='Non-Parent DNBs')
+        nsplit_counts, _, _ = ax[0].hist(nsplit_density, xs, histtype='step', color='C4', label='Non-Split DNBs')
         ax[0].axvline(x=self.empty_fth, color='red', linestyle='--')
         ax[0].xaxis.set_ticks_position('bottom')
         ax[0].yaxis.set_ticks_position('left')
         ax[0].legend(markerscale=20)
 
-
         ax[1].hist(full_density, xs, histtype='step', color='C0', label='All DNBs')
-        ax[1].hist(highchastity_density, xs, histtype='step', color='C1', label='High Chastity DNBs')
-        ax[1].hist(singlecall_density, xs, histtype='step', color='C2', label='Single-call DNBs')
-        ax[1].hist(nmixed_density, xs, histtype='step', color='C4', label='Non-Mixed DNBs')
+        lowshi_counts, _, _ = ax[1].hist(lowshi_density, xs, histtype='step', color='C5', label='Low SHI DNBs')
+        highchas_counts, _, _ = ax[1].hist(highchastity_density, xs, histtype='step', color='C1', label='High Chastity DNBs')
+        singlecall_counts, _, _ = ax[1].hist(singlecall_density, xs, histtype='step', color='C2', label='Single-call DNBs')
+        nmixed_counts, _, _ = ax[1].hist(nmixed_density, xs, histtype='step', color='C4', label='Non-Mixed DNBs')
         ax[1].axvline(x=self.empty_fth, color='red', linestyle='--')
         ax[1].xaxis.set_ticks_position('bottom')
         ax[1].yaxis.set_ticks_position('left')
@@ -417,7 +422,7 @@ class LabelAnalysis(object):
         ax[2].hist(full_density, xs, histtype='step', color='C0', label='All DNBs')
         ax[2].hist(nsplit_density, xs, histtype='step', color='C1', label='Non-Split DNBs')
         ax[2].hist(nmixed_density, xs, histtype='step', color='C2', label='Non-Mixed DNBs')
-        ax[2].hist(nsm_density, xs, histtype='step', color='C4', label='Non-Mixed/Split DNBs')
+        nsm_counts, _, _ = ax[2].hist(nsm_density, xs, histtype='step', color='C4', label='Non-Mixed/Split DNBs')
         ax[2].axvline(x=self.empty_fth, color='red', linestyle='--')
         ax[2].xaxis.set_ticks_position('bottom')
         ax[2].yaxis.set_ticks_position('left')
@@ -434,12 +439,18 @@ class LabelAnalysis(object):
             plt.savefig('\\\\?\\' + png_path)
         plt.gcf().clear()
         plt.close()
+
+        counts = [full_counts, singular_counts,
+                  nchildren_counts, nparent_counts, nsplit_counts,
+                  lowshi_counts, highchas_counts, singlecall_counts, nmixed_counts, nsm_counts]
+        counts = np.array(counts).astype(np.int16)
+        np.save(self.avgCBI_hist_npy, counts)
         return
 
     def save_outputs(self, size_summary, size_results,
                      multicall_summary, multicall_results,
                      chastity_summary, chastity_results,
-                     SHI_results, mixed_summary,
+                     SHI_summary, SHI_results, mixed_summary,
                      empty_splits_results, mixed_splits_results,
                      familial_results,
                      singular_summary,
@@ -461,9 +472,12 @@ class LabelAnalysis(object):
             pickle.dump(chastity_results, f)
         with open(self.chastity_summary_fp, 'w') as f:
             pickle.dump(chastity_summary, f)
-            
+
+        with open(self.SHI_summary_fp, 'w') as f:
+            pickle.dump(SHI_summary, f)
         with open(self.SHI_results_fp, 'w') as f:
             pickle.dump(SHI_results, f)
+
         with open(self.mixed_summary_fp, 'w') as f:
             pickle.dump(mixed_summary, f)
             
@@ -693,6 +707,7 @@ class LabelAnalysis(object):
         SHI_0 = self.label_arr[label_dict['SHI']] == 0
         assert np.sum(SHI_10 + SHI_9 + SHI_8 + SHI_7 + SHI_6 + SHI_5 + SHI_4 + SHI_3 + SHI_2 + SHI_1 + SHI_0) == \
                num_DNBs
+        high_shi = np.logical_or.reduce((SHI_10, SHI_9, SHI_8, SHI_7, SHI_6, SHI_5, SHI_4, SHI_3))
 
         vSHI_10 = np.logical_and(self.label_arr[label_dict['SHI']] == 10, valid_DNBs)
         vSHI_9 = np.logical_and(self.label_arr[label_dict['SHI']] == 9, valid_DNBs)
@@ -708,6 +723,10 @@ class LabelAnalysis(object):
 
         assert np.sum(vSHI_10 + vSHI_9 + vSHI_8 + vSHI_7 + vSHI_6 + vSHI_5 + vSHI_4 + vSHI_3 + vSHI_2 + vSHI_1 +
                       vSHI_0) == num_valid
+        vhigh_shi = np.logical_or.reduce((vSHI_10, vSHI_9, vSHI_8, vSHI_7, vSHI_6, vSHI_5, vSHI_4, vSHI_3))
+
+        high_shi_PofT = 100. * np.sum(high_shi) / num_DNBs
+        valid_hs_PofV = 100. * np.sum(vhigh_shi) / num_valid
 
         SHI_0_PofT = 100. * np.sum(SHI_0) / num_DNBs
         SHI_1_PofT = 100. * np.sum(SHI_1) / num_DNBs
@@ -732,6 +751,11 @@ class LabelAnalysis(object):
         vSHI_8_PofT = 100. * np.sum(vSHI_8) / num_valid
         vSHI_9_PofT = 100. * np.sum(vSHI_9) / num_valid
         vSHI_10_PofT = 100. * np.sum(vSHI_10) / num_valid
+
+        SHI_summary = [
+            ['HighSHI (%ofTotal)', high_shi_PofT],
+            ['vHighSHI (%ofValid)', valid_hs_PofV]
+        ]
         SHI_results = [
             ['[0 10)% SHI (%ofTotal)', SHI_0_PofT],
             ['[10 20)% SHI (%ofTotal)', SHI_1_PofT],
@@ -811,9 +835,16 @@ class LabelAnalysis(object):
 
         mixed_PofT = 100. * num_mixed / num_DNBs
         vmixed_PofV = 100. * num_vmixed / num_valid
+
+        mixed_shi = np.logical_or(cM, high_shi)
+        valid_mixed_shi = np.logical_and(valid_DNBs, mixed_shi)
+        mixed_shi_PofT = 100. * np.sum(mixed_shi) / num_DNBs
+        vmixed_shi_PofV = 100. * np.sum(valid_mixed_shi) / num_valid
         mixed_summary = [
             ['Mixed (%ofTotal)', mixed_PofT],
-            ['vMixed (%ofValid)', vmixed_PofV]
+            ['vMixed (%ofValid)', vmixed_PofV],
+            ['Mixed (MultiCall or HighSHI) (%ofTotal)', mixed_shi_PofT],
+            ['vMixed (MultiCall or HighSHI) (%ofValid)', vmixed_shi_PofV]
         ]
 
         split_or_mixed = np.logical_or(split, mixed)
@@ -1217,7 +1248,7 @@ class LabelAnalysis(object):
         self.save_outputs(size_summary, size_results,
                           multicall_summary, multicall_results,
                           chastity_summary, chastity_results,
-                          SHI_results, mixed_summary,
+                          SHI_summary, SHI_results, mixed_summary,
                           empty_splits_results, mixed_splits_results,
                           familial_results,
                           singular_summary,
@@ -1227,7 +1258,7 @@ class LabelAnalysis(object):
         return size_summary, size_results, \
                multicall_summary, multicall_results, \
                chastity_summary, chastity_results, \
-               SHI_results, \
+               SHI_summary, SHI_results, \
                mixed_summary, \
                empty_splits_results, mixed_splits_results, \
                familial_results, \
@@ -1307,7 +1338,7 @@ class LabelAnalysis(object):
 
 def main(slide, lane, fov, start_cycle, occupancy_range, int_fp):
     inta = IntensityAnalysis(slide, lane, fov, start_cycle, occupancy_range, int_fp)
-    inta.load_data()
+    # inta.load_data()
     la = LabelAnalysis(inta)
     la.run()
 
