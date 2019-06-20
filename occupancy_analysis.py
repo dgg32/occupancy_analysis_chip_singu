@@ -242,7 +242,7 @@ class OccupancyAnalysis(object):
         nbr_analysis = NeighborAnalysis(int_analysis, coords_fp, neighbors_fp, blocks_fp, fastq_fp, bypass=bypass,
                                         log_dp=self.log_dp, log_overrides=self.log_overrides)
 
-        self.ACGT_splits_fp = nbr_analysis.save_ACGT_csv
+        self.ACGT_splits_fp = nbr_analysis.ACGT_dist_csv
         self.split_cbi_ratio_dist_npy = nbr_analysis.split_cbi_ratio_dist_npy
         self.parent_cbi_dist_npy = nbr_analysis.parent_cbi_dist_npy
         self.children_cbi_dist_npy = nbr_analysis.children_cbi_dist_npy
