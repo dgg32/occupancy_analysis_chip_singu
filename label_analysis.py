@@ -1285,6 +1285,8 @@ class LabelAnalysis(object):
             with open(self.chastity_summary_fp, 'r') as f:
                 chastity_summary = pickle.load(f)
 
+            with open(self.SHI_summary_fp, 'r') as f:
+                SHI_summary = pickle.load(f)
             with open(self.SHI_results_fp, 'r') as f:
                 SHI_results = pickle.load(f)
             with open(self.mixed_summary_fp, 'r') as f:
@@ -1318,7 +1320,7 @@ class LabelAnalysis(object):
             size_summary, size_results, \
             multicall_summary, multicall_results, \
             chastity_summary, chastity_results, \
-            SHI_results, \
+            SHI_summary, SHI_results, \
             mixed_summary, \
             empty_splits_results, mixed_splits_results, \
             familial_results, \
@@ -1328,7 +1330,7 @@ class LabelAnalysis(object):
         return size_summary, size_results, \
                multicall_summary, multicall_results, \
                chastity_summary, chastity_results, \
-               SHI_results, \
+               SHI_summary, SHI_results, \
                mixed_summary, \
                empty_splits_results, mixed_splits_results, \
                familial_results, \

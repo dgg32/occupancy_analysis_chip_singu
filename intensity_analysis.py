@@ -39,6 +39,7 @@ class IntensityAnalysis(object):
     def __init__(self, slide, lane, fov, start_cycle, occupancy_range, cal_fp, int_fp, norm_paras_fp, background_fp,
                  blocks_fp, output_dp='', bypass={},
                  log_dp='', log_overrides={}):
+        self.lane = lane
         self.fov = fov
         self.cal_fp = cal_fp
         self.int_fp = int_fp
