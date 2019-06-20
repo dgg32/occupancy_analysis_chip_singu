@@ -241,6 +241,11 @@ class OccupancyAnalysis(object):
 
         nbr_analysis = NeighborAnalysis(int_analysis, coords_fp, neighbors_fp, blocks_fp, fastq_fp, bypass=bypass,
                                         log_dp=self.log_dp, log_overrides=self.log_overrides)
+
+        self.ACGT_splits_fp = nbr_analysis.save_ACGT_csv
+        self.split_cbi_ratio_dist_npy = nbr_analysis.split_cbi_ratio_dist_npy
+        self.parent_cbi_dist_npy = nbr_analysis.parent_cbi_dist_npy
+        self.children_cbi_dist_npy = nbr_analysis.children_cbi_dist_npy
         # neighbor_analysis can only be bypassed if int_analysis was since the latter recreates the label array
         if self.bypass['neighbor_analysis'] and self.cbi_bypassed:
             self.neighbors_summary, self.neighbors_results = nbr_analysis.complete_bypass()
@@ -252,12 +257,12 @@ class OccupancyAnalysis(object):
         from label_analysis import LabelAnalysis
 
         lbl_analysis = LabelAnalysis(int_analysis, bypass, log_dp=self.log_dp, log_overrides=self.log_overrides)
-
+        self.avgCBI_hist_npy = lbl_analysis.avgCBI_hist_npy
         if self.bypass['label_analysis']:
             self.size_summary, self.size_results, \
             self.multicall_summary, self.multicall_results, \
             self.chastity_summary, self.chastity_results, \
-            self.SHI_results, \
+            self.SHI_summary, self.SHI_results, \
             self.mixed_summary, \
             self.empty_splits_results, self.mixed_splits_results, \
             self.familial_results, \
@@ -269,7 +274,7 @@ class OccupancyAnalysis(object):
             self.size_summary, self.size_results, \
             self.multicall_summary, self.multicall_results, \
             self.chastity_summary, self.chastity_results, \
-            self.SHI_results, \
+            self.SHI_summary, self.SHI_results, \
             self.mixed_summary, \
             self.empty_splits_results, self.mixed_splits_results, \
             self.familial_results, \
@@ -281,7 +286,7 @@ class OccupancyAnalysis(object):
                 self.size_summary_center, self.size_results_center, \
                 self.multicall_summary_center, self.multicall_results_center, \
                 self.chastity_summary_center, self.chastity_results_center, \
-                self.SHI_results_center, \
+                self.SHI_summary_center, self.SHI_results_center, \
                 self.mixed_summary_center, \
                 self.empty_splits_results_center, self.mixed_splits_results_center, \
                 self.familial_results_center, \
@@ -297,7 +302,8 @@ class OccupancyAnalysis(object):
         logger.debug('Outputting reports...')
         summary_fp = os.path.join(self.fov_dp, '%s_Summary.csv' % self.report_name)
         summary_data = self.singular_summary + self.size_summary + self.mixed_summary + self.multicall_summary + \
-                       self.chastity_summary + self.neighbors_summary + self.splits_summary + self.thresholds_summary + self.rho_results
+                       self.chastity_summary + self.SHI_summary + \
+                       self.neighbors_summary + self.splits_summary + self.thresholds_summary + self.rho_results
         output_table(summary_fp, summary_data, ['', self.fov])
         if not bool(self.blocks):
             center_summary_fp = os.path.join(self.fov_dp, '%s_Center2x2_Summary.csv' % self.report_name)
@@ -377,7 +383,7 @@ class OccupancyAnalysis(object):
                           '/s /R:0 /W:0 >> %(fov_dp)s/Copy_Log.txt' % path_parameters)
         return
 
-    def run(self):
+    def run(self,):
         int_fp, posinfo_fp, coords_fp, neighbors_fp, blocks_fp, fastq_fp, norm_paras_fp, background_fp = self.process_data(
             self.platform)
         self.run_intensity_analysis(self.slide, self.lane, self.fov,
@@ -388,18 +394,25 @@ class OccupancyAnalysis(object):
         self.run_neighbor_analysis(self.int_analysis, coords_fp, neighbors_fp, blocks_fp, fastq_fp, self.neighbor_analysis_bypass)
         self.run_label_analysis(self.int_analysis, self.label_analysis_bypass)
         mixed_clustering_fp = self.mixed_clustering_fp
+        avgCBI_hist_npy = self.avgCBI_hist_npy
+        ACGT_splits_fp = self.ACGT_splits_fp
+        split_cbi_ratio_dist_npy = self.split_cbi_ratio_dist_npy
+        parent_cbi_dist_npy = self.parent_cbi_dist_npy
+        children_cbi_dist_npy = self.children_cbi_dist_npy
         if not bool(self.blocks):
             summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
             cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, center_summary_fp = self.output_reports()
             self.copy_temps()
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, cbi_quartiles_fp, snr1_quartiles_fp, \
-                   snr2_quartiles_fp, mixed_clustering_fp, center_summary_fp
+                   snr2_quartiles_fp, mixed_clustering_fp, center_summary_fp, \
+                   split_cbi_ratio_dist_npy, parent_cbi_dist_npy, children_cbi_dist_npy, avgCBI_hist_npy, ACGT_splits_fp
         else:
             summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
             cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp = self.output_reports()
             self.copy_temps()
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, cbi_quartiles_fp, snr1_quartiles_fp, \
-                   snr2_quartiles_fp, mixed_clustering_fp
+                   snr2_quartiles_fp, mixed_clustering_fp, \
+                   split_cbi_ratio_dist_npy, parent_cbi_dist_npy, children_cbi_dist_npy, avgCBI_hist_npy, ACGT_splits_fp
 
 
 
