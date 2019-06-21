@@ -579,7 +579,7 @@ def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
                                                                   'mid_color': '#FFEB84',
                                                                   'max_color': '#F8696B'})
                 if 'HighSHI (%ofTotal)' in df.index.tolist():
-                    worksheet.conditional_format(21, 1, col, 21, {'type': '3_color_scale',
+                    worksheet.conditional_format(21, 1, 21, c, {'type': '3_color_scale',
                                                                   'min_color': '#63BE7B',
                                                                   'mid_color': '#FFEB84',
                                                                   'max_color': '#F8696B'})
