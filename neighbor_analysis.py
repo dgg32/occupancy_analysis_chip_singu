@@ -914,14 +914,14 @@ class NeighborAnalysis(object):
         else:
             CBI_arr = CBI_arr.tolist()
             for pair in CBI_arr:
-                    p1 = pair[0]
-                    p2 = pair[1]
-                    if p1 > 0.0001 or p2 > 0.0001:
-                        if p1 < 0.0001:
-                            p1 = 0.0001
-                        if p2 < 0.0001:
-                            p2 = 0.0001
-                        res['ratio'].append(min([p1, p2]) / max([p1, p2]))
+                p1 = pair[0]
+                p2 = pair[1]
+                if p1 > 0.0001 or p2 > 0.0001:
+                    if p1 < 0.0001:
+                        p1 = 0.0001
+                    if p2 < 0.0001:
+                        p2 = 0.0001
+                    res['ratio'].append(min([p1, p2]) / max([p1, p2]))
 
 
         # res['ratio'] = []
@@ -1113,7 +1113,7 @@ class NeighborAnalysis(object):
                 num_empty += less_than_th / 100 * len(arr[i])
 
         f.suptitle('%s CBI Distributions (w/o Mixed Splits)')
-        plt.tight_layout()
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
         png_path = os.path.join(self.output_dp, '%s_%s_CBI_Distributions.png' % (self.prefix, relation))
         try:
             plt.savefig(png_path)

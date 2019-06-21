@@ -352,7 +352,7 @@ def plot_split_cbi_ratio_dist(report_group, fovs, final_report_fp, lanes=False):
         data = np.load(report_fp)
         ax2.plot(data[2], data[3], label='Horizontal: Left/Right', alpha=0.6)
         ax2.plot(data[6], data[7], label='Vertical: Up/Down', alpha=0.6)
-        ax2.plot(data[10], data[11], label='Diagonal:\nSum(Small)/Large CBI', alpha=0.6)
+        ax2.plot(data[10], data[11], label='Multi:\nSum(Small)/Large CBI', alpha=0.6)
         ax2.set_xlabel('CBI Ratio')
         ax2.set_ylabel('Density')
         ax2.tick_params(labelsize=12)
@@ -578,7 +578,7 @@ def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
                                                                   'min_color': '#63BE7B',
                                                                   'mid_color': '#FFEB84',
                                                                   'max_color': '#F8696B'})
-                if 'HighSHI  (%ofTotal)' in df.index.tolist():
+                if 'HighSHI (%ofTotal)' in df.index.tolist():
                     worksheet.conditional_format(21, 1, col, 21, {'type': '3_color_scale',
                                                                   'min_color': '#63BE7B',
                                                                   'mid_color': '#FFEB84',
