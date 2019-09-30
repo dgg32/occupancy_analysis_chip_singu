@@ -43,7 +43,7 @@ class NeighborClustering(object):
         posinfo_fp = int_analysis.background_fp.replace('_background.npy', '.posiIndex.txt')
         neighbors_fp = neighbors_fp
         self.blocks = blocks
-        self.inner = False if blocks else True
+        self.inner = False if (type(blocks)!=type(None)) else True
 
         if not os.path.exists(self.output_dp):
             os.makedirs(self.output_dp)
@@ -75,15 +75,22 @@ class NeighborClustering(object):
             edge_blocks = range(10) + range(10, 90, 10) + range(19, 99, 10) + range(90, 100)
             block_list = np.array(list(set(range(100)) - set(edge_blocks)))
             block_bool = np.in1d(dnb_pos[:, 0], block_list)
+            self.block_bool = block_bool
+            dnb_pos = dnb_pos[block_bool, 1:]
+            self.dnb_pos = dnb_pos
+            self.xyminmax = (dnb_pos[:, 0].min(), dnb_pos[:, 0].max(), dnb_pos[:, 1].min(), dnb_pos[:, 1].max())
+            self.neighbors_arr = self.neighbors_arr[block_bool]
+            self.num_dnbs = len(dnb_pos)
         else:
-            block_bool = self.blocks
+            print(self.blocks.shape, self.blocks)
+            block_bool = np.ones(len(self.neighbors_arr), dtype=bool)
 
-        self.block_bool = block_bool
-        dnb_pos = dnb_pos[block_bool, 1:]
-        self.dnb_pos = dnb_pos
-        self.xyminmax = (dnb_pos[:, 0].min(), dnb_pos[:, 0].max(), dnb_pos[:, 1].min(), dnb_pos[:, 1].max())
-        self.neighbors_arr = self.neighbors_arr[block_bool]
-        self.num_dnbs = len(dnb_pos)
+            self.block_bool = block_bool
+            dnb_pos = dnb_pos[self.blocks, 1:]
+            self.dnb_pos = dnb_pos
+            self.xyminmax = (dnb_pos[:, 0].min(), dnb_pos[:, 0].max(), dnb_pos[:, 1].min(), dnb_pos[:, 1].max())
+            self.neighbors_arr = self.neighbors_arr[block_bool]
+            self.num_dnbs = len(dnb_pos)
         return
 
     def get_mixed_dnbs(self, mixed):

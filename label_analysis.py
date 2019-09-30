@@ -341,7 +341,7 @@ class LabelAnalysis(object):
 
         ax[0].annotate('Empty [{:,.2}): {:,.3}%'.format(self.empty_fth, self.empty_PofT) + \
                        '\nSmall [{:,.2}, {:,.2}): {:,.3}%'.format(self.empty_fth, self.small_fth,
-                                                                         self.small_PofT) + \
+                                                                  self.small_PofT) + \
                        '\nLarge [{:,.2}, {:,.2}): {:,.3}%'.format(self.large_fth, self.outlier_fth, self.large_PofT) + \
                        '\nOutliers [{:,.2}): {:,.3}%'.format(self.outlier_fth, self.outlier_PofT),
                        xy=(0.9925, 0.82), xycoords='axes fraction', horizontalalignment='right',
@@ -401,7 +401,8 @@ class LabelAnalysis(object):
         mpl.rcParams.update({'font.size': 10})
 
         ax[0].hist(full_density, xs, histtype='step', color='C0', label='All DNBs')
-        nchildren_counts, _, _ = ax[0].hist(nchildren_density, xs, histtype='step', color='C1', label='Non-Children DNBs')
+        nchildren_counts, _, _ = ax[0].hist(nchildren_density, xs, histtype='step', color='C1',
+                                            label='Non-Children DNBs')
         nparent_counts, _, _ = ax[0].hist(nparent_density, xs, histtype='step', color='C2', label='Non-Parent DNBs')
         nsplit_counts, _, _ = ax[0].hist(nsplit_density, xs, histtype='step', color='C4', label='Non-Split DNBs')
         ax[0].axvline(x=self.empty_fth, color='red', linestyle='--')
@@ -411,8 +412,10 @@ class LabelAnalysis(object):
 
         ax[1].hist(full_density, xs, histtype='step', color='C0', label='All DNBs')
         lowshi_counts, _, _ = ax[1].hist(lowshi_density, xs, histtype='step', color='C5', label='Low SHI DNBs')
-        highchas_counts, _, _ = ax[1].hist(highchastity_density, xs, histtype='step', color='C1', label='High Chastity DNBs')
-        singlecall_counts, _, _ = ax[1].hist(singlecall_density, xs, histtype='step', color='C2', label='Single-call DNBs')
+        highchas_counts, _, _ = ax[1].hist(highchastity_density, xs, histtype='step', color='C1',
+                                           label='High Chastity DNBs')
+        singlecall_counts, _, _ = ax[1].hist(singlecall_density, xs, histtype='step', color='C2',
+                                             label='Single-call DNBs')
         nmixed_counts, _, _ = ax[1].hist(nmixed_density, xs, histtype='step', color='C4', label='Non-Mixed DNBs')
         ax[1].axvline(x=self.empty_fth, color='red', linestyle='--')
         ax[1].xaxis.set_ticks_position('bottom')
@@ -796,12 +799,14 @@ class LabelAnalysis(object):
         single_parent = self.label_arr[label_dict['Parents']] == 1
         multi_parents = self.label_arr[label_dict['Parents']] > 1
         assert np.sum(no_parents + single_parent + multi_parents) == num_DNBs
-        children = np.logical_and(self.label_arr[label_dict['Parents']] > 0, self.label_arr[label_dict['Children']] == 0)
+        children = np.logical_and(self.label_arr[label_dict['Parents']] > 0,
+                                  self.label_arr[label_dict['Children']] == 0)
         vchildren = np.logical_and(children, valid_DNBs)
         empty_children = np.logical_and(children, self.label_arr[label_dict['PercCBI']] <= 0)
         c0_children = np.logical_and(children, self.label_arr[label_dict['Multicall']] == 0)
 
-        parent_and_child = np.logical_and(self.label_arr[label_dict['Parents']] > 0, self.label_arr[label_dict['Children']] > 0)
+        parent_and_child = np.logical_and(self.label_arr[label_dict['Parents']] > 0,
+                                          self.label_arr[label_dict['Children']] > 0)
         vparent_and_child = np.logical_and(parent_and_child, valid_DNBs)
         empty_pc = np.logical_and(parent_and_child, self.label_arr[label_dict['PercCBI']] <= 0)
         c0_pc = np.logical_and(parent_and_child, self.label_arr[label_dict['Multicall']] == 0)

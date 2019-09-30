@@ -100,7 +100,12 @@ class IntensityAnalysis(object):
         norm_paras = np.load(self.norm_paras_fp)
         raw_ints = np.zeros_like(fin_ints)
         ctc_ints = np.zeros_like(fin_ints)
-        cal_obj = Cal(self.cal_fp)
+        cal_obj = Cal()
+        if 'V40' in self.cal_fp:
+            v40=True
+        else:
+            v40=False
+        cal_obj.load(self.cal_fp, V40=v40)
         background = np.load(self.background_fp)
 
         if label_mask is None:

@@ -1279,7 +1279,11 @@ class NeighborAnalysis(object):
         plt.style.use('dark_background')
         #plt.rcParams.update(mpl.rcParamsDefault)
         fig = plt.figure(figsize=(60, 60))
-        plt.scatter(self.coords[0], self.coords[1], s=1, c='w', marker=',')
+        if 'Center' in self.output_dp:
+            ms = 3
+        else:
+            ms = 1
+        plt.scatter(self.coords[0], self.coords[1], s=ms, c='w', marker=',')
         x1, x2, y1, y2 = plt.axis()
         xymin = min(x1, y1)
         xymax = max(x2, y2)
@@ -1319,11 +1323,11 @@ class NeighborAnalysis(object):
             ny.append(self.coords[1][i])
 
         # change: color multi first
-        plt.scatter(mx, my, s=1, c='m', marker=',', label='multiple')
-        plt.scatter(hx, hy, s=1, c='r', marker=',', label='horizontal')
-        plt.scatter(vx, vy, s=1, c='b', marker=',', label='vertical')
-        plt.scatter(dx, dy, s=1, c='g', marker=',', label='diagonal')
-        plt.scatter(nx, ny, s=1, c='w', marker='.', label='mixed split (int ID)')
+        plt.scatter(mx, my, s=ms, c='m', marker=',', label='multiple')
+        plt.scatter(hx, hy, s=ms, c='r', marker=',', label='horizontal')
+        plt.scatter(vx, vy, s=ms, c='b', marker=',', label='vertical')
+        plt.scatter(dx, dy, s=ms, c='g', marker=',', label='diagonal')
+        plt.scatter(nx, ny, s=ms, c='w', marker='.', label='mixed split (int ID)')
         plt.gca().invert_yaxis()
         plt.legend(markerscale=30, prop={'size': 60})
 
@@ -1340,7 +1344,11 @@ class NeighborAnalysis(object):
     def plot_splits_alt(self, horiz, vert, diag, multi, tag=''):
         plt.rcParams.update(mpl.rcParamsDefault)
         fig = plt.figure(figsize=(60, 60))
-        plt.scatter(self.coords[0], self.coords[1], s=1, c='k', marker=',')
+        if 'Center' in self.output_dp:
+            ms = 3
+        else:
+            ms = 1
+        plt.scatter(self.coords[0], self.coords[1], s=ms, c='k', marker=',')
         x1, x2, y1, y2 = plt.axis()
         xymin = min(x1, y1)
         xymax = max(x2, y2)
@@ -1380,11 +1388,11 @@ class NeighborAnalysis(object):
             ny.append(self.coords[1][i])
 
         # change: color multi first
-        plt.scatter(mx, my, s=1, c='m', marker=',', label='multiple')
-        plt.scatter(hx, hy, s=1, c='r', marker=',', label='horizontal')
-        plt.scatter(vx, vy, s=1, c='b', marker=',', label='vertical')
-        plt.scatter(dx, dy, s=1, c='g', marker=',', label='diagonal')
-        plt.scatter(nx, ny, s=1, c='w', marker='.', label='mixed split (int ID)')
+        plt.scatter(mx, my, s=ms, c='m', marker=',', label='multiple')
+        plt.scatter(hx, hy, s=ms, c='r', marker=',', label='horizontal')
+        plt.scatter(vx, vy, s=ms, c='b', marker=',', label='vertical')
+        plt.scatter(dx, dy, s=ms, c='g', marker=',', label='diagonal')
+        plt.scatter(nx, ny, s=ms, c='w', marker='.', label='mixed split (int ID)')
         plt.gca().invert_yaxis()
         plt.legend(markerscale=30, prop={'size': 60})
 
@@ -1402,9 +1410,12 @@ class NeighborAnalysis(object):
         plt.style.use('dark_background')
         fig = plt.figure(figsize=(60, 60))
         plt.axis(self.xyminmax)
-
+        if 'Center' in self.output_dp:
+            ms = 3
+        else:
+            ms = 1
         mask = self.naCBI_data <= 0.25
-        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='r', marker=',', label='CBI<=0.25 (Empty)')
+        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='r', marker=',', label='CBI<=0.25 (Empty)')
 
         temp_data = np.append(0, self.naCBI_data)
         neighbor_ints = np.nan_to_num(temp_data[self.neighbors_arr])
@@ -1423,13 +1434,13 @@ class NeighborAnalysis(object):
         for i, rang in enumerate(ranges):
             label = '%d<CBI<=%d (%s)' % (rang[0], rang[1], sizes[i])
             mask = np.logical_and(self.naCBI_data > rang[0], self.naCBI_data <= rang[1])
-            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c=colors[i], marker=',', label=label)
+            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c=colors[i], marker=',', label=label)
 
         mask = self.naCBI_data > 2.00
-        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='c', marker=',', label='2.00<CBI (Large)')
+        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='c', marker=',', label='2.00<CBI (Large)')
 
         mask = np.isnan(self.naCBI_data)
-        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='m', marker='.', label='NaN')
+        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='m', marker='.', label='NaN')
 
         plt.gca().invert_yaxis()
         plt.legend(markerscale=30, prop={'size': 60})
@@ -1448,7 +1459,11 @@ class NeighborAnalysis(object):
         plt.style.use('dark_background')
         #fig = plt.figure(figsize=(60, 60))
         fig = plt.figure()
-        plt.scatter(self.coords[0], self.coords[1], s=1, c='k', marker=',')
+        if 'Center' in self.output_dp:
+            ms = 3
+        else:
+            ms = 1
+        plt.scatter(self.coords[0], self.coords[1], s=ms, c='k', marker=',')
         x1, x2, y1, y2 = plt.axis()
         xymin = min(x1, y1)
         xymax = max(x2, y2)
@@ -1515,13 +1530,13 @@ class NeighborAnalysis(object):
             nx.append(self.coords[0][i])
             ny.append(self.coords[1][i])
 
-        plt.scatter(x0, y0, s=1, c='m', marker=',', label='CBI<=0.25 (Empty)')
-        plt.scatter(x1, y1, s=1, c='r', marker=',', label='0.25<CBI<=0.50 (Small)')
-        plt.scatter(x2, y2, s=1, c='y', marker=',', label='0.50<CBI<=0.75 (Med-Small)')
-        plt.scatter(x3, y3, s=1, c='k', marker='.', label='0.75<CBI<=1.25 (Medium)')
-        plt.scatter(x4, y4, s=1, c='w', marker='.', label='1.25<CBI<=2.00 (Med-Large)')
-        plt.scatter(x5, y5, s=1, c='y', marker='.', label='2.00<CBI (Large)')
-        plt.scatter(nx, ny, s=1, c='r', marker='.', label='NaN')
+        plt.scatter(x0, y0, s=ms, c='m', marker=',', label='CBI<=0.25 (Empty)')
+        plt.scatter(x1, y1, s=ms, c='r', marker=',', label='0.25<CBI<=0.50 (Small)')
+        plt.scatter(x2, y2, s=ms, c='y', marker=',', label='0.50<CBI<=0.75 (Med-Small)')
+        plt.scatter(x3, y3, s=ms, c='k', marker='.', label='0.75<CBI<=1.25 (Medium)')
+        plt.scatter(x4, y4, s=ms, c='w', marker='.', label='1.25<CBI<=2.00 (Med-Large)')
+        plt.scatter(x5, y5, s=ms, c='y', marker='.', label='2.00<CBI (Large)')
+        plt.scatter(nx, ny, s=ms, c='r', marker='.', label='NaN')
         plt.gca().invert_yaxis()
         plt.legend(markerscale=30, prop={'size': 60})
 
@@ -1539,9 +1554,12 @@ class NeighborAnalysis(object):
         plt.style.use('dark_background')
         fig = plt.figure(figsize=(60, 60))
         plt.axis(self.xyminmax)
-
+        if 'Center' in self.output_dp:
+            ms = 3
+        else:
+            ms = 1
         mask = self.label_arr[label_dict['PercCBI']] < 0
-        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='r', marker=',', label='DNB<0')
+        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='r', marker=',', label='DNB<0')
 
         colors = ['C3', 'c', 'C4', 'b']
         ranges = [[0, 25], [25, 50], [50, 75], [75, 100]]
@@ -1549,14 +1567,14 @@ class NeighborAnalysis(object):
             label = '%d<DNB<=%d' % (rang[0], rang[1])
             mask = np.logical_and(self.label_arr[label_dict['PercCBI']] > rang[0],
                                   self.label_arr[label_dict['PercCBI']] <= rang[1])
-            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c=colors[i], marker=',', label=label)
+            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c=colors[i], marker=',', label=label)
             logger.debug('%s - %s : %s' % (self.fov, label, np.sum(mask)))
 
         mask = self.label_arr[label_dict['PercCBI']] > 100
-        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='w', marker=',', label='100<DNB')
+        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='w', marker=',', label='100<DNB')
 
         mask = np.isnan(self.label_arr[label_dict['PercCBI']])
-        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='m', marker='.', label='NaN')
+        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='m', marker='.', label='NaN')
 
         plt.gca().invert_yaxis()
         plt.legend(markerscale=30, prop={'size': 60})
@@ -1575,13 +1593,16 @@ class NeighborAnalysis(object):
         plt.style.use('dark_background')
         fig = plt.figure(figsize=(60, 60))
         plt.axis(self.xyminmax)
-
+        if 'Center' in self.output_dp:
+            ms = 3
+        else:
+            ms = 1
         colors = ['r', 'b', 'C1', 'C5', 'C3']
         labels = ['zero calls (empty)', 'single calls', 'double calls (mixed)',
                   'triple calls (mixed)', 'quadruple calls (mixed)']
         for i in range(5):
             mask = self.label_arr[label_dict['Multicall']] == i
-            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c=colors[i], marker=',', label=labels[i])
+            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c=colors[i], marker=',', label=labels[i])
 
         plt.gca().invert_yaxis()
         plt.legend(markerscale=30, prop={'size': 60})
@@ -1597,6 +1618,10 @@ class NeighborAnalysis(object):
         return
 
     def plot_nonCBI(self):
+        if 'Center' in self.output_dp:
+            ms = 3
+        else:
+            ms = 1
         plt.style.use('dark_background')
         logger.debug('%s - plot_nonCBI initiated.' % self.fov)
         colors = ['r', 'C3', 'y', 'g', 'C4']
@@ -1613,15 +1638,15 @@ class NeighborAnalysis(object):
             plt.axis(self.xyminmax)
 
             mask = np.isnan(self.label_arr[label_dict['%s-nonCBI' % base]] == 100)
-            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='m', marker=',', label='100%')
+            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='m', marker=',', label='100%')
 
             for i, rang in enumerate(ranges):
                 mask = np.logical_and(self.label_arr[label_dict['%s-nonCBI' % base]] >= rang[0],
                                       self.label_arr[label_dict['%s-nonCBI' % base]] < rang[1])
-                plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c=colors[i], marker=',', label=labels[i])
+                plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c=colors[i], marker=',', label=labels[i])
 
             mask = self.label_arr[label_dict['%s-nonCBI' % base]] < 5
-            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='b', marker=',', label='< 5%')
+            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='b', marker=',', label='< 5%')
 
             plt.gca().invert_yaxis()
             plt.legend(markerscale=30, prop={'size': 60})
@@ -1640,6 +1665,10 @@ class NeighborAnalysis(object):
     def plot_chastity(self):
         logger.debug('%s - plot_chastity initiated.' % self.fov)
         fig = plt.figure(figsize=(60, 60))
+        if 'Center' in self.output_dp:
+            ms = 3
+        else:
+            ms = 1
         plt.style.use('dark_background')
         plt.axis(self.xyminmax)
         colors = ['C3', 'r', 'y', 'c', 'C4', 'b', 'w']
@@ -1647,10 +1676,10 @@ class NeighborAnalysis(object):
         chastities = [0, 5, 6, 7, 8, 9, 10]
         for i, chas in enumerate(chastities):
             mask = self.label_arr[label_dict['Chastity']] == chas
-            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c=colors[i], marker=',', label=labels[i])
+            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c=colors[i], marker=',', label=labels[i])
 
         mask = np.isnan(self.label_arr[label_dict['Chastity']])
-        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='m', marker=',', label='NaN')
+        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='m', marker=',', label='NaN')
         plt.axis(self.xyminmax)
 
         plt.gca().invert_yaxis()
@@ -1670,16 +1699,20 @@ class NeighborAnalysis(object):
     def plot_SHI(self):
         logger.debug('%s - plot_SHI initiated.' % self.fov)
         fig = plt.figure(figsize=(60, 60))
+        if 'Center' in self.output_dp:
+            ms = 3
+        else:
+            ms = 1
         plt.style.use('dark_background')
         plt.axis(self.xyminmax)
         colors = ['w', 'r', 'y', 'c', 'g', 'C1', 'C5', 'C4', 'C2', 'C3', 'b'][::-1]
         for i in range(11):
             label = '100% SHI' if i == 10 else ('[%d - %d)' % (i * 10, (i + 1) * 10) + '% SHI')
             mask = self.label_arr[label_dict['SHI']] == i
-            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c=colors[i], marker=',', label=label)
+            plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c=colors[i], marker=',', label=label)
 
         mask = np.isnan(self.label_arr[label_dict['SHI']])
-        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=1, c='m', marker=',', label='NaN')
+        plt.scatter(self.coords[0][mask], self.coords[1][mask], s=ms, c='m', marker=',', label='NaN')
 
         plt.gca().invert_yaxis()
         plt.legend(markerscale=30, prop={'size': 40})

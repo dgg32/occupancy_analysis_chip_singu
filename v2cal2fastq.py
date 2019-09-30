@@ -43,9 +43,12 @@ class V2Cal2Fastq(object):
         logger.info('%s - Generating fastq file from cal file...' % self.fov)
         if not os.path.exists(self.cal_fp):
             return
-
+        if 'V40' in self.cal_fp:
+            v40 = True
+        else:
+            v40 = False
         cal_obj = Cal()
-        cal_obj.load(self.cal_fp, center_bool=self.blocks_vect)
+        cal_obj.load(self.cal_fp, center_bool=self.blocks_vect, V40=v40)
         cal_obj.writefq(self.fastq_fp, idPrefix=self.fov, cycles=[self.occupancy_cycle,
                                                                   self.occupancy_cycle+self.occu_range])
 

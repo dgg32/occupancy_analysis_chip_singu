@@ -80,7 +80,7 @@ class Cal(object):
                                           to gzip format if filename end with .gz.
 
     """
-
+    HEADER = 1024
     INT_LEN = 4
     BASES_MASK = 64
     FOV_CR_LEN = 3
@@ -130,7 +130,7 @@ class Cal(object):
         self.basesDigit[newCycle] = np.zeros(self.number, dtype=np.uint8) + self._baseASCII[base]
         self.bases[newCycle] = self.basesDigit.view("S1")
 
-    def load(self, filename, center_bool=False, swap_dyes=False):
+    def load(self, filename, center_bool=False, swap_dyes=False, V40=False):
         ''' Load the bases and quality from cal file.
         '''
         if bool(swap_dyes):
@@ -218,20 +218,31 @@ class Cal(object):
                 self.fov = self._guessFOV(filename)
 
                 with open(filename, 'rb') as fh:
+                    if bool(V40):
+                        prefixArr = np.fromfile(fh, dtype=np.uint16, count=4)
+                        restHeader = np.fromfile(fh, dtype=np.uint8, count=self.HEADER - self.INT_LEN * 2)
                     uintArray = np.fromfile(fh, dtype=np.uint8)
                 self.calFile = filename
                 # header
                 # the first 4 bytes is DNB number
                 # the second 4 bytes is total cycle number
-                tmpArr = uintArray[:self.INT_LEN * 2]
-                tmpArr.dtype = np.int32
-                self.number = tmpArr[0]
+                if bool(V40):
+                    numArr = prefixArr[:2]
+                    numArr.dtype = np.uint32
+                    self.number = numArr[0]
+                    self.totalCycle = prefixArr[2]
+                    self.version = prefixArr[3]
+                    idx = 0
+                else:
+                    tmpArr = uintArray[:self.INT_LEN * 2]
+                    tmpArr.dtype = np.int32
+                    self.number = tmpArr[0]
 
-                self.totalCycle = tmpArr[1]
+                    self.totalCycle = tmpArr[1]
+                    idx = 8
 
                 # each cycle
                 self.validCycle = set()
-                idx = 8
                 for c in range(self.totalCycle):
                     # The first 4 bytes is Cycle ID
                     idArr = uintArray[idx:idx + self.INT_LEN]
@@ -307,91 +318,104 @@ class Cal(object):
                 self.fov = self._guessFOV(filename)
 
                 with open(filename, 'rb') as fh:
+                    if bool(V40):
+                        prefixArr = np.fromfile(fh, dtype=np.uint16, count=4)
+                        restHeader = np.fromfile(fh, dtype=np.uint8, count=self.HEADER - self.INT_LEN * 2)
                     uintArray = np.fromfile(fh, dtype=np.uint8)
                 # print(uintArray)
                 self.calFile = filename
                 # header
                 # the first 4 bytes is DNB number
                 # the second 4 bytes is total cycle number
+            if bool(V40):
+                numArr = prefixArr[:2]
+                numArr.dtype = np.uint32
+                self.number = numArr[0]
+                self.totalCycle = prefixArr[2]
+                self.version = prefixArr[3]
+                idx = 0
+            else:
                 tmpArr = uintArray[:self.INT_LEN * 2]
                 tmpArr.dtype = np.int32
                 self.number = tmpArr[0]
+
                 self.totalCycle = tmpArr[1]
+                idx = 8
                 # print(self.totalCycle)
 
                 ## each cycle
-                self.validCycle = set()
-                idx = 8
-                for c in range(self.totalCycle):
-                    ## The first 4 bytes is Cycle ID
-                    idArr = uintArray[idx:idx+self.INT_LEN]
-                    # print(idArr)
-                    idArr.dtype = np.int32
-                    try:
-                        cycleId = idArr[0]
-                        end = idx + self.INT_LEN + self.number
-                        ## extract the data region
-                        dataArr = uintArray[idx + self.INT_LEN: end]
-                        ## update the index pointer
-                        idx = end
-                    except IndexError:
-                        cycleId = 0
-                    ## 1 byte per base
-                    if cycleId == 0:
-                        basesDigit = np.ones(self.number) * 78
-                        # basesDigit[:] = self._baseASCII["N"]
-                        qualArr = np.zeros(self.number, dtype=np.uint8)
-                        self.cycleSet.add(c+1)
-                        self.qual[c+1] = qualArr
-                        self.basesDigit[c+1] = basesDigit.astype(np.uint8)
-                        ## view as Byte string
-                        self.bases[c+1] = basesDigit.astype(np.uint8).view("S1")
-                        continue
+            self.validCycle = set()
+                # idx = 8
+            for c in range(self.totalCycle):
+                ## The first 4 bytes is Cycle ID
+                idArr = uintArray[idx:idx+self.INT_LEN]
+                # print(idArr)
+                idArr.dtype = np.int32
+                try:
+                    cycleId = idArr[0]
+                    end = idx + self.INT_LEN + self.number
+                    ## extract the data region
+                    dataArr = uintArray[idx + self.INT_LEN: end]
+                    ## update the index pointer
+                    idx = end
+                except IndexError:
+                    cycleId = 0
+                ## 1 byte per base
+                if cycleId == 0:
+                    basesDigit = np.ones(self.number) * 78
+                    # basesDigit[:] = self._baseASCII["N"]
+                    qualArr = np.zeros(self.number, dtype=np.uint8)
+                    self.cycleSet.add(c+1)
+                    self.qual[c+1] = qualArr
+                    self.basesDigit[c+1] = basesDigit.astype(np.uint8)
+                    ## view as Byte string
+                    self.bases[c+1] = basesDigit.astype(np.uint8).view("S1")
+                    continue
 
-                    qualArr = np.right_shift(np.left_shift(dataArr, 2), 2)
-                    basesDigit = np.right_shift(dataArr, 6)
-                    ## translate to charater
-                    ## A: ACSII 65
-                    if not bool(swap_dyes):
-                        basesDigit += self._baseASCII["A"]
-                        # T: ACSII 84
-                        basesDigit[np.where(basesDigit == self._baseASCII["A"] + 3)] = self._baseASCII["T"]
-                        # G: ACSII 71
-                        basesDigit[np.where(basesDigit == self._baseASCII["A"] + 2)] = self._baseASCII["G"]
-                        # C: ACSII 67
-                        basesDigit[np.where(basesDigit == self._baseASCII["A"] + 1)] = self._baseASCII["C"]
-                        # N: ACSII 78, Noted that N is quality == 0
-                        basesDigit[np.where(qualArr == 0)] = self._baseASCII["N"]
-
-                        self.cycleSet.add(cycleId)
-                        self.qual[cycleId] = qualArr[center_bool]
-                        self.basesDigit[cycleId] = basesDigit[center_bool]
-                        # view as Byte string
-                        self.bases[cycleId] = basesDigit.view("S1")[center_bool]
-                    else:
-                        basesDigit += self._baseASCII["A"]
-                        # T: ACSII 84
-                        t_pos = np.where(basesDigit == self._baseASCII["A"] + 3)
-                        g_pos = np.where(basesDigit == self._baseASCII["A"] + 2)
-                        c_pos = np.where(basesDigit == self._baseASCII["A"] + 1)
-                        a_pos = np.where(basesDigit == self._baseASCII["A"])
-                        basesDigit[t_pos] = self._baseASCII[swap_dyes["T"]]
-                        # G: ACSII 71
-                        basesDigit[g_pos] = self._baseASCII[swap_dyes["G"]]
-                        # C: ACSII 67
-                        basesDigit[c_pos] = self._baseASCII[swap_dyes["C"]]
-
-                        basesDigit[a_pos] = self._baseASCII[swap_dyes["A"]]
-                        # N: ACSII 78, Noted that N is quality == 0
-                        basesDigit[np.where(qualArr == 0)] = self._baseASCII["N"]
+                qualArr = np.right_shift(np.left_shift(dataArr, 2), 2)
+                basesDigit = np.right_shift(dataArr, 6)
+                ## translate to charater
+                ## A: ACSII 65
+                if not bool(swap_dyes):
+                    basesDigit += self._baseASCII["A"]
+                    # T: ACSII 84
+                    basesDigit[np.where(basesDigit == self._baseASCII["A"] + 3)] = self._baseASCII["T"]
+                    # G: ACSII 71
+                    basesDigit[np.where(basesDigit == self._baseASCII["A"] + 2)] = self._baseASCII["G"]
+                    # C: ACSII 67
+                    basesDigit[np.where(basesDigit == self._baseASCII["A"] + 1)] = self._baseASCII["C"]
+                    # N: ACSII 78, Noted that N is quality == 0
+                    basesDigit[np.where(qualArr == 0)] = self._baseASCII["N"]
 
                     self.cycleSet.add(cycleId)
-                    self.qual[cycleId] = qualArr
-                    self.basesDigit[cycleId] = basesDigit
-                    ## view as Byte string
-                    self.bases[cycleId] = basesDigit.view("S1")
-                self.version = uintArray[idx-1]
-                return
+                    self.qual[cycleId] = qualArr[center_bool]
+                    self.basesDigit[cycleId] = basesDigit[center_bool]
+                    # view as Byte string
+                    self.bases[cycleId] = basesDigit.view("S1")[center_bool]
+                else:
+                    basesDigit += self._baseASCII["A"]
+                    # T: ACSII 84
+                    t_pos = np.where(basesDigit == self._baseASCII["A"] + 3)
+                    g_pos = np.where(basesDigit == self._baseASCII["A"] + 2)
+                    c_pos = np.where(basesDigit == self._baseASCII["A"] + 1)
+                    a_pos = np.where(basesDigit == self._baseASCII["A"])
+                    basesDigit[t_pos] = self._baseASCII[swap_dyes["T"]]
+                    # G: ACSII 71
+                    basesDigit[g_pos] = self._baseASCII[swap_dyes["G"]]
+                    # C: ACSII 67
+                    basesDigit[c_pos] = self._baseASCII[swap_dyes["C"]]
+
+                    basesDigit[a_pos] = self._baseASCII[swap_dyes["A"]]
+                    # N: ACSII 78, Noted that N is quality == 0
+                    basesDigit[np.where(qualArr == 0)] = self._baseASCII["N"]
+
+                self.cycleSet.add(cycleId)
+                self.qual[cycleId] = qualArr
+                self.basesDigit[cycleId] = basesDigit
+                ## view as Byte string
+                self.bases[cycleId] = basesDigit.view("S1")
+            self.version = uintArray[idx-1]
+            return
 
     def loadFromFastq(self, filename, center_bool=False):
         import gzip
@@ -525,9 +549,13 @@ class Cal(object):
             allBaseArr = np.empty((cycles[1]-cycles[0]+1, self.number), dtype=np.uint8)
             allQualArr = np.empty((cycles[1]-cycles[0]+1, self.number), dtype=np.uint8)
             for c in range(cycles[0], cycles[1]+1):
-                ptr = c - cycles[0]
-                allBaseArr[ptr] = self.basesDigit[c]
-                allQualArr[ptr] = self.qual[c] + 33
+                try:
+                    ptr = c - cycles[0]
+                    allBaseArr[ptr] = self.basesDigit[c]
+                    allQualArr[ptr] = self.qual[c] + 33
+                except:
+                    allBaseArr[ptr] = 78
+                    allQualArr[ptr] = 0 + 33
             # baseChar = allBaseArr.view("S1").reshape(-1, len(self.cycleSet))
             baseChar = allBaseArr.view("S1").T
             # qualChar = allQualArr.view("S1").reshape(-1, len(self.cycleSet))
