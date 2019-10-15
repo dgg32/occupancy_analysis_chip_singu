@@ -12,8 +12,8 @@ import datetime
 import glob
 
 ###### Version and Date
-occupancy_version = 'v4.1_0A'
-prog_date = '2018-09-17'
+occupancy_version = 'v4.1_1B'
+prog_date = '2019-10-10'
 
 ###### Usage
 usage = '''
@@ -29,7 +29,7 @@ class OccupancyAnalysis(object):
         'bin2npy': True
     }
     def __init__(self, platform='', data_dp='Data', slide='FLOWSLIDE', lane='L0X', fov='', blocks=[], cycle_start=1,
-                 cycle_range=10, fastq_fp=None, temp_dp='Temp', output_dp='Output', parameter_overrides={},
+                 cycle_range=10, read_len=20, fastq_fp=None, temp_dp='Temp', output_dp='Output', parameter_overrides={},
                  log_dp='', log_overrides={}):
         from sap_funcs import make_dir
 
@@ -51,6 +51,7 @@ class OccupancyAnalysis(object):
         self.start_cycle = int(self.start_cycle)
         self.occupancy_range = parameter_overrides.pop('cycle_range', int(cycle_range))
         self.occupancy_range = int(self.occupancy_range)
+        self.read_len = parameter_overrides.pop('read_len',int(read_len))
         self.fastq_fp = parameter_overrides.pop('fastq_fp', fastq_fp)
         self.temp_dp = parameter_overrides.pop('temp_dp', temp_dp)
         output_dp = parameter_overrides.pop('output_dp', output_dp)
@@ -63,9 +64,7 @@ class OccupancyAnalysis(object):
 
         self.log_overrides = parameter_overrides.pop('log_overrides', log_overrides)
         # report name can be specified in parameter_overrides
-        self.report_name = parameter_overrides.pop('report_name', '%s_%s_%s_Occupancy_Analysis_C%02d-C%02d' %
-                                                   (self.slide, self.lane, self.fov, self.start_cycle,
-                                                    self.start_cycle + self.occupancy_range - 1))
+        self.report_name = parameter_overrides.pop('report_name', '')
 
         self.bypass = parameter_overrides.pop('bypass', {})
         if self.platform == 'v1':
@@ -197,12 +196,14 @@ class OccupancyAnalysis(object):
 
     def run_int2npy(self, data_dp, fov, start_cycle, occupancy_range, temp_dp):
         from occuint2npy import Int2npy
-        i2n = Int2npy(data_dp, fov, start_cycle, occupancy_range, temp_dp,
+        i2n = Int2npy(data_dp, fov, start_cycle, occupancy_range, self.read_len, output_dp=temp_dp,
                       log_dp=self.log_dp, log_overrides=self.log_overrides)
         if self.bypass['int2npy']:
             int_fp, posinfo_fp, norm_paras_fp, background_fp = i2n.complete_bypass()
         else:
             int_fp, posinfo_fp, norm_paras_fp, background_fp = i2n.run()
+        self.cycles = i2n.good_cycles
+        self.cycles_summary = i2n.cycles_summary
         return int_fp, posinfo_fp, norm_paras_fp, background_fp
 
     def run_v2cal2fastq(self, data_dp, fov, blocks_fp):
@@ -210,17 +211,17 @@ class OccupancyAnalysis(object):
             fastq_fp = glob.glob(os.path.join(data_dp, '%s*.fq.gz' % fov))[0]
         except:
             from v2cal2fastq import V2Cal2Fastq
-            c2f = V2Cal2Fastq(self.data_dp, fov, self.start_cycle, self.occupancy_range, blocks_fp,
+            c2f = V2Cal2Fastq(self.data_dp, fov, self.cycles+1, self.occupancy_range, blocks_fp,
                               output_dp=self.temp_dp, log_dp=self.log_dp, log_overrides=self.log_overrides)
             fastq_fp = c2f.run()
         return fastq_fp
 
-    def run_intensity_analysis(self, slide, lane, fov, start_cycle, occupancy_range,
+    def run_intensity_analysis(self, slide, lane, fov,
                                int_fp, norm_paras_fp, background_fp, blocks_fp, temp_dp,
                                bypass):
         from intensity_analysis import IntensityAnalysis
         cal_fp = os.path.join(self.data_dp, 'calFile', '%s.cal' % fov)
-        self.int_analysis = IntensityAnalysis(slide, lane, fov, start_cycle, occupancy_range,
+        self.int_analysis = IntensityAnalysis(slide, lane, fov, self.cycles,
                                               cal_fp, int_fp, norm_paras_fp, background_fp, blocks_fp,
                                               temp_dp, bypass, log_dp=self.log_dp, log_overrides=self.log_overrides)
         if self.bypass['intensity_analysis']:
@@ -303,65 +304,44 @@ class OccupancyAnalysis(object):
         summary_fp = os.path.join(self.fov_dp, '%s_Summary.csv' % self.report_name)
         summary_data = self.singular_summary + self.size_summary + self.mixed_summary + self.multicall_summary + \
                        self.chastity_summary + self.SHI_summary + \
-                       self.neighbors_summary + self.splits_summary + self.thresholds_summary + self.rho_results
+                       self.neighbors_summary + self.splits_summary + self.thresholds_summary + self.rho_results + \
+                       self.cycles_summary
         output_table(summary_fp, summary_data, ['', self.fov])
+
+        size_results_fp = os.path.join(self.fov_dp, '%s_Size_Results.csv' % self.report_name)
+        results_data = self.size_results + self.snr_results
+        output_table(size_results_fp, results_data, ['', self.fov])
+
+        mixed_results_fp = os.path.join(self.fov_dp, '%s_Mixed_Results.csv' % self.report_name)
+        results_data = self.multicall_results + self.SHI_results + self.chastity_results
+        output_table(mixed_results_fp, results_data, ['', self.fov])
+
+        split_results_fp = os.path.join(self.fov_dp, '%s_Split_Results.csv' % self.report_name)
+        results_data = self.splits_results + self.neighbors_results + self.empty_splits_results + \
+                        self.mixed_splits_results + self.familial_results
+        output_table(split_results_fp, results_data, ['', self.fov])
+
+        quartiles_header = ['', 'Q1', 'Q2', 'Q3', 'Q4']
+        cbi_quartiles_fp = os.path.join(self.fov_dp, '%s_CBI_Quartiles.csv' % self.report_name)
+        output_table(cbi_quartiles_fp, self.cbi_quartile_results, quartiles_header)
+
+        snr1_quartiles_fp = os.path.join(self.fov_dp, '%s_SNR1_Quartiles.csv' % self.report_name)
+        output_table(snr1_quartiles_fp, self.snr1_quartile_results, quartiles_header)
+
+        snr2_quartiles_fp = os.path.join(self.fov_dp, '%s_SNR2_Quartiles.csv' % self.report_name)
+        output_table(snr2_quartiles_fp, self.snr2_quartile_results, quartiles_header)
+
+        logger.debug('Output completed.')
+
         if not bool(self.blocks):
             center_summary_fp = os.path.join(self.fov_dp, '%s_Center2x2_Summary.csv' % self.report_name)
             center_summary_data = self.singular_summary_center + self.size_summary_center +\
                                   self.mixed_summary_center + self.multicall_summary_center + \
                                   self.chastity_summary_center + self.splits_summary_center
             output_table(center_summary_fp, center_summary_data, ['', self.fov])
-
-            size_results_fp = os.path.join(self.fov_dp, '%s_Size_Results.csv' % self.report_name)
-            results_data = self.size_results + self.snr_results
-            output_table(size_results_fp, results_data, ['', self.fov])
-
-            mixed_results_fp = os.path.join(self.fov_dp, '%s_Mixed_Results.csv' % self.report_name)
-            results_data = self.multicall_results + self.SHI_results + self.chastity_results
-            output_table(mixed_results_fp, results_data, ['', self.fov])
-
-            split_results_fp = os.path.join(self.fov_dp, '%s_Split_Results.csv' % self.report_name)
-            results_data = self.splits_results + self.neighbors_results + self.empty_splits_results + \
-                           self.mixed_splits_results + self.familial_results
-            output_table(split_results_fp, results_data, ['', self.fov])
-
-            quartiles_header = ['', 'Q1', 'Q2', 'Q3', 'Q4']
-            cbi_quartiles_fp = os.path.join(self.fov_dp, '%s_CBI_Quartiles.csv' % self.report_name)
-            output_table(cbi_quartiles_fp, self.cbi_quartile_results, quartiles_header)
-
-            snr1_quartiles_fp = os.path.join(self.fov_dp, '%s_SNR1_Quartiles.csv' % self.report_name)
-            output_table(snr1_quartiles_fp, self.snr1_quartile_results, quartiles_header)
-
-            snr2_quartiles_fp = os.path.join(self.fov_dp, '%s_SNR2_Quartiles.csv' % self.report_name)
-            output_table(snr2_quartiles_fp, self.snr2_quartile_results, quartiles_header)
-
-            logger.debug('Output completed.')
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
                    cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, center_summary_fp
         else:
-            size_results_fp = os.path.join(self.fov_dp, '%s_Size_Results.csv' % self.report_name)
-            results_data = self.size_results + self.snr_results
-            output_table(size_results_fp, results_data, ['', self.fov])
-
-            mixed_results_fp = os.path.join(self.fov_dp, '%s_Mixed_Results.csv' % self.report_name)
-            results_data = self.multicall_results + self.SHI_results + self.chastity_results
-            output_table(mixed_results_fp, results_data, ['', self.fov])
-
-            split_results_fp = os.path.join(self.fov_dp, '%s_Split_Results.csv' % self.report_name)
-            results_data = self.splits_results + self.neighbors_results + self.empty_splits_results + \
-                           self.mixed_splits_results + self.familial_results
-            output_table(split_results_fp, results_data, ['', self.fov])
-
-            quartiles_header = ['', 'Q1', 'Q2', 'Q3', 'Q4']
-            cbi_quartiles_fp = os.path.join(self.fov_dp, '%s_CBI_Quartiles.csv' % self.report_name)
-            output_table(cbi_quartiles_fp, self.cbi_quartile_results, quartiles_header)
-
-            snr1_quartiles_fp = os.path.join(self.fov_dp, '%s_SNR1_Quartiles.csv' % self.report_name)
-            output_table(snr1_quartiles_fp, self.snr1_quartile_results, quartiles_header)
-
-            snr2_quartiles_fp = os.path.join(self.fov_dp, '%s_SNR2_Quartiles.csv' % self.report_name)
-            output_table(snr2_quartiles_fp, self.snr2_quartile_results, quartiles_header)
-            logger.debug('Output completed.')
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
                    cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp
 
@@ -384,10 +364,14 @@ class OccupancyAnalysis(object):
         return
 
     def run(self,):
-        int_fp, posinfo_fp, coords_fp, neighbors_fp, blocks_fp, fastq_fp, norm_paras_fp, background_fp = self.process_data(
-            self.platform)
-        self.run_intensity_analysis(self.slide, self.lane, self.fov,
-                                    self.start_cycle, self.occupancy_range, int_fp,
+        (int_fp, posinfo_fp, coords_fp, neighbors_fp, blocks_fp, 
+                    fastq_fp, norm_paras_fp, background_fp) = self.process_data(self.platform)
+        # if report name wasn't specified in parameter_overrides and is empty
+        if not self.report_name: 
+            self.report_name = ('%s_%s_%s_Occupancy_Analysis_C%02d-C%02d' % (self.slide, self.lane, 
+                                                    self.fov, self.cycles.min()+1, self.cycles.max()+1))
+
+        self.run_intensity_analysis(self.slide, self.lane, self.fov, int_fp,
                                     norm_paras_fp, background_fp, blocks_fp, self.temp_dp,
                                     self.intensity_analysis_bypass)
         self.run_neighbor_clustering(self.int_analysis, neighbors_fp, self.report_name)
@@ -431,7 +415,7 @@ def main(arguments):
         time_diff = datetime.datetime.now() - start_time
         logger.info('Occupancy analysis completed. (%s)' % time_diff)
     else:
-        print usage
+        print(usage)
 
     return
 

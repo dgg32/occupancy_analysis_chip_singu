@@ -12,12 +12,14 @@ import datetime
 
 class Int2npy(object):
 
-    def __init__(self, data_dp, fov, start_cycle, cycle_range=10, output_dp='', int_type='finInts',
+    def __init__(self, data_dp, fov, start_cycle, cycle_range=10, read_len=20, output_dp='', int_type='finInts',
                  log_dp='', log_overrides={}):
         self.data_dp = data_dp
         self.fov = fov
         self.start_cycle = int(start_cycle)
         self.cycle_range = cycle_range
+        self.read_len = int(read_len) #max cycle length (read_len+start_cycle) to search for good cycles
+        self.good_cycles = []
         self.output_dp = output_dp if output_dp else data_dp
         self.int_type = int_type
 
@@ -58,29 +60,61 @@ class Int2npy(object):
         logger.debug(str(data[0]))
         return data
 
+    def _get_good_cycles(self):
+        cycles = range(self.start_cycle, self.start_cycle + self.read_len)
+        for i, cycle in enumerate(cycles):
+            int_bin_fp = os.path.join(self.data_dp, self.int_type, 'S%03d' % cycle, '%s.int' % self.fov)
+            if os.path.exists(int_bin_fp):
+                self.good_cycles.append(cycle-1)
+        self.good_cycles = np.array(self.good_cycles)
+        if len(self.good_cycles)<self.cycle_range: 
+            logger.warning('Only {0:d} good cycles < {1:d} required cycles'.format(len(self.good_cycles),self.cycle_range))
+            
+    def _cycles_summary(self):
+        cycles_range = np.arange(self.start_cycle-1,self.good_cycles.max()+1)
+        mask = np.isin(cycles_range,self.good_cycles)
+        self.cycles_summary = [ 
+            ['Failed Cycles',cycles_range[~mask]+1], #convert back to 1 indexing for summary table
+            ['Used Cycles',cycles_range[mask]+1] 
+        ]
+
     def run(self):
         start_time = datetime.datetime.now()
         logger.info('%s - Consolidating intensities in npy format...' % self.fov)
         #intensities = np.empty((num_dnbs, 4, len(cycles)), dtype=np.float)
 
-        cycles = range(self.start_cycle, self.start_cycle + self.cycle_range)
+        cycles = range(self.start_cycle, self.start_cycle + self.read_len)
 
         intensities = []
         norm_paras = np.zeros((16, len(cycles)))
         background = np.zeros((100, 4, len(cycles)))
         for i, cycle in enumerate(cycles):
             int_bin_fp = os.path.join(self.data_dp, self.int_type, 'S%03d' % cycle, '%s.int' % self.fov)
-            ib = IntensityBin(int_bin_fp)
-            cycle_ints = ib.metrics.IntsData.reshape(ib.metrics.ChannelNumber, -1).T
+            if os.path.exists(int_bin_fp):
+                self.good_cycles.append(cycle-1) # convert to 0 indexing
+                ib = IntensityBin(int_bin_fp)
+                cycle_ints = ib.metrics.IntsData.reshape(ib.metrics.ChannelNumber, -1).T
 
-            logger.debug('cycle_ints.shape: %s' % str(cycle_ints.shape))
-            intensities.append(cycle_ints)
-            norm_paras[:, i] = ib.metrics.NormalizationValue
-            background[:, :, i] = ib.dump_block_backgrounds()
-            if cycle == self.start_cycle:  # output posiIndex file
-                pos_list = self.get_coords(ib)
-                output_table(self.posinfo_fp, pos_list, delimiter='\t')
-                logger.debug('posinfo_fp created.')
+                logger.debug('cycle_ints.shape: %s' % str(cycle_ints.shape))
+                intensities.append(cycle_ints)
+                norm_paras[:, i] = ib.metrics.NormalizationValue
+                background[:, :, i] = ib.dump_block_backgrounds()
+                # if cycle == self.start_cycle:  # output posiIndex file
+                if not os.path.exists(self.posinfo_fp):
+                    pos_list = self.get_coords(ib)
+                    output_table(self.posinfo_fp, pos_list, delimiter='\t')
+                    logger.debug('posinfo_fp created.')
+            else:
+                logger.debug('Missing Data Cycle {0:03d} (1 indexing)'.format(cycle))
+                continue
+            if len(self.good_cycles)==self.cycle_range:
+                break
+        self.good_cycles = np.array(self.good_cycles)
+        self._cycles_summary()
+        ##TODO Throw Error here? and break out of occupancy for FOV?
+        if len(self.good_cycles)<self.cycle_range: 
+            logger.warning('FOV:{0}, Only {1:d} good cycles < {2:d} required cycles'.\
+                                format(self.fov,len(self.good_cycles),self.cycle_range))
 
         intensities = np.asarray(intensities, dtype=np.float32)
         # swap axes so that order is: num_dnbs, num_channels, num_cycles
@@ -103,6 +137,8 @@ class Int2npy(object):
     def complete_bypass(self):
         if os.path.exists(self.int_fp) and os.path.exists(self.posinfo_fp) and os.path.exists(self.norm_paras_fp) \
                 and os.path.exists(self.background_fp):
+            self._get_good_cycles()
+            self._cycles_summary()
             logger.info('%s - Bypass successful.' % self.fov)
             return self.int_fp, self.posinfo_fp, self.norm_paras_fp, self.background_fp
         logger.warning('%s - Could not bypass bin2npy!' % self.fov)

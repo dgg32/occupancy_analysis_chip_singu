@@ -19,11 +19,11 @@ BASE_LIST = ['A', 'C', 'G', 'T']
 DYE_LIST = ['Cy5', 'TxR', 'Cy3', 'Fit']
 
 class IntensitiesGMM(object):
-    def __init__(self, data, prefix, fov, start_cycle, output_dp, log_dp='', log_overrides={}):
+    def __init__(self, data, prefix, fov, cycles, output_dp, log_dp='', log_overrides={}):
         self.data = data
         self.prefix = prefix
         self.fov = fov
-        self.start_cycle = start_cycle
+        self.cycles = np.array(cycles)+1 #shift to 1 indexing for plot labeling and human readable
         self.output_dp = output_dp
         self.log_dp = log_dp
         self.log_overrides = log_overrides
@@ -112,9 +112,8 @@ class IntensitiesGMM(object):
         exclude = []
         called_signals = np.zeros(data.shape)
         logger.info('Running mixture models for channels one after another.')
-        for cyndex in range(len(data[0][0])):
+        for cyndex,cycle_number in enumerate(self.cycles):
             cycle_pass = True
-            cycle_number = self.start_cycle + cyndex
             fig, ax = plt.subplots(2, 2, figsize=(12, 12))
             fig2, ax2 = plt.subplots(2, 2, figsize=(12, 12))
 
@@ -340,9 +339,8 @@ class IntensitiesGMM(object):
         gmm_results = []
         called_signals = np.zeros(data.shape)
         logger.info('Running mixture models for channels one after another.')
-        for cyndex in range(len(data[0][0])):
+        for cyndex,cycle_number in enumerate(self.cycles):
             cycle_pass = True
-            cycle_number = self.start_cycle + cyndex
             fig, ax = plt.subplots(2, 2, figsize=(12, 12))
             fig2, ax2 = plt.subplots(2, 2, figsize=(12, 12))
 
@@ -498,7 +496,7 @@ class IntensitiesGMM(object):
                     ax2[i, j].annotate('%s\n%s' % (norm_factor_str, norm_thresh_str),
                                       xy=(0.95, 0.95), xycoords='axes fraction', horizontalalignment='right',
                                       verticalalignment='top')
-                plt.setp(subax, file=open(os.devnull, 'w'))
+                # plt.setp(subax, file=open(os.devnull, 'w')) #is this necessary?
                 ax[i, j].annotate('%s\n%s\n%s' % (noise_str, signal_str, threshold_str),
                                   xy=(0.95, 0.95), xycoords='axes fraction', horizontalalignment='right',
                                   verticalalignment='top')
@@ -635,13 +633,13 @@ def single_channel_gmm(cyndex, channel, channel_intensities, ax, ax2):
 
         weights, means, covs, separate = get_gmm_attributes(gmm, gmm_x)
 
-    logger.debug('C%02d ch%s - GMM n_components=%s' % (n_comp, cyndex, channel))
+    logger.debug('C%02d ch%s - GMM n_components=%s' % (cyndex, channel,n_comp))
     logger.debug('C%02d ch%s - means: %s, covs: %s, weights: %s' % (cyndex, channel, means, covs, weights))
 
     if max(weights) > 0.95 or abs(min(means)) > 0.1:
-        logger.warning('C%02d ch%s - weight: %s' % (max(weights), cyndex, channel))
-        logger.warning('C%02d ch%s - cov: %s' % (max(covs), cyndex, channel))
-        logger.warning('C%02d ch%s - means: %s' % (abs(min(means)), cyndex, channel))
+        logger.warning('C%02d ch%s - weight: %s' % ( cyndex, channel,max(weights)))
+        logger.warning('C%02d ch%s - cov: %s' % (cyndex, channel,max(covs)))
+        logger.warning('C%02d ch%s - means: %s' % (cyndex, channel,abs(min(means))))
         # raise bad_data
         channel_pass = False
 

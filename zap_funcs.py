@@ -20,7 +20,7 @@ def full_traceback(func):
             msg += 'args:\n'
             for arg in args:
                 msg += '%s\n' % arg
-            print msg
+            print(msg)
             raise type(e)(msg)
     return wrapper
 

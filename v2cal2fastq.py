@@ -49,7 +49,10 @@ class V2Cal2Fastq(object):
             v40 = False
         cal_obj = Cal()
         cal_obj.load(self.cal_fp, center_bool=self.blocks_vect, V40=v40)
-        cal_obj.writefq(self.fastq_fp, idPrefix=self.fov, cycles=[self.occupancy_cycle,
+        if (type(self.occupancy_cycle)==np.ndarray) | (type(self.occupancy_cycle)==list):
+            cal_obj.writefq(self.fastq_fp, idPrefix=self.fov, cycles=list(self.occupancy_cycle))
+        else:
+            cal_obj.writefq(self.fastq_fp, idPrefix=self.fov, cycles=[self.occupancy_cycle,
                                                                   self.occupancy_cycle+self.occu_range])
 
         time_diff = datetime.datetime.now() - start_time

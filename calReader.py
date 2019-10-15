@@ -387,11 +387,11 @@ class Cal(object):
                     # N: ACSII 78, Noted that N is quality == 0
                     basesDigit[np.where(qualArr == 0)] = self._baseASCII["N"]
 
-                    self.cycleSet.add(cycleId)
-                    self.qual[cycleId] = qualArr[center_bool]
-                    self.basesDigit[cycleId] = basesDigit[center_bool]
-                    # view as Byte string
-                    self.bases[cycleId] = basesDigit.view("S1")[center_bool]
+                    # self.cycleSet.add(cycleId)
+                    # self.qual[cycleId] = qualArr[center_bool]
+                    # self.basesDigit[cycleId] = basesDigit[center_bool]
+                    # # view as Byte string
+                    # self.bases[cycleId] = basesDigit.view("S1")[center_bool]
                 else:
                     basesDigit += self._baseASCII["A"]
                     # T: ACSII 84
@@ -544,13 +544,19 @@ class Cal(object):
         if strand:
             strand = '/' + strand
         if type(cycles) == list:
-            if idPrefix:
-                idPrefix += "_"
-            allBaseArr = np.empty((cycles[1]-cycles[0]+1, self.number), dtype=np.uint8)
-            allQualArr = np.empty((cycles[1]-cycles[0]+1, self.number), dtype=np.uint8)
-            for c in range(cycles[0], cycles[1]+1):
+            if len(cycles)==2:
+                if idPrefix:
+                    idPrefix += "_"
+                allBaseArr = np.empty((cycles[1]-cycles[0]+1, self.number), dtype=np.uint8)
+                allQualArr = np.empty((cycles[1]-cycles[0]+1, self.number), dtype=np.uint8)
+                cycles = range(cycles[0], cycles[1]+1)
+            elif len(cycles)>2:
+                if idPrefix:
+                    idPrefix += "_"
+                allBaseArr = np.empty((len(cycles), self.number), dtype=np.uint8)
+                allQualArr = np.empty((len(cycles), self.number), dtype=np.uint8)
+            for ptr,c in enumerate(cycles):
                 try:
-                    ptr = c - cycles[0]
                     allBaseArr[ptr] = self.basesDigit[c]
                     allQualArr[ptr] = self.qual[c] + 33
                 except:
@@ -574,8 +580,7 @@ class Cal(object):
                 idPrefix += "_"
             allBaseArr = np.empty((cycles, self.number), dtype=np.uint8)
             allQualArr = np.empty((cycles, self.number), dtype=np.uint8)
-            for c in range(1, cycles+1):
-                ptr = c - 1
+            for ptr,c in enumerate(range(1, cycles+1)):
                 allBaseArr[ptr] = self.basesDigit[c]
                 allQualArr[ptr] = self.qual[c] + 33
             # baseChar = allBaseArr.view("S1").reshape(-1, len(self.cycleSet))
@@ -594,8 +599,7 @@ class Cal(object):
                 idPrefix += "_"
             allBaseArr = np.empty((len(self.cycleSet), self.number), dtype=np.uint8)
             allQualArr = np.empty((len(self.cycleSet), self.number), dtype=np.uint8)
-            for c in sorted(list(self.cycleSet)):
-                ptr = c - 1
+            for ptr,c in enumerate(sorted(list(self.cycleSet))):
                 allBaseArr[ptr] = self.basesDigit[c]
                 allQualArr[ptr] = self.qual[c] + 33
 
@@ -616,17 +620,18 @@ class Cal(object):
         ''' Save the base and quality to a FASTQ file.
             Compression if filename is *.gz.
         '''
-        print('writing ' + filename)
+        print('writing ' + filename + str(cycles))
         if not idPrefix:
             idPrefix = self.fov
         if filename.endswith('.gz'):
             import gzip
-            if type(cycles) is list:
+            if type(cycles)==list:
                 tag = 1
-                if type(cycles[0]) is int:
+                if not type(cycles[0])==list:
                     tag = ''
                     suffix = '.fq.gz'
                     split_name = filename.replace('.fq.gz', suffix)
+                    print(filename+str(cycles))
                     with gzip.open(split_name, 'wb') as fp:
                         self._dumpAsFq(fp, idPrefix=idPrefix, cycles=cycles, strand='', insert_vect_fp=insert_vect)
                 else:

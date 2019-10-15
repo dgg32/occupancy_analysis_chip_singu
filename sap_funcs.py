@@ -203,7 +203,7 @@ def make_dir(dir_path):
     for i in range(5):
         if os.path.exists(dir_path): return
         try:
-            os.makedirs(dir_path, 0755)
+            os.makedirs(dir_path, 0o755)
             #print "Making: %s" % dir_path
             logger.info( "Making: %s" % dir_path)
         except OSError:
@@ -270,7 +270,7 @@ def read_fov_list(input_path, list_fn=None):
 def get_position_call_counts(readLen, readDist):
     #print 'get_position_call_counts'
     tempDist = deepcopy(readDist)
-    print 'tempDist', tempDist
+    print('tempDist: {0}'.format(tempDist))
     call_counts = []
     running_count = 0
     if type(readDist) == list:

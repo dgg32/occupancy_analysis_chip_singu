@@ -154,7 +154,6 @@ class NeighborAnalysis(object):
         self.lane = int_analysis.lane
         self.fov = int_analysis.fov
         self.start_cycle = int_analysis.start_cycle
-        self.cycle_range = int_analysis.cycle_range
         self.empty_fth = int_analysis.empty_fth
         empty_calls = np.zeros(40).astype(np.int8)
         empty_calls.shape = (1,4,10)
@@ -2301,7 +2300,7 @@ def main(slide, lane, fov, start_cycle, occupancy_range, int_fp, posinfo_fp, fas
 
     ma = NeighborAnalysis(inta, posinfo_fp, fastq_fp=fastq_fp)
     summary, results = ma.run()
-    print summary, results
+    print((summary, results))
     return summary, results
 
 if __name__ == '__main__':

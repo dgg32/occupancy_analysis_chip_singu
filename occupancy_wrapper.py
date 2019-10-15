@@ -23,8 +23,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 ###### Version and Date
-occupancy_version = 'v4.1_0A'
-prog_date = '2018-09-17'
+occupancy_version = 'v4.1_1B'
+prog_date = '2019-10-10'
 
 ###### Usage
 usage = '''
@@ -54,6 +54,8 @@ def parse_arguments(arguments):
                            help="Number of cycles to analyze. Used in conjunction with cycle start.")
     ArgParser.add_argument("-a", "--cycle_list", nargs="+", dest="cycle_list", default=[],
                            help="Manually specify cycle numbers to analyze. Used in lieu of cycle start/range.")
+    ArgParser.add_argument("-R", "--read", action="store", dest="read", default=1,
+                           help="Read number. 1 or 2. Default is 1 (first strand)")      
     ArgParser.add_argument("-e", "--occupancy_version", action="store", dest="occupancy_version", default="",
                            help="Specify older version to run. Default: current version")
     ArgParser.add_argument("-t", "--temp_dp", action="store", dest="temp_dp", default="",
@@ -63,7 +65,7 @@ def parse_arguments(arguments):
     ArgParser.add_argument("-E", "--emails", nargs="+", dest="emails", default=[],
                            help="Emails to notify upon report completion.")
     ArgParser.add_argument("-d", "--data", action="store", dest="data_dp", default='',
-                           help="Emails to notify upon report completion.")
+                           help="data path.")
     ArgParser.add_argument("-L", "--consolidate_lanes", action="store_false", dest="consolidate_lanes", default=True,
                            help="Flag to not compile all lanes to single workbook. Default true.")
     para, args = ArgParser.parse_known_args()
@@ -151,7 +153,7 @@ def get_identification_strings(slide, lane='L0X', *spillover):
     slide = slide if slide else 'FLOWCELL'
     return slide, lane
 
-def generate_final_paths(grouped_reports):
+def generate_final_paths(grouped_reports,occupancy_parameters):
     final_report_fps = []
     for report_group in grouped_reports:
         priming_report = report_group[0]
@@ -159,17 +161,19 @@ def generate_final_paths(grouped_reports):
         output_dp = os.path.dirname(fov_dp)
         comp_strings = report_fn.split('_Occupancy_Analysis_')
         slide, lane = get_identification_strings(*comp_strings[0].split('_'))
-        new_fn = '%s_%s_Occupancy_Analysis_%s' % (slide, lane, comp_strings[-1])
+        read = 'Read{0}'.format(occupancy_parameters['read'])
+        new_fn = '%s_%s_Occupancy_Analysis_%s' % (slide, lane, 
+                                    comp_strings[-1].replace(comp_strings[-1].split('_')[0],read))#comp_strings[-1])
         final_report_fps.append(os.path.join(output_dp, new_fn))
     return final_report_fps
 
 def calculate_averages(metrics, data):
     data = zip(*data) # transpose
     metric_count = len(data)
-    ignored_metrics = ['Most Frequent 10-mer']
+    ignored_metrics = ['Most Frequent 10-mer','Failed Cycles','Used Cycles']
     ignored_metrics = [metric for metric in ignored_metrics if metric in metrics]
     ignored_indices = [metrics.index(i) for i in ignored_metrics]
-    data = [d for id, d in enumerate(data) if id not in ignored_indices]
+    data = [d for i, d in enumerate(data) if i not in ignored_indices]
     data = np.asarray(data, dtype=np.float32)
     avg_data = np.mean(data, 1).tolist()
     avg_list = []
@@ -186,9 +190,9 @@ def calculate_quartiles_averages(data):
     data = np.asarray(data, dtype=np.float32)
     return zip(*np.mean(data, 0).tolist()) # convert to list and transpose
 
-def consolidate_reports(report_lists):
+def consolidate_reports(report_lists,occupancy_parameters):
     grouped_reports = zip(*report_lists)[:-5]
-    final_report_fps = generate_final_paths(grouped_reports)
+    final_report_fps = generate_final_paths(grouped_reports,occupancy_parameters)
     for g, report_group in enumerate(grouped_reports):
         final_report_fp = final_report_fps[g]
 
@@ -221,14 +225,16 @@ def consolidate_reports(report_lists):
     return final_report_fps
 
 
-def consolidate_split_base_comp_reports(report_lists):
+def consolidate_split_base_comp_reports(report_lists,occupancy_parameters):
     #splits_order = ['All Split', 'Horizontal', 'Vertical', 'Diagonal', 'Multi']
     fov_reports = zip(*report_lists)[-1]
     fov_dp, report_fn = os.path.split(fov_reports[0])
     output_dp = os.path.dirname(fov_dp)
     comp_strings = report_fn.split('_Occupancy_Analysis_')
     slide, lane = get_identification_strings(*comp_strings[0].split('_'))
-    new_fn = '%s_%s_Occupancy_Analysis_%s' % (slide, lane, comp_strings[-1])
+    read = 'Read{0}'.format(occupancy_parameters['read'])
+    new_fn = '%s_%s_Occupancy_Analysis_%s' % (slide, lane, 
+                                comp_strings[-1].replace(comp_strings[-1].split('_')[0],read))#comp_strings[-1])
     final_report_fp = os.path.join(output_dp, new_fn)
     dfs = []
     for fov_report in fov_reports:
@@ -242,7 +248,7 @@ def consolidate_split_base_comp_reports(report_lists):
     return
 
 
-def consolidate_fov_plots(report_lists, output_dp):
+def consolidate_fov_plots(report_lists, output_dp, read):
     make_dir(os.path.join(output_dp, 'npy'))
 
     grouped_reports = zip(*report_lists)[-5:-1]
@@ -260,11 +266,11 @@ def consolidate_fov_plots(report_lists, output_dp):
         fov_dp, report_fn = os.path.split(report_group[0])
         fn = report_fn.split('_')
         if len(fn[1]) == 3:
-            new_fn = '%s_%s_Occupancy_Analysis_%s_%s' % (fn[0], fn[1], fn[3], '_'.join(fn[4:]))
-            cycles = fn[3]
+            new_fn = '%s_%s_Occupancy_Analysis_%s_%s' % (fn[0], fn[1], read, '_'.join(fn[4:]))
+            cycles = read#fn[3]
         else:
-            new_fn = '%s_%s_Occupancy_Analysis_%s_%s' % (fn[0], fn[2], fn[4], '_'.join(fn[5:]))
-            cycles = fn[4]
+            new_fn = '%s_%s_Occupancy_Analysis_%s_%s' % (fn[0], fn[2], read, '_'.join(fn[5:]))
+            cycles = read#fn[4]
         final_report_fp = os.path.join(output_dp, new_fn).replace('.npy', '.png')
 
         if g == 0:
@@ -655,10 +661,12 @@ def main(arguments):
         logger.error('%s' % exception)
     occupancy_results = [oo for oo in occupancy_outputs if type(oo) == tuple]
 
-    final_report_fps = consolidate_reports(occupancy_results)
-    consolidate_split_base_comp_reports(occupancy_results)
-    consolidate_fov_plots(occupancy_results, occupancy_parameters['output_dp'])
+    final_report_fps = consolidate_reports(occupancy_results,occupancy_parameters)
+    consolidate_split_base_comp_reports(occupancy_results,occupancy_parameters)
+    consolidate_fov_plots(occupancy_results, occupancy_parameters['output_dp'],
+                            'Read{0}'.format(occupancy_parameters['read']))
 
+    logger.info('Copying files from tmp directory...')
     if os.name == 'posix':
         os.system('rsync -zarv --include="*/" --include="*.png" --include="*.csv" '
                   '--include="*_Labels.npy" --include="*_SNR_Values.npy" '
@@ -670,6 +678,7 @@ def main(arguments):
     if bypass['temp_deletion']:
         logger.debug('Retaining temporary files.')
     else:
+        logger.info('Deleting tmp directory...')
         os.rmdir('%(temp_dp)s' % occupancy_parameters)
 
     """

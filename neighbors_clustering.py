@@ -37,7 +37,7 @@ class NeighborClustering(object):
         self.prefix = int_analysis.prefix
         self.fov = int_analysis.fov
         self.start_cycle = int_analysis.start_cycle
-        self.occupancy_range = int_analysis.cycle_range
+        self.occupancy_range = len(int_analysis.cycles)
         self.labels_fp = int_analysis.labels_fp
         self.snr_fp = int_analysis.snr_fp
         posinfo_fp = int_analysis.background_fp.replace('_background.npy', '.posiIndex.txt')
@@ -60,7 +60,7 @@ class NeighborClustering(object):
     def output_data(self, data_dp):
         from occuint2npy import Int2npy
         import pos2neighbor
-        i2n = Int2npy(data_dp, self.fov, self.start_cycle, self.occupancy_range, self.output_dp)
+        i2n = Int2npy(data_dp, self.fov, self.start_cycle, self.occupancy_range, output_dp=self.output_dp)
         int_fp, posinfo_fp, norm_paras_fp, background_fp = i2n.run()
 
         blocks = self.blocks

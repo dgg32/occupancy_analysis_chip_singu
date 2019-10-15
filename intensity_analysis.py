@@ -36,7 +36,7 @@ label_dict = dict((label, c) for c, label in enumerate(label_order))
 
 class IntensityAnalysis(object):
 
-    def __init__(self, slide, lane, fov, start_cycle, occupancy_range, cal_fp, int_fp, norm_paras_fp, background_fp,
+    def __init__(self, slide, lane, fov, cycles, cal_fp, int_fp, norm_paras_fp, background_fp,
                  blocks_fp, output_dp='', bypass={},
                  log_dp='', log_overrides={}):
         self.lane = lane
@@ -48,22 +48,23 @@ class IntensityAnalysis(object):
         self.blocks_fp = blocks_fp
         self.output_dp = output_dp
         make_dir(self.output_dp)
-        self.start_cycle = int(start_cycle)
-        self.cycle_range = int(occupancy_range)
+        self.cycles = cycles # already sorted?
+        self.start_cycle = self.cycles.min()+1 # used in file names and labels (1 indexing)
+        self.end_cycle = self.cycles.max() + 1 #used in file names and labels (1 indexing) #self.start_cycle+self.cycle_range-1
         self.prefix = '%s_%s_%s_C%02d-C%02d' % (slide, lane, fov, self.start_cycle,
-                                                self.start_cycle + self.cycle_range - 1)
+                                                self.end_cycle)
         self.normCBI_fp = self.int_fp.replace('.npy', '_C%02d-C%02d_norm_CBI.npy' % (
-            self.start_cycle, self.start_cycle + self.cycle_range - 1))
+                                                        self.start_cycle, self.end_cycle))
         self.cyndexes_fp = self.int_fp.replace('.npy', '_C%02d-C%02d_Cyndexes.npy' % (
-            self.start_cycle, self.start_cycle + self.cycle_range - 1))
+                                                        self.start_cycle, self.end_cycle))
         self.calls_fp = self.int_fp.replace('.npy', '_C%02d-C%02d_Calls.npy' % (
-            self.start_cycle, self.start_cycle + self.cycle_range - 1))
+                                                        self.start_cycle, self.end_cycle))
         self.thresholds_fp = self.int_fp.replace('.npy', '_C%02d-C%02d_Thresholds.npy' % (
-            self.start_cycle, self.start_cycle + self.cycle_range - 1))
+                                                        self.start_cycle, self.end_cycle))
         self.final_thresholds_fp = self.int_fp.replace('.npy', '_C%02d-C%02d_Final_Thresholds.npy' % (
-            self.start_cycle, self.start_cycle + self.cycle_range - 1))
+                                                        self.start_cycle, self.end_cycle))
         self.naCBI_fp = self.int_fp.replace('.npy', '_C%02d-C%02d_avg_CBI.npy' % (
-            self.start_cycle, self.start_cycle + self.cycle_range - 1))
+                                                        self.start_cycle, self.end_cycle))
         self.labels_fp = os.path.join(self.output_dp, '%s_Labels.npy' % self.prefix)
         self.snr_fp = os.path.join(self.output_dp, '%s_SNR_Values.npy' % self.prefix)
 
@@ -110,10 +111,10 @@ class IntensityAnalysis(object):
 
         if label_mask is None:
             label_mask = np.ones(len(fin_ints), dtype=bool)
-        cycle_range = range(self.start_cycle, self.start_cycle + self.cycle_range)
+
         qc = CalQCStats(fin_ints[label_mask, :, :], raw_ints[label_mask, :, :],
                         ctc_ints[label_mask, :, :], norm_paras, cal_obj, label_mask,
-                        background, cycle_range=cycle_range)
+                        background, cycle_range=self.cycles+1)
         try:
             logger.info('Calculating RHO')
             rho = qc.get_rho_phi()
@@ -127,7 +128,7 @@ class IntensityAnalysis(object):
         rho['avg'] = np.mean(rho.values(), axis=0)
         for base in ['A', 'C', 'G', 'T', 'avg']:
             rho['%s C%02d' % (base, self.start_cycle)] = rho[base][0]
-            rho[base] = np.polyfit(range(self.cycle_range), rho[base], 1)[1]
+            rho[base] = np.polyfit(range(len(self.cycles)), rho[base], 1)[1]
         return rho
 
     def calculate_SNR(self, normalized_data, trim=0.02):
@@ -165,7 +166,7 @@ class IntensityAnalysis(object):
     def calculate_DNB_SNR(self, sorted_data):
         logger.info('%s - Calculating SNR at DNB level...' % self.fov)
         signal = sorted_data[:, 3, :].mean(axis=1)
-        noise = sorted_data[:, :3, :].reshape(sorted_data.shape[0], 3 * (self.cycle_range)).std(axis=1)
+        noise = sorted_data[:, :3, :].reshape(sorted_data.shape[0], 3 * len(self.cycles)).std(axis=1)
         SNR1_values = signal / (noise + 0.001)
         SNR1_labels = self.label_SNR(SNR1_values)
 
@@ -253,11 +254,11 @@ class IntensityAnalysis(object):
         # expected shape ~570000, 4, 10
         logger.debug('%s - data shape: %s' % (self.fov, str(data.shape)))
         cycle_count = data.shape[2]
-        if cycle_count > self.cycle_range:
+        if cycle_count > len(self.cycles):
             logger.warning('%s - Excess cycles detected! data shape: %s' % (self.fov, str(data.shape)))
-            data = data[:,:,self.start_cycle-1:self.start_cycle-1+self.cycle_range]
-            logger.warning('%s - Using slice: %s:%s' %
-                           (self.fov, self.start_cycle-1, self.start_cycle-1+self.cycle_range))
+            data = data[:,:,self.cycles]
+            logger.warning('%s - Using slice (0 indexing): %s:%s' %
+                           (self.fov, self.start_cycle-1, self.end_cycle-1))
             logger.warning('%s - Final data shape: %s' % (self.fov, str(data.shape)))
         major_count = int(data.shape[2] / 2.0 + 0.5) + 1
         return data, num_dnbs, major_count
@@ -268,10 +269,10 @@ class IntensityAnalysis(object):
 
         gmm_output_dp = os.path.join(self.output_dp, 'GMM_Results')
         make_dir(gmm_output_dp)
-        ig = IntensitiesGMM(data, self.prefix, self.fov, self.start_cycle, gmm_output_dp,
+        ig = IntensitiesGMM(data, self.prefix, self.fov, self.cycles, gmm_output_dp,
                              log_dp=self.log_dp, log_overrides=self.log_overrides)
         data, called_signals, thresholds, exclude = ig.run()
-        cyndexes = np.delete(np.arange(self.cycle_range), exclude)
+        cyndexes = np.delete(np.arange(len(self.cycles)), exclude)
         logger.debug('%s - cyndexes: %s' % (self.fov, cyndexes))
         return data, called_signals, cyndexes, \
                thresholds['empty'], thresholds['small'], thresholds['large'], thresholds['outlier']
@@ -608,8 +609,9 @@ def get_max_multicalls(mc_array, major_count):
     return 0
 
 def main(args):
-    slide, lane, fov, start_cycle, occupancy_range, cal_fp, int_fp, norm_paras_fp, background_fp, blocks_fp = args
-    ca = IntensityAnalysis(slide, lane, fov, start_cycle, occupancy_range, cal_fp, 
+    slide, lane, fov, cycles, cal_fp, int_fp, norm_paras_fp, background_fp, blocks_fp = args
+    cycles = map(int, cycles.strip('[]').split(',')) #could use argparse for better parsing
+    ca = IntensityAnalysis(slide, lane, fov, cycles, cal_fp, 
                            int_fp, norm_paras_fp, background_fp, blocks_fp)
     rho_results, snr_results, thresholds_summary, cbi_bypassed = ca.run()
     return rho_results, snr_results, thresholds_summary, cbi_bypassed
