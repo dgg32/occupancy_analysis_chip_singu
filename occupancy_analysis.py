@@ -337,7 +337,7 @@ class OccupancyAnalysis(object):
             center_summary_fp = os.path.join(self.fov_dp, '%s_Center2x2_Summary.csv' % self.report_name)
             center_summary_data = self.singular_summary_center + self.size_summary_center +\
                                   self.mixed_summary_center + self.multicall_summary_center + \
-                                  self.chastity_summary_center + self.splits_summary_center
+                                  self.chastity_summary_center + self.splits_summary_center + self.cycles_summary
             output_table(center_summary_fp, center_summary_data, ['', self.fov])
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
                    cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, center_summary_fp
