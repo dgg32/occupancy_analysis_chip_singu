@@ -560,6 +560,7 @@ class Cal(object):
                     allBaseArr[ptr] = self.basesDigit[c]
                     allQualArr[ptr] = self.qual[c] + 33
                 except:
+                    ptr = c - cycles[0]
                     allBaseArr[ptr] = 78
                     allQualArr[ptr] = 0 + 33
             # baseChar = allBaseArr.view("S1").reshape(-1, len(self.cycleSet))
