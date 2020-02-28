@@ -186,6 +186,17 @@ def calculate_quartiles_averages(data):
     data = np.asarray(data, dtype=np.float32)
     return zip(*np.mean(data, 0).tolist()) # convert to list and transpose
 
+def generate_trimmed_summary(summary_report_path):
+    summary = pd.read_csv(summary_report_path, index_col=0)
+    best_col = summary.columns.values[np.argmax(summary.loc['Seeds+Singular (%ofTotal)'].values)]
+    for i in range(2):
+        worst = summary.columns.values[np.argmax(summary.loc['Seeds+Singular (%ofTotal)'].values)]
+        summary.drop(worst)
+    summary['AVG'][:-2] = summary.iloc[:-2, 1:].values.astype(float).mean(axis=1)
+    summary.to_csv(summary_report_path.replace('Summary', 'Trim_Summary'))
+    best = summary[best_col]
+    best.to_csv(summary_report_path.replace('Summary', 'Best_Field'))
+
 
 def consolidate_reports(report_lists):
     grouped_reports = zip(*report_lists)[:-5]
@@ -243,7 +254,7 @@ def consolidate_split_base_comp_reports(report_lists):
     return
 
 
-def consolidate_fov_plots(report_lists, output_dp):
+def consolidate_fov_plots(report_lists, output_dp, mode='All'):
     make_dir(os.path.join(output_dp, 'npy'))
 
     grouped_reports = zip(*report_lists)[-5:-1]
@@ -297,7 +308,11 @@ def consolidate_lane_plots(slide_dp, occupancy_fn, prefix):
         threshold_fps = []
         for lane in lanes:
             lane_dp = os.path.join(os.path.split(slide_dp)[0], lane, occupancy_fn)
-            f = os.path.join(lane_dp, 'npy', '%s_%s_Occupancy_Analysis_%s_%s.npy' % (slide, lane, cycles, report))
+            if 'Center2x2' in occupancy_fn:
+                f = os.path.join(lane_dp, 'npy', '%s_%s_Occupancy_Analysis_%s_Center2x2_%s.npy' % (slide, lane, cycles,
+                                                                                                   report))
+            else:
+                f = os.path.join(lane_dp, 'npy', '%s_%s_Occupancy_Analysis_%s_%s.npy' % (slide, lane, cycles, report))
             if os.path.exists(f):
                 report_groups[report].append(f)
                 threshold_fps.append(os.path.join(lane_dp, 'npy', '%s_%s_Occupancy_Analysis_%s_Final_Thresholds.npy' % (
@@ -513,7 +528,8 @@ def get_parent_report_names(f):
 
 def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
     report_names = ['ACGT_splits', 'CBI_Quartiles', 'Center2x2_Summary', 'Cluster_Mixed_Summary', 'Mixed_Results',
-                    'Size_Results', 'SNR1_Quartiles', 'SNR2_Quartiles', 'Split_Results', 'Summary']
+                    'Size_Results', 'SNR1_Quartiles', 'SNR2_Quartiles', 'Split_Results', 'Summary', 'Trim_Summary',
+                    'Best_Field']
     slide = prefix.split('_')[0]
     cycles = prefix.split('_')[-1]
     for report in report_names:
@@ -521,7 +537,11 @@ def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
         lanes, dfs, avgs = [], [], []
         for lane in ['L01', 'L02', 'L03', 'L04']:
             lane_dp = os.path.join(os.path.split(slide_dp)[0], lane, occupancy_fn)
-            f = os.path.join(lane_dp, '%s_%s_Occupancy_Analysis_%s_%s.csv' % (slide, lane, cycles, report))
+            if 'Center2x2' in occupancy_fn:
+                f = os.path.join(lane_dp, '%s_%s_Occupancy_Analysis_%s_Center2x2_%s.csv' % (slide, lane, cycles,
+                                                                                            report))
+            else:
+                f = os.path.join(lane_dp, '%s_%s_Occupancy_Analysis_%s_%s.csv' % (slide, lane, cycles, report))
             if os.path.exists(f):
                 idx = [0, 1, 2] if report == 'ACGT_splits' else 0
                 df = pd.read_csv(f, index_col=idx)
@@ -573,7 +593,7 @@ def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
             worksheet = writer.sheets[report]
             worksheet.freeze_panes(0, 1)
             worksheet.set_column(0, 0, 30)
-            if report == 'Summary' or report == 'Center2x2_Summary':
+            if (report == 'Summary') | (report == 'Trim_Summary') | (report == 'Best_Field'):
                 worksheet.conditional_format(2, 1, 2, c, {'type': '3_color_scale'})
                 for col in [6, 11, 15, 19]:
                     worksheet.conditional_format(col, 1, col, c, {'type': '3_color_scale',
