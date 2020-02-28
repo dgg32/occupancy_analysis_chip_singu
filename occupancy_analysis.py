@@ -51,7 +51,7 @@ class OccupancyAnalysis(object):
         self.start_cycle = int(self.start_cycle)
         self.occupancy_range = parameter_overrides.pop('cycle_range', int(cycle_range))
         self.occupancy_range = int(self.occupancy_range)
-        self.read_len = parameter_overrides.pop('read_len',int(read_len))
+        self.read_len = parameter_overrides.pop('read_len', int(read_len))
         self.fastq_fp = parameter_overrides.pop('fastq_fp', fastq_fp)
         self.temp_dp = parameter_overrides.pop('temp_dp', temp_dp)
         output_dp = parameter_overrides.pop('output_dp', output_dp)
@@ -64,7 +64,9 @@ class OccupancyAnalysis(object):
 
         self.log_overrides = parameter_overrides.pop('log_overrides', log_overrides)
         # report name can be specified in parameter_overrides
-        self.report_name = parameter_overrides.pop('report_name', '')
+        self.report_name = parameter_overrides.pop('report_name', '%s_%s_%s_Occupancy_Analysis_C%02d-C%02d' %
+                                                   (self.slide, self.lane, self.fov, self.start_cycle,
+                                                    self.start_cycle + self.occupancy_range - 1))
 
         self.bypass = parameter_overrides.pop('bypass', {})
         if self.platform == 'v1':

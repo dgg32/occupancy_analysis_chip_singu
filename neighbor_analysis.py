@@ -27,6 +27,7 @@ import traceback
 
 import datetime
 
+
 def merge_dnb_lists(lists):
     """
     Input format: list of lists of DNBs (class DNB)
@@ -58,6 +59,7 @@ def merge_dnb_lists(lists):
     else:
         return merge_index_lists(res)
 
+
 def merge_index_lists(lists):
     """
     Input format: list of lists of DNBs (class DNB)
@@ -88,6 +90,7 @@ def merge_index_lists(lists):
         return res
     else:
         return merge_index_lists(res)
+
 
 def area_under_curve(x, y, th=1):
     """
@@ -855,7 +858,10 @@ class NeighborAnalysis(object):
 
         logger.info('%s - Most frequent split sequences:' % self.fov)
         for i in range(10):
-            logger.info('%s - %s - %s' % (self.fov, seqs[i], counts[i]))
+            try:
+                logger.info('%s - %s - %s' % (self.fov, seqs[i], counts[i]))
+            except:
+                pass
 
         # return seq, 100.*ht[seq]/len(idx)
         return seqs[0], counts[0]
@@ -2172,7 +2178,7 @@ class NeighborAnalysis(object):
 
             left = right = up = down = 0
 
-            if len(horizontal_splits) > 0:
+            if len(h_CBI_arr) > 0:
                 h = self.calculate_single_split_CBI_ratio(h_CBI_arr, 'horizontal')
                 self.plot_single_split_CBI_ratio(h_CBI_arr, 'horizontal')
                 h_parent, h_child = self.profile_family(h_CBI_arr)
@@ -2181,7 +2187,7 @@ class NeighborAnalysis(object):
                 ['Left Parent Count', left],
                 ['Right Parent Count', right]
             ]
-            if len(vertical_splits) > 0:
+            if len(v_CBI_arr) > 0:
                 v = self.calculate_single_split_CBI_ratio(v_CBI_arr, 'vertical')
                 self.plot_single_split_CBI_ratio(v_CBI_arr, 'vertical')
                 v_parent, v_child = self.profile_family(v_CBI_arr)
@@ -2190,17 +2196,17 @@ class NeighborAnalysis(object):
                 ['Up Parent Count', up],
                 ['Down Parent Count', down]
             ]
-            if len(diagonal_splits) > 0:
+            if len(d_CBI_arr) > 0:
                 d = self.calculate_single_split_CBI_ratio(d_CBI_arr, 'diagonal')
                 self.plot_single_split_CBI_ratio(d_CBI_arr, 'diagonal')
                 d_parent, d_child = self.profile_family(d_CBI_arr)
-            if len(multiple_splits) > 0:
+            if len(m_CBI_arr) > 0:
                 m = self.calculate_multi_split_CBI_ratio(m_CBI_arr)
                 m_parent, m_children = self.profile_family(m_CBI_arr)
 
             empty_parents_rate = empty_children_rate = empty_split_rate = 0
-            if len(horizontal_splits) > 0 and len(vertical_splits) > 0 and len(diagonal_splits) > 0 and \
-                    len(multiple_splits) > 0:
+            if len(h_CBI_arr) > 0 and len(v_CBI_arr) > 0 and len(d_CBI_arr) > 0 and \
+                    len(m_CBI_arr) > 0:
                 directions = ['Horizontal', 'Vertical', 'Diagonal', 'Multiple']
                 empty_parents, total_parents = self.plot_profile([h_parent, v_parent, d_parent, m_parent],
                                                                  directions, 'Parents')
@@ -2293,6 +2299,7 @@ class NeighborAnalysis(object):
             logger.warning('%s - Could not bypass Neighbor Analysis!' % self.fov)
             summary, results = self.run()
         return summary, results
+
 
 def main(slide, lane, fov, start_cycle, occupancy_range, int_fp, posinfo_fp, fastq_fp):
     inta = IntensityAnalysis(slide, lane, fov, start_cycle, occupancy_range, int_fp)

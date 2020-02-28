@@ -51,7 +51,7 @@ class IntensityAnalysis(object):
         self.cycles = cycles # already sorted?
         self.start_cycle = self.cycles.min()+1 # used in file names and labels (1 indexing)
         self.end_cycle = self.cycles.max() + 1 #used in file names and labels (1 indexing) #self.start_cycle+self.cycle_range-1
-        self.prefix = '%s_%s_%s_C%02d-C%02d' % (slide, lane, fov, self.start_cycle,
+        self.prefix = '%s_%s_%s_C%02d-C%02d' % ('-'.join(slide.split('_')), lane, fov, self.start_cycle,
                                                 self.end_cycle)
         self.normCBI_fp = self.int_fp.replace('.npy', '_C%02d-C%02d_norm_CBI.npy' % (
                                                         self.start_cycle, self.end_cycle))
@@ -102,7 +102,7 @@ class IntensityAnalysis(object):
         raw_ints = np.zeros_like(fin_ints)
         ctc_ints = np.zeros_like(fin_ints)
         cal_obj = Cal()
-        if 'V40' in self.cal_fp:
+        if ('V40' in self.cal_fp) or ('cap_integ' in self.cal_fp) or ('V0.2' in self.cal_fp):
             v40=True
         else:
             v40=False
@@ -341,10 +341,13 @@ class IntensityAnalysis(object):
 
         empty_data = naCBI_data[np.where(naCBI_data < empty_threshold)[0]]
         for p in range(10):
-            left = np.percentile(empty_data, p * 10)
-            right = np.percentile(empty_data, (p + 1) * 10)
-            p_subset = np.where(np.logical_and(naCBI_data >= left, naCBI_data < right))[0]
-            pl[p_subset] = -10 + p
+            try:
+                left = np.percentile(empty_data, p * 10)
+                right = np.percentile(empty_data, (p + 1) * 10)
+                p_subset = np.where(np.logical_and(naCBI_data >= left, naCBI_data < right))[0]
+                pl[p_subset] = -10 + p
+            except:
+                pass
         return pl
 
     def save_normalized_data(self, normalized_data):
@@ -596,14 +599,14 @@ def get_max_chastity(chas_array, major_count):
     return 0
 
 def get_max_SHI(SHI_array, major_count):
-    for SHI_int in range(10,-1,-1):
+    for SHI_int in range(10, -1, -1):
         SHI_perc = SHI_int/10.
         count = len(SHI_array[SHI_array >= SHI_perc])
         if count >= major_count: return SHI_int
     return -1
 
 def get_max_multicalls(mc_array, major_count):
-    for call_count in range(4,-1,-1):
+    for call_count in range(4, -1, -1):
         count = len(mc_array[mc_array >= call_count])
         if count >= major_count: return call_count
     return 0
@@ -620,4 +623,3 @@ def main(args):
 if __name__ == '__main__':
     main(sys.argv[1:])
     # main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
-    

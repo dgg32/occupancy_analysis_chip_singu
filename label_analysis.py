@@ -866,14 +866,26 @@ class LabelAnalysis(object):
         vmixed_parents = np.logical_and(valid_DNBs, mixed_parents)
         vmixed_parent_and_child = np.logical_and(valid_DNBs, mixed_parent_and_child)
         assert np.sum(mixed_non_split + mixed_children + mixed_parents + mixed_parent_and_child) == np.sum(mixed)
-        non_split_PofM = 100. * np.sum(mixed_non_split) / num_mixed
-        children_PofM = 100. * np.sum(mixed_children) / num_mixed
-        parents_PofM = 100. * np.sum(mixed_parents) / num_mixed
-        pc_PofM = 100. * np.sum(mixed_parent_and_child) / num_mixed
-        vnon_split_PofVM = 100. * np.sum(vmixed_non_split) / num_vmixed
-        vchildren_PofVM = 100. * np.sum(vmixed_children) / num_vmixed
-        vparents_PofVM = 100. * np.sum(vmixed_parents) / num_vmixed
-        vpc_PofVM = 100. * np.sum(vmixed_parent_and_child) / num_vmixed
+        if num_mixed != 0:
+            non_split_PofM = 100. * np.sum(mixed_non_split) / num_mixed
+            children_PofM = 100. * np.sum(mixed_children) / num_mixed
+            parents_PofM = 100. * np.sum(mixed_parents) / num_mixed
+            pc_PofM = 100. * np.sum(mixed_parent_and_child) / num_mixed
+        else:
+            non_split_PofM = 0
+            children_PofM = 0
+            parents_PofM = 0
+            pc_PofM = 0
+        if num_vmixed != 0:
+            vnon_split_PofVM = 100. * np.sum(vmixed_non_split) / num_vmixed
+            vchildren_PofVM = 100. * np.sum(vmixed_children) / num_vmixed
+            vparents_PofVM = 100. * np.sum(vmixed_parents) / num_vmixed
+            vpc_PofVM = 100. * np.sum(vmixed_parent_and_child) / num_vmixed
+        else:
+            vnon_split_PofVM = 0
+            vchildren_PofVM = 0
+            vparents_PofVM = 0
+            vpc_PofVM = 0
 
         multicall_non_split = np.logical_and(cM, self.non_split)
         multicall_children = np.logical_and(cM, children)
@@ -885,14 +897,26 @@ class LabelAnalysis(object):
         vmulticall_parent_and_child = np.logical_and(valid_DNBs, multicall_parent_and_child)
         assert np.sum(multicall_non_split + multicall_children +
                       multicall_parents + multicall_parent_and_child) == np.sum(cM)
-        non_split_PofMC = 100. * np.sum(multicall_non_split) / num_cM
-        children_PofMC = 100. * np.sum(multicall_children) / num_cM
-        parents_PofMC = 100. * np.sum(multicall_parents) / num_cM
-        pc_PofMC = 100. * np.sum(multicall_parent_and_child) / num_cM
-        vnon_split_PofVMC = 100. * np.sum(vmulticall_non_split) / num_vcM
-        vchildren_PofVMC = 100. * np.sum(vmulticall_children) / num_vcM
-        vparents_PofVMC = 100. * np.sum(vmulticall_parents) / num_vcM
-        vpc_PofVMC = 100. * np.sum(vmulticall_parent_and_child) / num_vcM
+        if num_cM != 0:
+            non_split_PofMC = 100. * np.sum(multicall_non_split) / num_cM
+            children_PofMC = 100. * np.sum(multicall_children) / num_cM
+            parents_PofMC = 100. * np.sum(multicall_parents) / num_cM
+            pc_PofMC = 100. * np.sum(multicall_parent_and_child) / num_cM
+        else:
+            non_split_PofMC = 0
+            children_PofMC = 0
+            parents_PofMC = 0
+            pc_PofMC = 0
+        if num_vcM !=0:
+            vnon_split_PofVMC = 100. * np.sum(vmulticall_non_split) / num_vcM
+            vchildren_PofVMC = 100. * np.sum(vmulticall_children) / num_vcM
+            vparents_PofVMC = 100. * np.sum(vmulticall_parents) / num_vcM
+            vpc_PofVMC = 100. * np.sum(vmulticall_parent_and_child) / num_vcM
+        else:
+            vnon_split_PofVMC = 0
+            vchildren_PofVMC = 0
+            vparents_PofVMC = 0
+            vpc_PofVMC = 0
 
         low_chastity_non_split = np.logical_and(low_chastity, self.non_split)
         low_chastity_children = np.logical_and(low_chastity, children)
@@ -904,14 +928,26 @@ class LabelAnalysis(object):
         vlow_chastity_parent_and_child = np.logical_and(valid_DNBs, low_chastity_parent_and_child)
         assert np.sum(low_chastity_non_split + low_chastity_children +
                       low_chastity_parents + low_chastity_parent_and_child) == np.sum(low_chastity)
-        non_split_PofLC = 100. * np.sum(low_chastity_non_split) / num_lc
-        children_PofLC = 100. * np.sum(low_chastity_children) / num_lc
-        parents_PofLC = 100. * np.sum(low_chastity_parents) / num_lc
-        pc_PofLC = 100. * np.sum(low_chastity_parent_and_child) / num_lc
-        vnon_split_PofVLC = 100. * np.sum(vlow_chastity_non_split) / num_vlc
-        vchildren_PofVLC = 100. * np.sum(vlow_chastity_children) / num_vlc
-        vparents_PofVLC = 100. * np.sum(vlow_chastity_parents) / num_vlc
-        vpc_PofVLC = 100. * np.sum(vlow_chastity_parent_and_child) / num_vlc
+        if num_lc !=0:
+            non_split_PofLC = 100. * np.sum(low_chastity_non_split) / num_lc
+            children_PofLC = 100. * np.sum(low_chastity_children) / num_lc
+            parents_PofLC = 100. * np.sum(low_chastity_parents) / num_lc
+            pc_PofLC = 100. * np.sum(low_chastity_parent_and_child) / num_lc
+        else:
+            non_split_PofLC = 0
+            children_PofLC = 0
+            parents_PofLC = 0
+            pc_PofLC = 0
+        if num_vlc != 0:
+            vnon_split_PofVLC = 100. * np.sum(vlow_chastity_non_split) / num_vlc
+            vchildren_PofVLC = 100. * np.sum(vlow_chastity_children) / num_vlc
+            vparents_PofVLC = 100. * np.sum(vlow_chastity_parents) / num_vlc
+            vpc_PofVLC = 100. * np.sum(vlow_chastity_parent_and_child) / num_vlc
+        else:
+            vnon_split_PofVLC = 0
+            vchildren_PofVLC = 0
+            vparents_PofVLC = 0
+            vpc_PofVLC = 0
 
         # intensity-based split neighbors of mixed DNBs
         mixed_split0 = self.label_arr[label_dict['MixedSplit']] == 0
@@ -978,7 +1014,10 @@ class LabelAnalysis(object):
         fmly9 = self.label_arr[label_dict['FamilySize']][self.label_arr[label_dict['FamilySize']] == 8]
         fmly9plus = self.label_arr[label_dict['FamilySize']][self.label_arr[label_dict['FamilySize']] > 8]
         fmly2_PofT = 100. * np.sum(fmly2) / num_DNBs
-        fmly2_PofCl = 100. * np.sum(fmly2) / num_familial_DNBs
+        if num_familial_DNBs != 0:
+            fmly2_PofCl = 100. * np.sum(fmly2) / num_familial_DNBs
+        else:
+            fmly2_PofCl = 0
         fmly3_PofT = 100. * np.sum(fmly3) / num_DNBs
         fmly4_PofT = 100. * np.sum(fmly4) / num_DNBs
         fmly5_PofT = 100. * np.sum(fmly5) / num_DNBs
