@@ -169,8 +169,12 @@ def calculate_averages(metrics, data):
     ignored_metrics = [metric for metric in ignored_metrics if metric in metrics]
     ignored_indices = [metrics.index(i) for i in ignored_metrics]
     data = [d for i, d in enumerate(data) if i not in ignored_indices]
+    for i, val in enumerate(data):
+        if val == 'NA':
+            data[i] = 0
     data = np.asarray(data, dtype=np.float32)
-    avg_data = np.mean(data, 1).tolist()
+    print(data)
+    avg_data = np.nanmean(data, 1).tolist()
     avg_list = []
     offset = 0
     for r in range(metric_count):
@@ -186,16 +190,18 @@ def calculate_quartiles_averages(data):
     data = np.asarray(data, dtype=np.float32)
     return zip(*np.mean(data, 0).tolist()) # convert to list and transpose
 
+
 def generate_trimmed_summary(summary_report_path):
     summary = pd.read_csv(summary_report_path, index_col=0)
-    best_col = summary.columns.values[np.argmax(summary.loc['Seeds+Singular (%ofTotal)'].values)]
+    best_col = summary.columns.values[np.argmax(summary.loc['Seeds+Singular (%ofTotal)'][1:].values)+1]
+    print(best_col)
     for i in range(2):
-        worst = summary.columns.values[np.argmax(summary.loc['Seeds+Singular (%ofTotal)'].values)]
-        summary.drop(worst)
+        worst = summary.columns.values[np.argmin(summary.loc['Seeds+Singular (%ofTotal)'][1:].values)+1]
+        summary.drop(worst, inplace=True, axis=1)
     summary['AVG'][:-2] = summary.iloc[:-2, 1:].values.astype(float).mean(axis=1)
     summary.to_csv(summary_report_path.replace('Summary', 'Trim_Summary'))
     best = summary[best_col]
-    best.to_csv(summary_report_path.replace('Summary', 'Best_Field'))
+    best.to_csv(summary_report_path.replace('Summary', 'Best_Field'), header=[best_col])
 
 
 def consolidate_reports(report_lists):
@@ -203,16 +209,17 @@ def consolidate_reports(report_lists):
     final_report_fps = generate_final_paths(grouped_reports)
     for g, report_group in enumerate(grouped_reports):
         final_report_fp = final_report_fps[g]
-
+        print(g, report_group)
         fovs = []
         metrics, data = [], []
         for r, report_fp in enumerate(report_group):
             with open(report_fp, 'r') as report_f:
                 sp = '\n' if final_report_fp.endswith('Cluster_Mixed_Summary.csv') else '\r\n'
-                report_table = [line.split(',') for line in report_f.read().split(sp) if line]
+                report_table = [line.split(',') for line in report_f.read().replace('NA', '0').split(sp) if line]
 
             if r == 0:
                 metrics = [row[0] for row in report_table[1:]]
+            print(report_table)
             fov = report_table[0][-1] if final_report_fp.endswith('Cluster_Mixed_Summary.csv') else report_table[0][1]
             fovs.append(fov)
 
@@ -220,6 +227,7 @@ def consolidate_reports(report_lists):
             if final_report_fp.endswith('Cluster_Mixed_Summary.csv'):
                 values = [row[-1] for row in report_table[1:]]
             data.append(values)
+        print(data, values, fov)
         data = [y for x, y in sorted(zip(fovs, data))]
         if final_report_fp.endswith('Quartiles.csv'):
             avg_data = calculate_quartiles_averages(data)
@@ -537,20 +545,32 @@ def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
         lanes, dfs, avgs = [], [], []
         for lane in ['L01', 'L02', 'L03', 'L04']:
             lane_dp = os.path.join(os.path.split(slide_dp)[0], lane, occupancy_fn)
+            print(lane_dp)
             if 'Center2x2' in occupancy_fn:
                 f = os.path.join(lane_dp, '%s_%s_Occupancy_Analysis_%s_Center2x2_%s.csv' % (slide, lane, cycles,
                                                                                             report))
             else:
                 f = os.path.join(lane_dp, '%s_%s_Occupancy_Analysis_%s_%s.csv' % (slide, lane, cycles, report))
             if os.path.exists(f):
+                print(f)
                 idx = [0, 1, 2] if report == 'ACGT_splits' else 0
                 df = pd.read_csv(f, index_col=idx)
                 metrics = df.index
+                if 'Failed Cycles' in df.index:
+                    df.drop('Failed Cycles', inplace=True)
+                    df.drop('Used Cycles', inplace=True)
                 if 'AVG' in df.columns.tolist():
                     avgs.append(df['AVG'].values)
                     # assuming AVG column is always first?
-                    df = df[df.columns.tolist()[1:]]
-                dfs.append(df)
+                    try:
+                        df = df[df.columns.tolist()[1:]].astype(float)
+                    except:
+                        df = df[df.columns.tolist()[1:]]
+                metrics = df.index
+                try:
+                    dfs.append(df.astype(float))
+                except:
+                    dfs.append(df)
                 lanes.append(lane)
         if len(lanes) == 0:
             continue
@@ -569,6 +589,7 @@ def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
             index = True
             if len(avgs) > 0:
                 avgs = np.array(avgs).T
+                print avgs
                 df_avgs = pd.DataFrame(avgs, index=metrics, columns=['AVG'] * len(lanes))
                 df_avgs.to_excel(writer, sheet_name=report, startcol=c, startrow=1, index=index)
                 c += len(lanes) + 1
@@ -678,6 +699,7 @@ def main(arguments):
     occupancy_results = [oo for oo in occupancy_outputs if type(oo) == tuple]
 
     final_report_fps = consolidate_reports(occupancy_results)
+    generate_trimmed_summary(final_report_fps[0])
     consolidate_split_base_comp_reports(occupancy_results)
     consolidate_fov_plots(occupancy_results, occupancy_parameters['output_dp'])
 

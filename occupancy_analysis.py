@@ -64,9 +64,15 @@ class OccupancyAnalysis(object):
 
         self.log_overrides = parameter_overrides.pop('log_overrides', log_overrides)
         # report name can be specified in parameter_overrides
-        self.report_name = parameter_overrides.pop('report_name', '%s_%s_%s_Occupancy_Analysis_C%02d-C%02d' %
-                                                   (self.slide, self.lane, self.fov, self.start_cycle,
-                                                    self.start_cycle + self.occupancy_range - 1))
+        if 'Center2x2' in output_dp:
+            self.report_name = parameter_overrides.pop('report_name',
+                                                       '%s_%s_%s_Occupancy_Analysis_C%02d-C%02d_Center2x2' %
+                                                       (self.slide, self.lane, self.fov, self.start_cycle,
+                                                        self.start_cycle + self.occupancy_range - 1))
+        else:
+            self.report_name = parameter_overrides.pop('report_name', '%s_%s_%s_Occupancy_Analysis_C%02d-C%02d' %
+                                                       (self.slide, self.lane, self.fov, self.start_cycle,
+                                                        self.start_cycle + self.occupancy_range - 1))
 
         self.bypass = parameter_overrides.pop('bypass', {})
         if self.platform == 'v1':
@@ -170,9 +176,9 @@ class OccupancyAnalysis(object):
                 (blocks_fp is not None and not os.path.exists(blocks_fp)):
             if os.path.exists( coords_fp) and os.path.exists(neighbors_fp) and \
                     os.path.exists(blocks_fp):
-                coords_fp =  coords_fp
-                neighbors_fp =  neighbors_fp
-                blocks_fp =  blocks_fp
+                coords_fp = coords_fp
+                neighbors_fp = neighbors_fp
+                blocks_fp = blocks_fp
             else:
                 # CREATE NEIGHBORS.npy IF IT DOES NOT ALREADY EXIST
                 posinfo_fp = os.path.join(temp_dp, '%s.posiIndex.txt' % fov)
@@ -369,15 +375,23 @@ class OccupancyAnalysis(object):
         (int_fp, posinfo_fp, coords_fp, neighbors_fp, blocks_fp, 
                     fastq_fp, norm_paras_fp, background_fp) = self.process_data(self.platform)
         # if report name wasn't specified in parameter_overrides and is empty
-        if not self.report_name: 
-            self.report_name = ('%s_%s_%s_Occupancy_Analysis_C%02d-C%02d' % (self.slide, self.lane, 
-                                                    self.fov, self.cycles.min()+1, self.cycles.max()+1))
+        if not self.report_name:
+            if 'Center2x2' in self.output_dp:
+                self.report_name = ('%s_%s_%s_Occupancy_Analysis_C%02d-C%02d_Center2x2' % (self.slide, self.lane,
+                                                                                           self.fov,
+                                                                                           self.cycles.min() + 1,
+                                                                                           self.cycles.max() + 1))
+            else:
+                self.report_name = ('%s_%s_%s_Occupancy_Analysis_C%02d-C%02d' % (self.slide, self.lane,
+                                                                                 self.fov, self.cycles.min()+1,
+                                                                                 self.cycles.max()+1))
 
         self.run_intensity_analysis(self.slide, self.lane, self.fov, int_fp,
                                     norm_paras_fp, background_fp, blocks_fp, self.temp_dp,
                                     self.intensity_analysis_bypass)
         self.run_neighbor_clustering(self.int_analysis, neighbors_fp, self.report_name)
-        self.run_neighbor_analysis(self.int_analysis, coords_fp, neighbors_fp, blocks_fp, fastq_fp, self.neighbor_analysis_bypass)
+        self.run_neighbor_analysis(self.int_analysis, coords_fp, neighbors_fp, blocks_fp, fastq_fp,
+                                   self.neighbor_analysis_bypass)
         self.run_label_analysis(self.int_analysis, self.label_analysis_bypass)
         mixed_clustering_fp = self.mixed_clustering_fp
         avgCBI_hist_npy = self.avgCBI_hist_npy
