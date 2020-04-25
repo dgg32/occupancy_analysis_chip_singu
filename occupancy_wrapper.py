@@ -107,8 +107,7 @@ def populate_default_parameters(occupancy_parameters):
     if 'blocks' not in occupancy_parameters or not bool(occupancy_parameters['output_dp']):
         occupancy_parameters['blocks'] = []
 
-    consolidate_lanes = occupancy_parameters['consolidate_lanes']
-    occupancy_parameters.pop('consolidate_lanes')
+    consolidate_lanes = occupancy_parameters.pop('consolidate_lanes', False)
     return occupancy_parameters, consolidate_lanes
 
 # To-Do List
@@ -636,7 +635,7 @@ def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
 
 
 def main(arguments):
-    print('starting occupancy')
+    print('starting occupancy (%s)' % arguments)
     start_time = datetime.datetime.now()
 
     # single argument indicates json file path
@@ -645,7 +644,8 @@ def main(arguments):
         occupancy_parameters = prepare_json_dict(occupancy_json_fp)
     else:
         occupancy_parameters = parse_arguments(arguments)
-
+    for k,v in occupancy_parameters.items():
+        print k, v
     occupancy_parameters, consolidate_lanes = populate_default_parameters(occupancy_parameters)
 
     bypass = dict(occupancy_parameters['bypass']) if ('bypass' in occupancy_parameters) else {}
