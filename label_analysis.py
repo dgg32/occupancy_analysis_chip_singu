@@ -708,6 +708,8 @@ class LabelAnalysis(object):
         SHI_2 = self.label_arr[label_dict['SHI']] == 2
         SHI_1 = self.label_arr[label_dict['SHI']] == 1
         SHI_0 = self.label_arr[label_dict['SHI']] == 0
+        # print(self.label_arr[label_dict['SHI']])
+        # print(num_DNBs)
         assert np.sum(SHI_10 + SHI_9 + SHI_8 + SHI_7 + SHI_6 + SHI_5 + SHI_4 + SHI_3 + SHI_2 + SHI_1 + SHI_0) == \
                num_DNBs
         high_shi = np.logical_or.reduce((SHI_10, SHI_9, SHI_8, SHI_7, SHI_6, SHI_5, SHI_4, SHI_3))
@@ -1308,7 +1310,7 @@ class LabelAnalysis(object):
                familial_results, \
                singular_summary, \
                splits_summary, splits_results, \
-               qtrl_dict['cbi']['results'], qtrl_dict['snr1']['results'], qtrl_dict['snr2']['results']
+               qtrl_dict['cbi']['results'], qtrl_dict['snr1']['results'], qtrl_dict['snr2']['results'], num_DNBs
 
     def complete_bypass(self):
         import cPickle as pickle

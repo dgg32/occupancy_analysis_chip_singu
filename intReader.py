@@ -457,7 +457,8 @@ class IntensityBin(object):
             if metricsNum > len(self.structInfoList):
                 # intensity file is from a NEWER version than this program
                 if warn == True:
-                    print("New")
+                    pass
+                    # print("New")
                     # print("[WARN] Intensity file %s with %d metrics, is newer than this program %d metrics.
                     # The last %d metric(s) can not be read correctly." % (fileName, metricsNum,
                     # len(self.structInfoList), metricsNum - len(self.structInfoList)), file=sys.stderr)

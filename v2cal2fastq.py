@@ -12,11 +12,12 @@ import datetime
 class V2Cal2Fastq(object):
 
     def __init__(self, data_dp, fov, occupancy_cycle, occupancy_range,
-                 blocks_fp, output_dp='', log_dp='', log_overrides={}):
+                 blocks_fp, output_dp='', log_dp='', log_overrides={}, platform='V2'):
         self.data_dp = data_dp
         self.fov = fov
         self.output_dp = output_dp if output_dp else data_dp
         self.occupancy_cycle = occupancy_cycle
+        self.platform = platform
         self.occu_range = occupancy_range
         self.cal_fp = os.path.join(data_dp, 'calFile', '%s.cal' % fov)
         self.fastq_fp = os.path.join(self.output_dp, '%s.fq.gz' % fov)
@@ -43,7 +44,7 @@ class V2Cal2Fastq(object):
         logger.info('%s - Generating fastq file from cal file...' % self.fov)
         if not os.path.exists(self.cal_fp):
             return
-        if ('V40' in self.cal_fp) or ('cap_integ' in self.cal_fp) or ('V0.2' in self.cal_fp):
+        if (self.platform.upper() == 'V40') or ('DP' in self.cal_fp) or ('cap_integ' in self.cal_fp) or (self.platform.upper() == 'V0.2'):
             v40 = True
         else:
             v40 = False

@@ -10,7 +10,8 @@ from copy import deepcopy
 int_extensions = {
     'v1': 'bin',
     'v2': 'int',
-    'BB': 'csv'
+    'BB': 'csv',
+    'v40': 'int'
 }
 
 def chmod_paths(path_list):
@@ -270,7 +271,7 @@ def read_fov_list(input_path, list_fn=None):
 def get_position_call_counts(readLen, readDist):
     #print 'get_position_call_counts'
     tempDist = deepcopy(readDist)
-    print('tempDist: {0}'.format(tempDist))
+    # print('tempDist: {0}'.format(tempDist))
     call_counts = []
     running_count = 0
     if type(readDist) == list:

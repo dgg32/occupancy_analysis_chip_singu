@@ -37,7 +37,7 @@ label_dict = dict((label, c) for c, label in enumerate(label_order))
 class IntensityAnalysis(object):
 
     def __init__(self, slide, lane, fov, cycles, cal_fp, int_fp, norm_paras_fp, background_fp,
-                 blocks_fp, output_dp='', bypass={},
+                 blocks_fp, output_dp='', bypass={},platform='V2',
                  log_dp='', log_overrides={}):
         self.lane = lane
         self.fov = fov
@@ -47,6 +47,7 @@ class IntensityAnalysis(object):
         self.background_fp = background_fp
         self.blocks_fp = blocks_fp
         self.output_dp = output_dp
+        self.platform = platform
         make_dir(self.output_dp)
         self.cycles = cycles # already sorted?
         self.start_cycle = self.cycles.min()+1 # used in file names and labels (1 indexing)
@@ -102,10 +103,10 @@ class IntensityAnalysis(object):
         raw_ints = np.zeros_like(fin_ints)
         ctc_ints = np.zeros_like(fin_ints)
         cal_obj = Cal()
-        if ('V40' in self.cal_fp) or ('cap_integ' in self.cal_fp) or ('V0.2' in self.cal_fp):
-            v40=True
+        if (self.platform.upper() == 'V40') or ('DP' in self.cal_fp) or ('cap_integ' in self.cal_fp) or (self.platform.upper() == 'V0.2'):
+            v40 = True
         else:
-            v40=False
+            v40 = False
         cal_obj.load(self.cal_fp, V40=v40)
         background = np.load(self.background_fp)
 
@@ -127,8 +128,12 @@ class IntensityAnalysis(object):
 
         rho['avg'] = np.mean(rho.values(), axis=0)
         for base in ['A', 'C', 'G', 'T', 'avg']:
-            rho['%s C%02d' % (base, self.start_cycle)] = rho[base][0]
-            rho[base] = np.polyfit(range(len(self.cycles)), rho[base], 1)[1]
+            try:
+                rho['%s C%02d' % (base, self.start_cycle)] = rho[base][0]
+                rho[base] = np.polyfit(range(len(self.cycles)), rho[base], 1)[1]
+            except:
+                rho['%s C%02d' % (base, self.start_cycle)] = 0
+                rho[base] = 0
         return rho
 
     def calculate_SNR(self, normalized_data, trim=0.02):
@@ -143,7 +148,7 @@ class IntensityAnalysis(object):
             max_ints[:, i, :] = argmax_ints == i
 
         for i, base in enumerate('ACGT'):
-            signal[base] = normalized_data[:,i, self.cyndexes][max_ints[:,i, self.cyndexes]]
+            signal[base] = normalized_data[:, i, self.cyndexes][max_ints[:, i, self.cyndexes]]
             noise[base] = normalized_data[:, i, self.cyndexes][~max_ints[:, i, self.cyndexes]]
 
         snr = {'A': 0, 'C': 0, 'G': 0, 'T': 0, 'avg': 0}
@@ -260,7 +265,10 @@ class IntensityAnalysis(object):
             logger.warning('%s - Using slice (0 indexing): %s:%s' %
                            (self.fov, self.start_cycle-1, self.end_cycle-1))
             logger.warning('%s - Final data shape: %s' % (self.fov, str(data.shape)))
-        major_count = int(data.shape[2] / 2.0 + 0.5) + 1
+        if data.shape[2] > 1:
+            major_count = int(data.shape[2] / 2.0 + 0.5) + 1
+        else:
+            major_count = 1
         return data, num_dnbs, major_count
 
     def calculate_thresholds(self, data):
@@ -270,7 +278,7 @@ class IntensityAnalysis(object):
         gmm_output_dp = os.path.join(self.output_dp, 'GMM_Results')
         make_dir(gmm_output_dp)
         ig = IntensitiesGMM(data, self.prefix, self.fov, self.cycles, gmm_output_dp,
-                             log_dp=self.log_dp, log_overrides=self.log_overrides)
+                            log_dp=self.log_dp, log_overrides=self.log_overrides)
         data, called_signals, thresholds, exclude = ig.run()
         cyndexes = np.delete(np.arange(len(self.cycles)), exclude)
         logger.debug('%s - cyndexes: %s' % (self.fov, cyndexes))

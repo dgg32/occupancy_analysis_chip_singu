@@ -52,7 +52,7 @@ class Int2npy(object):
             blk = intensity_bin_array.metrics.Blocks[b]
             blkData = intensity_bin_array.getMetricsByBlock(blk, metList)
 
-            data[ct:ct + blkData.shape[0], :] = blkData
+            data[ct:ct + blkData.shape[0], ] = blkData
             ct += blkData.shape[0]
         logger.info('%s - Positional information extracted.' % self.fov)
         data = data[:,:5].T.tolist()
@@ -71,7 +71,7 @@ class Int2npy(object):
             logger.warning('Only {0:d} good cycles < {1:d} required cycles'.format(len(self.good_cycles),self.cycle_range))
             
     def _cycles_summary(self):
-        cycles_range = np.arange(self.start_cycle-1,self.good_cycles.max()+1)
+        cycles_range = np.arange(self.start_cycle-1, self.good_cycles.max()+1)
         mask = np.isin(cycles_range,self.good_cycles)
         self.cycles_summary = [ 
             ['Failed Cycles',cycles_range[~mask]+1], #convert back to 1 indexing for summary table
@@ -97,11 +97,21 @@ class Int2npy(object):
 
                 logger.debug('cycle_ints.shape: %s' % str(cycle_ints.shape))
                 intensities.append(cycle_ints)
-                norm_paras[:, i] = ib.metrics.NormalizationValue
-                background[:, :, i] = ib.dump_block_backgrounds()
+                try:
+                    norm_paras[:, i] = ib.metrics.NormalizationValue
+                except:
+                    pass
+                try:
+                    background[:, :, i] = ib.dump_block_backgrounds()
+                except:
+                    pass
                 # if cycle == self.start_cycle:  # output posiIndex file
                 if not os.path.exists(self.posinfo_fp):
-                    pos_list = self.get_coords(ib)
+                    if 'V0.2' in self.data_dp:
+                        num_colors = 2
+                    else:
+                        num_colors = 4
+                    pos_list = self.get_coords(ib, num_colors=num_colors)
                     output_table(self.posinfo_fp, pos_list, delimiter='\t')
                     logger.debug('posinfo_fp created.')
             else:

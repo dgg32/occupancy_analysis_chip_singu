@@ -133,7 +133,7 @@ class Cal(object):
     def load(self, filename, center_bool=False):
         ''' Load the bases and quality from cal file.
         '''
-        print('loading ' + filename)
+        # print('loading ' + filename)
         if type(center_bool) is np.ndarray:
             self.clear()
             self.fov = self._guessFOV(filename)
@@ -498,7 +498,7 @@ class Cal(object):
                     esr_filter_arr.append(False)
             np.save(os.path.join(self.out_dir, idPrefix + 'ESR.npy'),
                     np.array(esr_filter_arr))
-            print "ESR %.2f" % (100. * counter / len(baseChar)) + "%"
+            # print "ESR %.2f" % (100. * counter / len(baseChar)) + "%"
         else:
             for i in range(len(baseChar)):
                 fp.write("@%s%06d\n" % (idPrefix, i))
@@ -513,7 +513,7 @@ class Cal(object):
         id2, baseChar2, qualChar2 = self._getBaseQual(idPrefix=idPrefixes[1], cycles=cycles[1])
         dnb_num = len(baseChar1)
         if len(baseChar1) != len(baseChar2):
-            print "Error"
+            # print "Error"
             return
 
         # Filtering thresholds
@@ -537,7 +537,7 @@ class Cal(object):
             esr_arr[filtered] = True
             np.save(os.path.join(self.out_dir, idPrefixes[0] + 'ESR.npy'),
                     np.array(esr_arr))
-            print "ESR %.2f" % (100. * len(filtered) / dnb_num) + "%"
+            # print "ESR %.2f" % (100. * len(filtered) / dnb_num) + "%"
 
         for fp, idPrefix, baseChar, qualChar in zip(fps, [id1, id2], [baseChar1, baseChar2], [qualChar1, qualChar2]):
             rg = filtered if filter_ESR else range(dnb_num)
@@ -554,7 +554,7 @@ class Cal(object):
             Compression if filename is *.gz.
         '''
         esr = 100.0
-        print('writing ' + filename)
+        # print('writing ' + filename)
         self.out_dir = os.path.dirname(filename)
         if not idPrefix:
             idPrefix = self.fov
@@ -569,7 +569,7 @@ class Cal(object):
                         esr = self._dumpAsFqSE(fp, idPrefix=idPrefix, cycles=cycles, filter_ESR=filter_ESR)
                 else:
                     split_names = [filename.replace('.fq.gz', '_' + str(c + 1) + suffix) for c in range(len(cycles))]
-                    print('writing ' + str(split_names))
+                    # print('writing ' + str(split_names))
                     with gzip.open(split_names[0], 'wb') as fp1, gzip.open(split_names[1], 'wb') as fp2:
                         esr = self._dumpAsFqPE([fp1, fp2], idPrefixes=[idPrefix, idPrefix], cycles=cycles, filter_ESR=filter_ESR)
 

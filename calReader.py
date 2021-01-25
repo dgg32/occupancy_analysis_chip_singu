@@ -165,11 +165,11 @@ class Cal(object):
             for c in range(self.totalCycle):
                 ## The first 4 bytes is Cycle ID
                 idArr = uintArray_list[0][idx:idx + self.INT_LEN]
-                print(idArr)
-                print(c)
+                # print(idArr)
+                # print(c)
                 idArr.dtype = np.uint32
                 try:
-                    print(idArr)
+                    # print(idArr)
                     cycleId = idArr[0]
                     end = idx + self.INT_LEN + self.number_single
                     ## extract the data region
@@ -212,7 +212,7 @@ class Cal(object):
             self.version = uintArray_list[0][idx - 1]
             return
         else:
-            print('loading ' + filename)
+            # print('loading ' + filename)
             if type(center_bool) is np.ndarray:
                 self.clear()
                 self.fov = self._guessFOV(filename)
@@ -414,7 +414,10 @@ class Cal(object):
                 self.basesDigit[cycleId] = basesDigit
                 ## view as Byte string
                 self.bases[cycleId] = basesDigit.view("S1")
-            self.version = uintArray[idx-1]
+            try:
+                self.version = uintArray[idx-1]
+            except:
+                self.version = ''
             return
 
     def loadFromFastq(self, filename, center_bool=False):
@@ -523,6 +526,7 @@ class Cal(object):
                 baseList = self.bases[c]
                 qualList = self.qual[c]
                 for i in range(self.number):
+
                     print("%d\t%d\t%s\t%d" % (c, i, baseList[i].decode("utf8"), qualList[i]))
         except OSError:
             sys.stderr.close()
@@ -544,6 +548,7 @@ class Cal(object):
         if strand:
             strand = '/' + strand
         if type(cycles) == list:
+            # print(cycles)
             if len(cycles)==2:
                 if idPrefix:
                     idPrefix += "_"
@@ -555,7 +560,12 @@ class Cal(object):
                     idPrefix += "_"
                 allBaseArr = np.empty((len(cycles), self.number), dtype=np.uint8)
                 allQualArr = np.empty((len(cycles), self.number), dtype=np.uint8)
-            for ptr,c in enumerate(cycles):
+            else:
+                if idPrefix:
+                    idPrefix += "_"
+                allBaseArr = np.empty((1, self.number), dtype=np.uint8)
+                allQualArr = np.empty((1, self.number), dtype=np.uint8)
+            for ptr, c in enumerate(cycles):
                 try:
                     allBaseArr[ptr] = self.basesDigit[c]
                     allQualArr[ptr] = self.qual[c] + 33
@@ -621,7 +631,7 @@ class Cal(object):
         ''' Save the base and quality to a FASTQ file.
             Compression if filename is *.gz.
         '''
-        print('writing ' + filename + str(cycles))
+        # print('writing ' + filename + str(cycles))
         if not idPrefix:
             idPrefix = self.fov
         if filename.endswith('.gz'):
@@ -632,7 +642,7 @@ class Cal(object):
                     tag = ''
                     suffix = '.fq.gz'
                     split_name = filename.replace('.fq.gz', suffix)
-                    print(filename+str(cycles))
+                    # print(filename+str(cycles))
                     with gzip.open(split_name, 'wb') as fp:
                         self._dumpAsFq(fp, idPrefix=idPrefix, cycles=cycles, strand='', insert_vect_fp=insert_vect)
                 else:
@@ -808,7 +818,7 @@ class Cal(object):
             elif type(blocks) is list:
                 blocks_vect = np.array(blocks)
             else:
-                print('Blocks variable type is incompatible')
+                # print('Blocks variable type is incompatible')
                 blocks_vect = False
                 esr = 100.0 * (float(self.esr_filter_vect.sum()) / float(len(self.esr_filter_vect)))
                 esr = round(esr, 2)

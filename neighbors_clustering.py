@@ -43,6 +43,7 @@ class NeighborClustering(object):
         posinfo_fp = int_analysis.background_fp.replace('_background.npy', '.posiIndex.txt')
         neighbors_fp = neighbors_fp
         self.blocks = blocks
+        # print('blocks', self.blocks)
         self.inner = False if (type(blocks)!=type(None)) else True
 
         if not os.path.exists(self.output_dp):
@@ -74,15 +75,20 @@ class NeighborClustering(object):
         if self.inner:
             edge_blocks = range(10) + range(10, 90, 10) + range(19, 99, 10) + range(90, 100)
             block_list = np.array(list(set(range(100)) - set(edge_blocks)))
+            # print('blcok_list', block_list)
             block_bool = np.in1d(dnb_pos[:, 0], block_list)
-            self.block_bool = block_bool
+            if block_bool.sum() > 0:
+                self.block_bool = block_bool
+            else:
+                block_bool = np.ones_like(block_bool).astype(bool)
+                self.block_bool = block_bool
             dnb_pos = dnb_pos[block_bool, 1:]
             self.dnb_pos = dnb_pos
             self.xyminmax = (dnb_pos[:, 0].min(), dnb_pos[:, 0].max(), dnb_pos[:, 1].min(), dnb_pos[:, 1].max())
             self.neighbors_arr = self.neighbors_arr[block_bool]
             self.num_dnbs = len(dnb_pos)
         else:
-            print(self.blocks.shape, self.blocks)
+            # print(self.blocks.shape, self.blocks)
             block_bool = np.ones(len(self.neighbors_arr), dtype=bool)
 
             self.block_bool = block_bool
@@ -249,19 +255,23 @@ def get_dnb_pos(posinfo_fp):
     height = 0
     groups = pos_idx.groupby(1)
     group = groups.get_group(0)
+    possible_blocks = groups.indices.keys()
+    # print(groups, group)
     for r in range(10):
         width = 0
         for c in range(10):
-            group = groups.get_group(int(str(r) + str(c)))
-            idx.extend((group[0]).astype(int).tolist())
-            block.extend((group[1]).astype(np.int16).tolist())
-            x.extend(((group[3]) + width).astype(np.int32).tolist())
-            y.extend(((group[2]) + height).astype(np.int32).tolist())
-            width += len(np.unique(group[3])) + 2
+            if int(str(r) + str(c)) in possible_blocks:
+                group = groups.get_group(int(str(r) + str(c)))
+                idx.extend((group[0]).astype(int).tolist())
+                block.extend((group[1]).astype(np.int16).tolist())
+                x.extend(((group[3]) + width).astype(np.int32).tolist())
+                y.extend(((group[2]) + height).astype(np.int32).tolist())
+                width += len(np.unique(group[3])) + 2
         height += len(np.unique(group[2])) + 2
 
     dnb_pos = np.stack([np.array(block), np.array(x), np.array(y), np.array(idx)]).T
     dnb_pos = dnb_pos[dnb_pos[:, -1].argsort()]
+    # print(dnb_pos)
     return dnb_pos
 
 

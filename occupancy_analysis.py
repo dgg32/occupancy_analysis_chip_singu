@@ -12,13 +12,14 @@ import datetime
 import glob
 
 ###### Version and Date
-occupancy_version = 'v4.1_1B'
-prog_date = '2019-10-10'
+###### Version and Date
+occupancy_version = 'v4.4.0A'
+prog_date = '2021-1-25'
 
 ###### Usage
 usage = '''
 
-     Version %s by Christian Villarosa  %s
+     Version %s by Alex Jorjorian  %s
 
      Usage: python %s <JSON parameters>
 
@@ -220,7 +221,8 @@ class OccupancyAnalysis(object):
         except:
             from v2cal2fastq import V2Cal2Fastq
             c2f = V2Cal2Fastq(self.data_dp, fov, self.cycles+1, self.occupancy_range, blocks_fp,
-                              output_dp=self.temp_dp, log_dp=self.log_dp, log_overrides=self.log_overrides)
+                              output_dp=self.temp_dp, log_dp=self.log_dp, log_overrides=self.log_overrides,
+                              platform=self.platform)
             fastq_fp = c2f.run()
         return fastq_fp
 
@@ -231,7 +233,8 @@ class OccupancyAnalysis(object):
         cal_fp = os.path.join(self.data_dp, 'calFile', '%s.cal' % fov)
         self.int_analysis = IntensityAnalysis(slide, lane, fov, self.cycles,
                                               cal_fp, int_fp, norm_paras_fp, background_fp, blocks_fp,
-                                              temp_dp, bypass, log_dp=self.log_dp, log_overrides=self.log_overrides)
+                                              temp_dp, bypass,
+                                              platform=self.platform, log_dp=self.log_dp, log_overrides=self.log_overrides)
         if self.bypass['intensity_analysis']:
             self.rho_results, self.snr_results, self.thresholds_summary, self.cbi_bypassed = self.int_analysis.complete_bypass()
         else:
@@ -289,20 +292,21 @@ class OccupancyAnalysis(object):
             self.familial_results, \
             self.singular_summary, \
             self.splits_summary, self.splits_results, \
-            self.cbi_quartile_results, self.snr1_quartile_results, self.snr2_quartile_results = lbl_analysis.run()
-            if not bool(self.blocks):
-                lbl_analysis_center = LabelAnalysis(int_analysis, bypass, center=True)
-                self.size_summary_center, self.size_results_center, \
-                self.multicall_summary_center, self.multicall_results_center, \
-                self.chastity_summary_center, self.chastity_results_center, \
-                self.SHI_summary_center, self.SHI_results_center, \
-                self.mixed_summary_center, \
-                self.empty_splits_results_center, self.mixed_splits_results_center, \
-                self.familial_results_center, \
-                self.singular_summary_center, \
-                self.splits_summary_center, self.splits_results_center, \
-                self.cbi_quartile_results_center, self.snr1_quartile_results_center, self.snr2_quartile_results_center = \
-                    lbl_analysis_center.run()
+            self.cbi_quartile_results, self.snr1_quartile_results, self.snr2_quartile_results, self.dnb_count = lbl_analysis.run()
+            if self.dnb_count >= 1408077:
+                if not bool(self.blocks):
+                    lbl_analysis_center = LabelAnalysis(int_analysis, bypass, center=True)
+                    self.size_summary_center, self.size_results_center, \
+                    self.multicall_summary_center, self.multicall_results_center, \
+                    self.chastity_summary_center, self.chastity_results_center, \
+                    self.SHI_summary_center, self.SHI_results_center, \
+                    self.mixed_summary_center, \
+                    self.empty_splits_results_center, self.mixed_splits_results_center, \
+                    self.familial_results_center, \
+                    self.singular_summary_center, \
+                    self.splits_summary_center, self.splits_results_center, \
+                    self.cbi_quartile_results_center, self.snr1_quartile_results_center, self.snr2_quartile_results_center, self.num_dnbs = \
+                        lbl_analysis_center.run()
         return
 
     def output_reports(self):
@@ -341,7 +345,7 @@ class OccupancyAnalysis(object):
 
         logger.debug('Output completed.')
 
-        if not bool(self.blocks):
+        if (not bool(self.blocks)) and (self.dnb_count >=1408077):
             center_summary_fp = os.path.join(self.fov_dp, '%s_Center2x2_Summary.csv' % self.report_name)
             center_summary_data = self.singular_summary_center + self.size_summary_center +\
                                   self.mixed_summary_center + self.multicall_summary_center + \
@@ -375,6 +379,7 @@ class OccupancyAnalysis(object):
         (int_fp, posinfo_fp, coords_fp, neighbors_fp, blocks_fp, 
                     fastq_fp, norm_paras_fp, background_fp) = self.process_data(self.platform)
         # if report name wasn't specified in parameter_overrides and is empty
+        # print('cycles', self.cycles)
         if not self.report_name:
             if 'Center2x2' in self.output_dp:
                 self.report_name = ('%s_%s_%s_Occupancy_Analysis_C%02d-C%02d_Center2x2' % (self.slide, self.lane,
@@ -399,7 +404,7 @@ class OccupancyAnalysis(object):
         split_cbi_ratio_dist_npy = self.split_cbi_ratio_dist_npy
         parent_cbi_dist_npy = self.parent_cbi_dist_npy
         children_cbi_dist_npy = self.children_cbi_dist_npy
-        if not bool(self.blocks):
+        if (not bool(self.blocks)) and (self.dnb_count >= 1408077):
             summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
             cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, center_summary_fp = self.output_reports()
             self.copy_temps()

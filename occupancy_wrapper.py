@@ -23,13 +23,13 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 ###### Version and Date
-occupancy_version = 'v4.1_1B'
-prog_date = '2019-10-10'
+occupancy_version = 'v4.4.0A'
+prog_date = '2021-1-25'
 
 ###### Usage
 usage = '''
 
-     Version %s by Christian Villarosa  %s
+     Version %s by Alex Jorjorian  %s
 
      Usage: python %s <JSON parameters>
 
@@ -127,6 +127,8 @@ def ints2fov_list(data_dp, platform):
 
     ### PLATFORM DEPENDENCY ###
     int_files = glob.glob(os.path.join(data_dp, 'finInts/S002/*.%s' % int_extensions[platform]))
+    if not bool(int_files):
+        int_files = glob.glob(os.path.join(data_dp, 'finInts/S001/*.%s' % int_extensions[platform]))
     return [os.path.basename(f)[:-4] for f in int_files]
 
 @traceback_msg
@@ -162,6 +164,7 @@ def generate_final_paths(grouped_reports):
 
 
 def calculate_averages(metrics, data):
+    print(data)
     data = zip(*data) # transpose
     metric_count = len(data)
     ignored_metrics = ['Most Frequent 10-mer', 'Failed Cycles', 'Used Cycles']
@@ -169,8 +172,16 @@ def calculate_averages(metrics, data):
     ignored_indices = [metrics.index(i) for i in ignored_metrics]
     data = [d for i, d in enumerate(data) if i not in ignored_indices]
     for i, val in enumerate(data):
-        if val == 'NA':
-            data[i] = 0
+        print(val)
+        val_list = []
+        convert = False
+        for entry in val:
+            if (entry == 'NA') or (entry == ''):
+                val_list.append(0)
+                convert=True
+        if convert:
+            data[i] = tuple(val_list)
+    print(data)
     data = np.asarray(data, dtype=np.float32)
     print(data)
     avg_data = np.nanmean(data, 1).tolist()
@@ -251,13 +262,17 @@ def consolidate_split_base_comp_reports(report_lists):
     final_report_fp = os.path.join(output_dp, new_fn)
     dfs = []
     for fov_report in fov_reports:
-        df = pd.read_csv(fov_report, index_col=[0, 1, 2])
-        dfs.append(df)
-    df = pd.concat(dfs).T
-    curr_lane = df.columns.levels[0][0]
-    df = df.stack().assign(AVG=df.mean(level=2, axis='columns').stack()).unstack()
-    df = df.sort_index(axis='columns').rename(columns={'AVG': curr_lane, '': 'AVG'})
-    df.T.to_csv(final_report_fp)
+        if os.path.isfile(fov_report):
+            df = pd.read_csv(fov_report, index_col=[0, 1, 2])
+            dfs.append(df)
+        else:
+            pass
+    if len(dfs) > 0:
+        df = pd.concat(dfs).T
+        curr_lane = df.columns.levels[0][0]
+        df = df.stack().assign(AVG=df.mean(level=2, axis='columns').stack()).unstack()
+        df = df.sort_index(axis='columns').rename(columns={'AVG': curr_lane, '': 'AVG'})
+        df.T.to_csv(final_report_fp)
     return
 
 
@@ -343,18 +358,18 @@ def plot_split_cbi_ratio_dist(report_group, fovs, final_report_fp, lanes=False):
     for ax1, report_fp, fov in zip(axes1.flatten(), report_group, fovs):
         if lanes:
             fov = os.path.basename(report_fp).split('_')[1]
+        if os.path.exists(report_fp):
+            data = np.load(report_fp)
+            if fov not in ['C001R006', 'C006R060']:
+                center_fovs.append(data)
 
-        data = np.load(report_fp)
-        if fov not in ['C001R006', 'C006R060']:
-            center_fovs.append(data)
-
-        ax1.plot(data[0], data[1], label='Horizontal', alpha=0.6)
-        ax1.plot(data[4], data[5], label='Vertical', alpha=0.6)
-        ax1.plot(data[8], data[9], label='Diagonal', alpha=0.6)
-        ax1.set_xlabel('Small/Large CBI Ratio')
-        ax1.set_ylabel('Density')
-        ax1.tick_params(labelsize=12)
-        ax1.set_title(fov, fontsize=14)
+            ax1.plot(data[0], data[1], label='Horizontal', alpha=0.6)
+            ax1.plot(data[4], data[5], label='Vertical', alpha=0.6)
+            ax1.plot(data[8], data[9], label='Diagonal', alpha=0.6)
+            ax1.set_xlabel('Small/Large CBI Ratio')
+            ax1.set_ylabel('Density')
+            ax1.tick_params(labelsize=12)
+            ax1.set_title(fov, fontsize=14)
     axes1[0, 1].legend(bbox_to_anchor=(0.96, 0.9), prop={'size': 12})
     title = '%s' % os.path.basename(final_report_fp).replace('.png', '')
     if lanes:
@@ -371,15 +386,15 @@ def plot_split_cbi_ratio_dist(report_group, fovs, final_report_fp, lanes=False):
     for ax2, report_fp, fov in zip(axes2.flatten(), report_group, fovs):
         if lanes:
             fov = os.path.basename(report_fp).split('_')[1]
-
-        data = np.load(report_fp)
-        ax2.plot(data[2], data[3], label='Horizontal: Left/Right', alpha=0.6)
-        ax2.plot(data[6], data[7], label='Vertical: Up/Down', alpha=0.6)
-        ax2.plot(data[10], data[11], label='Multi:\nSum(Small)/Large CBI', alpha=0.6)
-        ax2.set_xlabel('CBI Ratio')
-        ax2.set_ylabel('Density')
-        ax2.tick_params(labelsize=12)
-        ax2.set_title(fov, fontsize=14)
+        if os.path.exists(report_fp):
+            data = np.load(report_fp)
+            ax2.plot(data[2], data[3], label='Horizontal: Left/Right', alpha=0.6)
+            ax2.plot(data[6], data[7], label='Vertical: Up/Down', alpha=0.6)
+            ax2.plot(data[10], data[11], label='Multi:\nSum(Small)/Large CBI', alpha=0.6)
+            ax2.set_xlabel('CBI Ratio')
+            ax2.set_ylabel('Density')
+            ax2.tick_params(labelsize=12)
+            ax2.set_title(fov, fontsize=14)
     axes2[0, 1].legend(bbox_to_anchor=(0.96, 0.9), prop={'size': 12})
     title = '%s' % os.path.basename(final_report_fp).replace('.png', '')
     if lanes:
@@ -482,25 +497,25 @@ def plot_split_cbi_dist(parent_reports, children_reports, fovs, final_report_fp,
     for ax, child_report_fp, parent_report_fp, fov in zip(axes.flatten(), children_reports, parent_reports, fovs):
         if lanes:
             fov = os.path.basename(child_report_fp).split('_')[1]
+        if os.path.isfile(child_report_fp):
+            data1 = np.load(child_report_fp)
+            if parent_report_fp is not None:
+                data2 = np.load(parent_report_fp)
+            else:
+                data2 = data1[4:]
+                data1 = data1[:4]
 
-        data1 = np.load(child_report_fp)
-        if parent_report_fp is not None:
-            data2 = np.load(parent_report_fp)
-        else:
-            data2 = data1[4:]
-            data1 = data1[:4]
+            if fov not in ['C001R006', 'C006R060']:
+                center_fovs.append(np.vstack([data1, data2]))
 
-        if fov not in ['C001R006', 'C006R060']:
-            center_fovs.append(np.vstack([data1, data2]))
-
-        xs = np.linspace(0, 4, 500)
-        for i in range(data1.shape[0]):
-            ax.plot(xs, data1[i], label='%s (Children)' % directions[i], linestyle='dashed', alpha=0.6)
-            ax.plot(xs, data2[i], label='%s (Parents)' % directions[i], alpha=0.6)
-        ax.set_xlabel('CBI')
-        ax.set_ylabel('Density')
-        ax.tick_params(labelsize=12)
-        ax.set_title(fov, fontsize=14)
+            xs = np.linspace(0, 4, 500)
+            for i in range(data1.shape[0]):
+                ax.plot(xs, data1[i], label='%s (Children)' % directions[i], linestyle='dashed', alpha=0.6)
+                ax.plot(xs, data2[i], label='%s (Parents)' % directions[i], alpha=0.6)
+            ax.set_xlabel('CBI')
+            ax.set_ylabel('Density')
+            ax.tick_params(labelsize=12)
+            ax.set_title(fov, fontsize=14)
     axes[0, 1].legend(bbox_to_anchor=(0.96, 0.9), prop={'size': 12})
     title = '%s' % os.path.basename(final_report_fp).replace('.png', '')
     if lanes:
@@ -525,7 +540,8 @@ def get_parent_report_names(f):
     slide_dp, lane = os.path.split(lane_dp)
     slide, lane, occ, analysis, cycles = os.path.basename(f).split('_')[:5]
     prefix = '%s_%s_%s_%s' % (slide, occ, analysis, cycles)
-
+    # if 'Blocks_Center2x2' in f:
+    #     prefix += '_Blocks_Center2x2'
     slide_dp = os.path.join(slide_dp, occupancy_fn)
     if not os.path.isdir(slide_dp):
         os.makedirs(slide_dp)
@@ -644,7 +660,7 @@ def main(arguments):
         occupancy_parameters = prepare_json_dict(occupancy_json_fp)
     else:
         occupancy_parameters = parse_arguments(arguments)
-    for k,v in occupancy_parameters.items():
+    for k, v in occupancy_parameters.items():
         print k, v
     occupancy_parameters, consolidate_lanes = populate_default_parameters(occupancy_parameters)
 
@@ -699,7 +715,8 @@ def main(arguments):
     occupancy_results = [oo for oo in occupancy_outputs if type(oo) == tuple]
 
     final_report_fps = consolidate_reports(occupancy_results)
-    generate_trimmed_summary(final_report_fps[0])
+    if len(fov_list) >2:
+        generate_trimmed_summary(final_report_fps[0])
     consolidate_split_base_comp_reports(occupancy_results)
     consolidate_fov_plots(occupancy_results, occupancy_parameters['output_dp'])
 
@@ -725,14 +742,14 @@ def main(arguments):
 
     """
     if consolidate_lanes:
-        time.sleep(10)
+        time.sleep(np.random.randint(10)*20)
         f = final_report_fps[0]
+        slide_output_dp, occupancy_fn, prefix = get_parent_report_names(f)
         completed_lanes = [os.path.exists(f.replace(occupancy_parameters['lane'], 'L01')),
                            os.path.exists(f.replace(occupancy_parameters['lane'], 'L02')),
                            os.path.exists(f.replace(occupancy_parameters['lane'], 'L03')),
                            os.path.exists(f.replace(occupancy_parameters['lane'], 'L04'))]
-        if np.sum(completed_lanes) > 1:
-            slide_output_dp, occupancy_fn, prefix = get_parent_report_names(f)
+        if np.sum(completed_lanes) > 1 :
             consolidate_lane_reports(slide_output_dp, occupancy_fn, prefix)
             consolidate_lane_plots(slide_output_dp, occupancy_fn, prefix)
 

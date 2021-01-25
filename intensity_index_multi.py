@@ -560,20 +560,20 @@ def crosstalk(intensities):
     intensities = intensities.astype(np.float32)
     for i in xrange(3):
         # crosstalk using only matrix calculated from cycle
-        print('Calculate Crosstalk Matrix..............................................')
+        # print('Calculate Crosstalk Matrix..............................................')
         # crosstalk matrix calculation for init_cycle
         crosstalk_matrix, _ = cc.crosstalk(intensities[~clipped[:, init_cycle], :, init_cycle],
                                            mode='gmm',
                                            num_clstr=2)
         if not type(crosstalk_matrix) == np.ndarray:
-            print('crosstalk_error')
+            # print('crosstalk_error')
             init_cycle += 1
         print(crosstalk_matrix)
         if np.abs(crosstalk_matrix)[crosstalk_matrix != 1].max() <= alpha:
             corr_intensities = cc.apply_crosstalk_correction(intensities, crosstalk_matrix, clipped)
             break
         # %%
-        print('Apply Crosstalk Correction..............................................')
+        # print('Apply Crosstalk Correction..............................................')
         # multiple intensities by inverse crosstalk matrix
         corr_intensities = cc.apply_crosstalk_correction(intensities, crosstalk_matrix, clipped)
     return corr_intensities
@@ -796,7 +796,7 @@ def main(data_path, out_path, fovs, split_types, split_range, label_dir, insert_
                         }
     p_count = 0
     for entry in failed_list:
-        print(entry)
+        # print(entry)
         if type(entry) is list:
             fovs.pop(fovs.index(entry[0]))
     for split_type in split_types:
@@ -806,7 +806,7 @@ def main(data_path, out_path, fovs, split_types, split_range, label_dir, insert_
     logger.info('populating multiprocessing queue for all fov-subsets')
     for fov in fovs:
         calFile = os.path.join(data_path, 'calFile', fov + '.cal')
-        print(calFile)
+        # print(calFile)
         for split_type in split_types:
             if not os.path.isfile(os.path.join(out_path, fov + split_type + '_QC_Data.p')):
                 for subset in subset_type_dict[split_type]:
@@ -833,7 +833,7 @@ def main(data_path, out_path, fovs, split_types, split_range, label_dir, insert_
             qc_out = os.path.join(out_path, fov + key + '_QC_Data.p')
             with open(qc_out, 'w') as fo:
                 Pickle.dump(vals[key][fov], fo)
-    print (fovs)
+    # print (fovs)
     return fovs
 
 

@@ -158,8 +158,10 @@ class NeighborAnalysis(object):
         self.fov = int_analysis.fov
         self.start_cycle = int_analysis.start_cycle
         self.empty_fth = int_analysis.empty_fth
-        empty_calls = np.zeros(40).astype(np.int8)
-        empty_calls.shape = (1,4,10)
+        self.cycle_range = int_analysis.called_signals.shape[-1]
+        empty_calls = np.zeros(4*self.cycle_range).astype(np.int8)
+        empty_calls.shape = (1, 4, self.cycle_range)
+        self.called_bases = int_analysis.called_signals
         self.called_signals = np.append(empty_calls, int_analysis.called_signals, axis=0)
         self.naCBI_data = int_analysis.naCBI_data
         self.label_arr = int_analysis.label_arr
@@ -212,6 +214,74 @@ class NeighborAnalysis(object):
 
         logger.debug(self.__dict__)
         return
+
+    def get_excess_nieghbor_matching(self):
+        excess_percentage = {'All': [], 'Total_NonN': [], 'A': [], 'C': [], 'G': [], 'T': []}
+        base_comps = {'A': [], 'C': [], 'G': [], 'T': [], 'N': []}
+        real_neighbors = self.neighbors_arr - 1
+        edge_mask = (real_neighbors.min(axis=1) > -1)
+        dnb_count = self.neighbors_arr.shape[0]
+        for i in range(self.called_bases.shape[-1]):
+            cycle_calls = np.argmax(self.called_bases[:, :, i], axis=1)
+            n_call_bool = (self.called_bases[:, :, i].sum(axis=1) == 1)
+            base_comp = []
+            for i, b in enumerate('ACGT'):
+                proportion = float((cycle_calls[n_call_bool.ravel()] == i).sum())/n_call_bool.sum()
+                base_comp.append(proportion)
+                base_comps[b].append(proportion*100)
+            simulated_calls = np.random.choice([0, 1, 2, 3], cycle_calls.shape, p=base_comp)
+            called_neighbor_groups = cycle_calls[real_neighbors]
+            sim_neighbor_groups = simulated_calls[real_neighbors]
+            called_matches = np.equal(called_neighbor_groups[:, 0].reshape(dnb_count, 1),
+                                      called_neighbor_groups[:, 1:].reshape(dnb_count, 8)).astype(int).sum(axis=1)
+            simulated_matches = np.equal(sim_neighbor_groups[:, 0].reshape(dnb_count, 1),
+                                         sim_neighbor_groups[:, 1:].reshape(dnb_count, 8)).astype(int).sum(axis=1)
+            simulated_count = np.mean(simulated_matches[edge_mask])
+            called_count = np.mean(called_matches[edge_mask])
+            excess_percentage['All'].append(float(called_count - simulated_count) / float(simulated_count))
+            cycle_calls[n_call_bool == 0] = 4
+            called_neighbor_groups = cycle_calls[real_neighbors]
+            n_call_bool = ((called_neighbor_groups == 4).sum(axis=1) == 0)
+            # called_neighbor_groups = cycle_calls[real_neighbors[n_call_bool.ravel()]]
+
+            called_neighbor_groups = cycle_calls[real_neighbors[n_call_bool.ravel()]]
+            base_comp = []
+            for i, b in enumerate('ACGT'):
+                proportion = float((called_neighbor_groups[:, 0] == i).sum()) / called_neighbor_groups[:, 0].shape[0]
+                base_comp.append(proportion)
+            simulated_calls = np.random.choice([0, 1, 2, 3], cycle_calls.shape, p=base_comp)
+            sim_neighbor_groups = simulated_calls[real_neighbors]
+            called_matches = np.equal(called_neighbor_groups[:, 0].reshape(called_neighbor_groups.shape[0], 1),
+                                      called_neighbor_groups[:, 1:].reshape(called_neighbor_groups.shape[0], 8)).astype(int).sum(axis=1)
+            simulated_matches = np.equal(sim_neighbor_groups[:, 0].reshape(sim_neighbor_groups.shape[0], 1),
+                                         sim_neighbor_groups[:, 1:].reshape(sim_neighbor_groups.shape[0], 8)).astype(int).sum(axis=1)
+            simulated_count = np.mean(simulated_matches[edge_mask])
+            called_count = np.mean(called_matches[edge_mask[n_call_bool.ravel()]])
+            excess_percentage['Total_NonN'].append(float(called_count-simulated_count) / float(simulated_count))
+
+            for i, b in enumerate('ACGT'):
+                called_neighbor_groups = cycle_calls[real_neighbors[n_call_bool.ravel()]]
+                called_neigbor_base_bool = (called_neighbor_groups[:, 0] == i)
+                called_neighbor_groups = called_neighbor_groups[called_neigbor_base_bool.ravel()]
+                sim_neighbor_groups = simulated_calls[real_neighbors]
+                sim_neighbor_base_bool = (sim_neighbor_groups[:, 0] == i)
+                sim_neighbor_groups = sim_neighbor_groups[sim_neighbor_base_bool.ravel()]
+                called_matches = np.equal(called_neighbor_groups[:, 0].reshape(called_neighbor_groups.shape[0], 1),
+                                          called_neighbor_groups[:, 1:].reshape(called_neighbor_groups.shape[0], 8)).astype(int).sum(axis=1)
+                simulated_matches = np.equal(sim_neighbor_groups[:, 0].reshape(sim_neighbor_groups.shape[0], 1),
+                                             sim_neighbor_groups[:, 1:].reshape(sim_neighbor_groups.shape[0], 8)).astype(int).sum(axis=1)
+                simulated_count = np.mean(simulated_matches[edge_mask[sim_neighbor_base_bool.ravel()]])
+                called_count = np.mean(called_matches[edge_mask[n_call_bool.ravel()][called_neigbor_base_bool.ravel()]])
+                excess_percentage[b].append(float(called_count - simulated_count) / float(simulated_count))
+        excess_out = {'All': 0, 'Total_NonN': 0, 'A': 0, 'C': 0, 'G': 0, 'T': 0}
+        percentage_out = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
+        for key in excess_out.keys():
+            average_excess = np.mean(excess_percentage[key])
+            excess_out[key] = average_excess*100.0
+            if key in percentage_out.keys():
+                percentage_out[key] = np.round(np.mean(base_comps[key]), 2)
+        return excess_out, percentage_out
+
 
     def load_block_bool(self):
         block_bool = np.load(self.blocks_fp) if self.blocks_fp is not None else None
@@ -326,7 +396,7 @@ class NeighborAnalysis(object):
         sequence_list = [seq for count, seq in sorted(zip(count_list, sequence_list), reverse=True)]
         count_list = sorted(count_list, reverse=True)
         logger.debug('%s - Most frequent sequences:' % self.fov)
-        for i in range(10):
+        for i in range(len(sequence_list)):
             logger.debug('%s - %s - %s' % (self.fov, sequence_list[i], count_list[i]))
 
         sequence_strings = np.asarray(sequence_strings)
@@ -344,11 +414,15 @@ class NeighborAnalysis(object):
         start = datetime.datetime.now()
         for adj in mixed_adjacent:
             self.label_arr[label_dict['MixedSplit']][adj[0] - 1] = len(adj[1:])
+            # print('adajacent', adj)
             # add primary index to sequences index list if neighbor sequence is already being tracked (doesn't have N)
             # and primary index is not already associated with it
-            add_count = len([sequences[sequence_strings[n-1]].append(adj[0] - 1) for n in adj[1:] if
-                             sequence_strings[n-1] in sequences and adj[0] - 1 not
-                             in sequences[sequence_strings[n-1]]])
+            try:
+                add_count = len([sequences[sequence_strings[n-1]].append(adj[0] - 1) for n in adj[1:] if
+                                 sequence_strings[n-1] in sequences and adj[0] - 1 not
+                                 in sequences[sequence_strings[n-1]]])
+            except:
+                add_count = 0
             self.label_arr[label_dict['HiddenSplit']][adj[0] - 1] = add_count
         logger.info('%s - Mixed Split Time: %s' % (self.fov, (datetime.datetime.now() - start)))
 
@@ -864,7 +938,10 @@ class NeighborAnalysis(object):
                 pass
 
         # return seq, 100.*ht[seq]/len(idx)
-        return seqs[0], counts[0]
+        if not bool(seqs[0]):
+            return 'NA', 0
+        else:
+            return seqs[0], counts[0]
 
     def split_CBI_arr(self, naCBI_data, arr, multiplicity, direction, mixed_indices):
         """
@@ -2277,8 +2354,20 @@ class NeighborAnalysis(object):
         minutes = (time_diff.seconds // 60) % 60
         seconds = time_diff.seconds % 60
         logger.info('%s - Neighbor analysis completed. (%s hrs, %s min, %s sec)' % (self.fov, hours, minutes, seconds))
+        excess_matching, base_comp = self.get_excess_nieghbor_matching()
         summary = [
-            ['Spatial Duplicates (%ofTotal)', spatdup_rate]
+            ['Spatial Duplicates (%ofTotal)', spatdup_rate],
+            ['Excess Concordant Neighbors (Cycle Avg) %ofTotal', excess_matching['All']],
+            ['Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['Total_NonN']],
+            ['A Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['A']],
+            ['C Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['C']],
+            ['G Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['G']],
+            ['T Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['T']],
+            ['% Called A', base_comp['A']],
+            ['% Called C', base_comp['C']],
+            ['% Called G', base_comp['G']],
+            ['% Called T', base_comp['T']]
+
         ]
 
         self.save_outputs(summary, results)
