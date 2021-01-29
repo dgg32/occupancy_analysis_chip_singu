@@ -215,6 +215,7 @@ def generate_trimmed_summary(summary_report_path):
 
 
 def consolidate_reports(report_lists):
+    # print(report_lists)
     grouped_reports = zip(*report_lists)[:-5]
     final_report_fps = generate_final_paths(grouped_reports)
     for g, report_group in enumerate(grouped_reports):
@@ -237,7 +238,7 @@ def consolidate_reports(report_lists):
             if final_report_fp.endswith('Cluster_Mixed_Summary.csv'):
                 values = [row[-1] for row in report_table[1:]]
             data.append(values)
-        print(data, values, fov)
+        # print(data, values, fov)
         data = [y for x, y in sorted(zip(fovs, data))]
         if final_report_fp.endswith('Quartiles.csv'):
             avg_data = calculate_quartiles_averages(data)
@@ -550,9 +551,9 @@ def get_parent_report_names(f):
 
 
 def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
-    report_names = ['ACGT_splits', 'CBI_Quartiles', 'Center2x2_Summary', 'Cluster_Mixed_Summary', 'Mixed_Results',
-                    'Size_Results', 'SNR1_Quartiles', 'SNR2_Quartiles', 'Split_Results', 'Summary', 'Trim_Summary',
-                    'Best_Field']
+    report_names = ['ACGT_splits', 'Single_Cycle_Split_Results', 'CBI_Quartiles', 'Center2x2_Summary',
+                    'Cluster_Mixed_Summary', 'Mixed_Results', 'Size_Results', 'SNR1_Quartiles', 'SNR2_Quartiles',
+                    'Split_Results', 'Summary', 'Trim_Summary', 'Best_Field']
     slide = prefix.split('_')[0]
     cycles = prefix.split('_')[-1]
     for report in report_names:

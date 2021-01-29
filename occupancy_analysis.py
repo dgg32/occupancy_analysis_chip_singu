@@ -262,7 +262,7 @@ class OccupancyAnalysis(object):
         if self.bypass['neighbor_analysis'] and self.cbi_bypassed:
             self.neighbors_summary, self.neighbors_results = nbr_analysis.complete_bypass()
         else:
-            self.neighbors_summary, self.neighbors_results = nbr_analysis.run()
+            self.neighbors_summary, self.neighbors_results, self.single_cycle_split = nbr_analysis.run()
         return
 
     def run_label_analysis(self, int_analysis, bypass):
@@ -329,9 +329,11 @@ class OccupancyAnalysis(object):
         output_table(mixed_results_fp, results_data, ['', self.fov])
 
         split_results_fp = os.path.join(self.fov_dp, '%s_Split_Results.csv' % self.report_name)
+        single_cycle_results_fp = os.path.join(self.fov_dp, '%s_Single_Cycle_Split_Results.csv' % self.report_name)
         results_data = self.splits_results + self.neighbors_results + self.empty_splits_results + \
                         self.mixed_splits_results + self.familial_results
         output_table(split_results_fp, results_data, ['', self.fov])
+        output_table(single_cycle_results_fp, self.single_cycle_split, ['', self.fov])
 
         quartiles_header = ['', 'Q1', 'Q2', 'Q3', 'Q4']
         cbi_quartiles_fp = os.path.join(self.fov_dp, '%s_CBI_Quartiles.csv' % self.report_name)
@@ -352,10 +354,10 @@ class OccupancyAnalysis(object):
                                   self.chastity_summary_center + self.splits_summary_center + self.cycles_summary
             output_table(center_summary_fp, center_summary_data, ['', self.fov])
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
-                   cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, center_summary_fp
+                   cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, single_cycle_results_fp, center_summary_fp
         else:
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
-                   cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp
+                   cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, single_cycle_results_fp
 
     def copy_temps(self):
         path_parameters = {
@@ -406,17 +408,17 @@ class OccupancyAnalysis(object):
         children_cbi_dist_npy = self.children_cbi_dist_npy
         if (not bool(self.blocks)) and (self.dnb_count >= 1408077):
             summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
-            cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, center_summary_fp = self.output_reports()
+            cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, single_cycle_split_fp, center_summary_fp = self.output_reports()
             self.copy_temps()
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, cbi_quartiles_fp, snr1_quartiles_fp, \
-                   snr2_quartiles_fp, mixed_clustering_fp, center_summary_fp, \
+                   snr2_quartiles_fp, mixed_clustering_fp, center_summary_fp, single_cycle_split_fp, \
                    split_cbi_ratio_dist_npy, parent_cbi_dist_npy, children_cbi_dist_npy, avgCBI_hist_npy, ACGT_splits_fp
         else:
             summary_fp, size_results_fp, mixed_results_fp, split_results_fp, \
-            cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp = self.output_reports()
+            cbi_quartiles_fp, snr1_quartiles_fp, snr2_quartiles_fp, single_cycle_split_fp, = self.output_reports()
             self.copy_temps()
             return summary_fp, size_results_fp, mixed_results_fp, split_results_fp, cbi_quartiles_fp, snr1_quartiles_fp, \
-                   snr2_quartiles_fp, mixed_clustering_fp, \
+                   snr2_quartiles_fp, mixed_clustering_fp, single_cycle_split_fp, \
                    split_cbi_ratio_dist_npy, parent_cbi_dist_npy, children_cbi_dist_npy, avgCBI_hist_npy, ACGT_splits_fp
 
 

@@ -26,7 +26,7 @@ import cPickle as pickle
 import traceback
 
 import datetime
-
+import excess_matching as em
 
 def merge_dnb_lists(lists):
     """
@@ -215,72 +215,65 @@ class NeighborAnalysis(object):
         logger.debug(self.__dict__)
         return
 
-    def get_excess_nieghbor_matching(self):
-        excess_percentage = {'All': [], 'Total_NonN': [], 'A': [], 'C': [], 'G': [], 'T': []}
-        base_comps = {'A': [], 'C': [], 'G': [], 'T': [], 'N': []}
-        real_neighbors = self.neighbors_arr - 1
-        edge_mask = (real_neighbors.min(axis=1) > -1)
-        dnb_count = self.neighbors_arr.shape[0]
-        for i in range(self.called_bases.shape[-1]):
-            cycle_calls = np.argmax(self.called_bases[:, :, i], axis=1)
-            n_call_bool = (self.called_bases[:, :, i].sum(axis=1) == 1)
-            base_comp = []
-            for i, b in enumerate('ACGT'):
-                proportion = float((cycle_calls[n_call_bool.ravel()] == i).sum())/n_call_bool.sum()
-                base_comp.append(proportion)
-                base_comps[b].append(proportion*100)
-            simulated_calls = np.random.choice([0, 1, 2, 3], cycle_calls.shape, p=base_comp)
-            called_neighbor_groups = cycle_calls[real_neighbors]
-            sim_neighbor_groups = simulated_calls[real_neighbors]
-            called_matches = np.equal(called_neighbor_groups[:, 0].reshape(dnb_count, 1),
-                                      called_neighbor_groups[:, 1:].reshape(dnb_count, 8)).astype(int).sum(axis=1)
-            simulated_matches = np.equal(sim_neighbor_groups[:, 0].reshape(dnb_count, 1),
-                                         sim_neighbor_groups[:, 1:].reshape(dnb_count, 8)).astype(int).sum(axis=1)
-            simulated_count = np.mean(simulated_matches[edge_mask])
-            called_count = np.mean(called_matches[edge_mask])
-            excess_percentage['All'].append(float(called_count - simulated_count) / float(simulated_count))
-            cycle_calls[n_call_bool == 0] = 4
-            called_neighbor_groups = cycle_calls[real_neighbors]
-            n_call_bool = ((called_neighbor_groups == 4).sum(axis=1) == 0)
-            # called_neighbor_groups = cycle_calls[real_neighbors[n_call_bool.ravel()]]
-
-            called_neighbor_groups = cycle_calls[real_neighbors[n_call_bool.ravel()]]
-            base_comp = []
-            for i, b in enumerate('ACGT'):
-                proportion = float((called_neighbor_groups[:, 0] == i).sum()) / called_neighbor_groups[:, 0].shape[0]
-                base_comp.append(proportion)
-            simulated_calls = np.random.choice([0, 1, 2, 3], cycle_calls.shape, p=base_comp)
-            sim_neighbor_groups = simulated_calls[real_neighbors]
-            called_matches = np.equal(called_neighbor_groups[:, 0].reshape(called_neighbor_groups.shape[0], 1),
-                                      called_neighbor_groups[:, 1:].reshape(called_neighbor_groups.shape[0], 8)).astype(int).sum(axis=1)
-            simulated_matches = np.equal(sim_neighbor_groups[:, 0].reshape(sim_neighbor_groups.shape[0], 1),
-                                         sim_neighbor_groups[:, 1:].reshape(sim_neighbor_groups.shape[0], 8)).astype(int).sum(axis=1)
-            simulated_count = np.mean(simulated_matches[edge_mask])
-            called_count = np.mean(called_matches[edge_mask[n_call_bool.ravel()]])
-            excess_percentage['Total_NonN'].append(float(called_count-simulated_count) / float(simulated_count))
-
-            for i, b in enumerate('ACGT'):
-                called_neighbor_groups = cycle_calls[real_neighbors[n_call_bool.ravel()]]
-                called_neigbor_base_bool = (called_neighbor_groups[:, 0] == i)
-                called_neighbor_groups = called_neighbor_groups[called_neigbor_base_bool.ravel()]
-                sim_neighbor_groups = simulated_calls[real_neighbors]
-                sim_neighbor_base_bool = (sim_neighbor_groups[:, 0] == i)
-                sim_neighbor_groups = sim_neighbor_groups[sim_neighbor_base_bool.ravel()]
-                called_matches = np.equal(called_neighbor_groups[:, 0].reshape(called_neighbor_groups.shape[0], 1),
-                                          called_neighbor_groups[:, 1:].reshape(called_neighbor_groups.shape[0], 8)).astype(int).sum(axis=1)
-                simulated_matches = np.equal(sim_neighbor_groups[:, 0].reshape(sim_neighbor_groups.shape[0], 1),
-                                             sim_neighbor_groups[:, 1:].reshape(sim_neighbor_groups.shape[0], 8)).astype(int).sum(axis=1)
-                simulated_count = np.mean(simulated_matches[edge_mask[sim_neighbor_base_bool.ravel()]])
-                called_count = np.mean(called_matches[edge_mask[n_call_bool.ravel()][called_neigbor_base_bool.ravel()]])
-                excess_percentage[b].append(float(called_count - simulated_count) / float(simulated_count))
-        excess_out = {'All': 0, 'Total_NonN': 0, 'A': 0, 'C': 0, 'G': 0, 'T': 0}
-        percentage_out = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
-        for key in excess_out.keys():
-            average_excess = np.mean(excess_percentage[key])
-            excess_out[key] = average_excess*100.0
-            if key in percentage_out.keys():
-                percentage_out[key] = np.round(np.mean(base_comps[key]), 2)
-        return excess_out, percentage_out
+    # def get_excess_nieghbor_matching(self):
+    #     excess_percentage = {'All': [], 'Total_NonN': [], 'A': [], 'C': [], 'G': [], 'T': []}
+    #     base_comps = {'A': [], 'C': [], 'G': [], 'T': [], 'N': []}
+    #     real_neighbors = self.neighbors_arr - 1
+    #     edge_mask = (real_neighbors.min(axis=1) > -1)
+    #     for i in range(self.called_bases.shape[-1]):
+    #         cycle_calls = np.argmax(self.called_bases[:, :, i], axis=1)
+    #         n_call_bool = (self.called_bases[:, :, i].sum(axis=1) == 1)
+    #         base_comp = []
+    #         for i, b in enumerate('ACGT'):
+    #             proportion = float((cycle_calls[n_call_bool.ravel()] == i).sum())/n_call_bool.sum()
+    #             base_comp.append(proportion)
+    #             base_comps[b].append(proportion*100)
+    #         simulated_calls = np.random.choice([0, 1, 2, 3], cycle_calls.shape, p=base_comp)
+    #         called_neighbor_groups = cycle_calls[real_neighbors]
+    #         sim_neighbor_groups = simulated_calls[real_neighbors]
+    #         called_matches = neighbor_to_matches(called_neighbor_groups)
+    #         simulated_matches = neighbor_to_matches(sim_neighbor_groups)
+    #         simulated_mean = np.mean(simulated_matches[edge_mask])
+    #         called_mean = np.mean(called_matches[edge_mask])
+    #         excess_percentage['All'].append(float(called_mean - simulated_mean) / float(simulated_mean))
+    #         cycle_calls[n_call_bool == 0] = 4
+    #         called_neighbor_groups = cycle_calls[real_neighbors]
+    #         n_call_bool = ((called_neighbor_groups == 4).sum(axis=1) == 0)
+    #         # called_neighbor_groups = cycle_calls[real_neighbors[n_call_bool.ravel()]]
+    #
+    #         called_neighbor_groups = cycle_calls[real_neighbors[n_call_bool.ravel()]]
+    #         base_comp = []
+    #         for i, b in enumerate('ACGT'):
+    #             proportion = float((called_neighbor_groups[:, 0] == i).sum()) / called_neighbor_groups[:, 0].shape[0]
+    #             base_comp.append(proportion)
+    #         simulated_calls = np.random.choice([0, 1, 2, 3], cycle_calls.shape, p=base_comp)
+    #         sim_neighbor_groups = simulated_calls[real_neighbors]
+    #         called_matches = neighbor_to_matches(called_neighbor_groups)
+    #         simulated_matches = neighbor_to_matches(sim_neighbor_groups)
+    #         simulated_mean = np.mean(simulated_matches[edge_mask])
+    #         called_mean = np.mean(called_matches[edge_mask[n_call_bool.ravel()]])
+    #         excess_percentage['Total_NonN'].append(float(called_mean-simulated_mean) / float(simulated_mean))
+    #
+    #         for i, b in enumerate('ACGT'):
+    #             called_neighbor_groups = cycle_calls[real_neighbors[n_call_bool.ravel()]]
+    #             called_neigbor_base_bool = (called_neighbor_groups[:, 0] == i)
+    #             called_neighbor_groups = called_neighbor_groups[called_neigbor_base_bool.ravel()]
+    #             sim_neighbor_groups = simulated_calls[real_neighbors]
+    #             sim_neighbor_base_bool = (sim_neighbor_groups[:, 0] == i)
+    #             sim_neighbor_groups = sim_neighbor_groups[sim_neighbor_base_bool.ravel()]
+    #             called_matches = neighbor_to_matches(called_neighbor_groups)
+    #             simulated_matches = neighbor_to_matches(sim_neighbor_groups)
+    #             simulated_mean = np.mean(simulated_matches[edge_mask[sim_neighbor_base_bool.ravel()]])
+    #             called_mean = np.mean(called_matches[edge_mask[n_call_bool.ravel()][called_neigbor_base_bool.ravel()]])
+    #             excess_percentage[b].append(float(called_mean - simulated_mean) / float(simulated_mean))
+    #     excess_out = {'All': 0, 'Total_NonN': 0, 'A': 0, 'C': 0, 'G': 0, 'T': 0}
+    #     percentage_out = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
+    #     for key in excess_out.keys():
+    #         average_excess = np.mean(excess_percentage[key])
+    #         excess_out[key] = average_excess*100.0
+    #         if key in percentage_out.keys():
+    #             percentage_out[key] = np.round(np.mean(base_comps[key]), 2)
+    #     return excess_out, percentage_out
 
 
     def load_block_bool(self):
@@ -383,7 +376,6 @@ class NeighborAnalysis(object):
                     if 'N' not in decamer:
                         for base in decamer:
                             ACGT_dist[base] += 1
-
                         if decamer in sequences:
                             sequences[decamer].append(idx)
                         else:
@@ -407,14 +399,18 @@ class NeighborAnalysis(object):
 
         start = datetime.datetime.now()
         # generator for neighbors that match binary arrays with primary
-        mixed_adjacent = ([val for val in gn if val and (val == gn[0] or self.match_binary_arrays(gn[0], val))] for
-                    gn in mixed_neighbors)
+        if self.cycle_range > 4:
+            mixed_adjacent = ([val for val in gn if val and (val == gn[0] or self.match_binary_arrays(gn[0], val))] for
+                              gn in mixed_neighbors)
+        else:
+            mixed_adjacent = ([])
+            self.label_arr[label_dict['MixedSplit']][mixed_indices] = 0
+            self.label_arr[label_dict['HiddenSplit']] = 0
         logger.info('%s - Mixed Adjacent Time: %s' % (self.fov, (datetime.datetime.now() - start)))
 
         start = datetime.datetime.now()
         for adj in mixed_adjacent:
             self.label_arr[label_dict['MixedSplit']][adj[0] - 1] = len(adj[1:])
-            # print('adajacent', adj)
             # add primary index to sequences index list if neighbor sequence is already being tracked (doesn't have N)
             # and primary index is not already associated with it
             try:
@@ -428,7 +424,10 @@ class NeighborAnalysis(object):
 
         # A list of lists, each containing indices that share the same 10mers
         #possible_split_groups = (sequences[key] for key in sequences.keys() if len(sequences[key]) > 1)
-        possible_split_groups = [sequences[key] for key in sequences.keys() if len(sequences[key]) > 1]
+        if self.cycle_range > 4:
+            possible_split_groups = [sequences[key] for key in sequences.keys() if len(sequences[key]) > 1]
+        else:
+            possible_split_groups = []
         logger.info('%s - Sequence count: %s' % (self.fov, len(possible_split_groups)))
 
         # start = datetime.datetime.now()
@@ -2354,26 +2353,72 @@ class NeighborAnalysis(object):
         minutes = (time_diff.seconds // 60) % 60
         seconds = time_diff.seconds % 60
         logger.info('%s - Neighbor analysis completed. (%s hrs, %s min, %s sec)' % (self.fov, hours, minutes, seconds))
-        excess_matching, base_comp = self.get_excess_nieghbor_matching()
+        real_means, simulated_means, excess_matching, base_comp, per_valid = em.run(self.called_bases, self.neighbors_arr)
         summary = [
             ['Spatial Duplicates (%ofTotal)', spatdup_rate],
             ['Excess Concordant Neighbors (Cycle Avg) %ofTotal', excess_matching['All']],
             ['Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['Total_NonN']],
-            ['A Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['A']],
-            ['C Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['C']],
-            ['G Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['G']],
-            ['T Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['T']],
-            ['% Called A', base_comp['A']],
-            ['% Called C', base_comp['C']],
-            ['% Called G', base_comp['G']],
-            ['% Called T', base_comp['T']]
-
+            ['A Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['A']],
+            ['C Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['C']],
+            ['G Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['G']],
+            ['T Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['T']],
+            ['Empty Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['E']],
+            ['Multicall Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['M']],
         ]
-
+        single_cycle_split_stats = [
+            ['Excess Concordant Neighbors (Cycle Avg) %ofTotal', excess_matching['All']],
+            ['A Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['A']],
+            ['C Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['C']],
+            ['G Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['G']],
+            ['T Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['T']],
+            ['Empty Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['E']],
+            ['Multicall Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['M']],
+            ['% Called A %ofTotal', base_comp['A']],
+            ['% Called C %ofTotal', base_comp['C']],
+            ['% Called G %ofTotal', base_comp['G']],
+            ['% Called T %ofTotal', base_comp['T']],
+            ['% Called Empty %ofTotal', base_comp['E']],
+            ['% Multicalled %ofTotal', base_comp['M']],
+            ['real %Valid', per_valid['real']],
+            ['Simulated %Valid', per_valid['sim']],
+            ['Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['Total_NonN']],
+            ['A Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['A_NonN']],
+            ['C Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['C_NonN']],
+            ['G Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['G_NonN']],
+            ['T Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['T_NonN']],
+            ['% Called A %ofValid', base_comp['A_NonN']],
+            ['% Called C %ofValid', base_comp['C_NonN']],
+            ['% Called G %ofValid', base_comp['G_NonN']],
+            ['% Called T %ofValid', base_comp['T_NonN']],
+            ['Mean Concord Neighbors ofValid', real_means['Total_NonN']],
+            ['Mean A Concord Neighbors ofValid', real_means['A_NonN']],
+            ['Mean C Concord Neighbors ofValid', real_means['C_NonN']],
+            ['Mean G Concord Neighbors ofValid', real_means['G_NonN']],
+            ['Mean T Concord Neighbors ofValid', real_means['T_NonN']],
+            ['Mean Simulated Concord Neighbors ofValid', simulated_means['Total_NonN']],
+            ['Mean Simulated A Concord Neighbors ofValid', simulated_means['A_NonN']],
+            ['Mean Simulated C Concord Neighbors ofValid', simulated_means['C_NonN']],
+            ['Mean Simulated G Concord Neighbors ofValid', simulated_means['G_NonN']],
+            ['Mean Simulated T Concord Neighbors ofValid', simulated_means['T_NonN']],
+            ['Mean Concord Neighbors ofTotal', real_means['All']],
+            ['Mean A Concord Neighbors ofTotal', real_means['A']],
+            ['Mean C Concord Neighbors ofTotal', real_means['C']],
+            ['Mean G Concord Neighbors ofTotal', real_means['G']],
+            ['Mean T Concord Neighbors ofTotal', real_means['T']],
+            ['Mean Empty Concord Neighbors ofTotal', real_means['E']],
+            ['Mean Multicall Concord Neighbors ofTotal', real_means['M']],
+            ['Mean Simulated Concord Neighbors ofTotal', simulated_means['All']],
+            ['Mean Simulated A Concord Neighbors ofTotal', simulated_means['A']],
+            ['Mean Simulated C Concord Neighbors ofTotal', simulated_means['C']],
+            ['Mean Simulated G Concord Neighbors ofTotal', simulated_means['G']],
+            ['Mean Simulated T Concord Neighbors ofTotal', simulated_means['T']],
+            ['Mean Simulated Empty Concord Neighbors ofTotal', simulated_means['E']],
+            ['Mean Simulated Multicall Concord Neighbors ofTotal', simulated_means['M']],
+            ]
         self.save_outputs(summary, results)
         time_diff = datetime.datetime.now() - start_time
         logger.info('%s Complete (%s)' % (self.fov, time_diff))
-        return summary, results
+        return summary, results, single_cycle_split_stats
 
     def complete_bypass(self):
         try:
