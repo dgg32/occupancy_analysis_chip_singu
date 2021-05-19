@@ -44,6 +44,7 @@ class V2Cal2Fastq(object):
         logger.info('%s - Generating fastq file from cal file...' % self.fov)
         if not os.path.exists(self.cal_fp):
             return
+        print(self.platform)
         if (self.platform.upper() == 'V40') or ('DP' in self.cal_fp) or ('cap_integ' in self.cal_fp) or (self.platform.upper() == 'V0.2'):
             v40 = True
         else:

@@ -27,6 +27,7 @@ import traceback
 
 import datetime
 import excess_matching as em
+import SingleCycleDictToResult
 
 def merge_dnb_lists(lists):
     """
@@ -2342,7 +2343,7 @@ class NeighborAnalysis(object):
         shuffled_sequences = self.shuffle_sequences(self.sequence_strings)
         shuffled_split_groups = self.get_expanded_split_groups(shuffled_sequences)
         multi_count, horiz_count, vert_count, diag_count, \
-        horizontal_splits, vertical_splits, diagonal_splits, multiple_splits = self.calculate_split_percentage(shuffled_split_groups, label=False)
+        horizontal_splits, vertical_splits, diagonal_splits, multiple_splits = self3.calculate_split_percentage(shuffled_split_groups, label=False)
         logger.info('Shuffled split counts (including Parents): %s (hori), %s (vert), %s (diag), %s (mult)' %
                          (len(horizontal_splits), len(vertical_splits), len(diagonal_splits), len(multiple_splits)))
         """
@@ -2353,68 +2354,73 @@ class NeighborAnalysis(object):
         minutes = (time_diff.seconds // 60) % 60
         seconds = time_diff.seconds % 60
         logger.info('%s - Neighbor analysis completed. (%s hrs, %s min, %s sec)' % (self.fov, hours, minutes, seconds))
-        real_means, simulated_means, excess_matching, base_comp, per_valid = em.run(self.called_bases, self.neighbors_arr)
+        real_means, simulated_means, excess_matching, base_comp, per_valid, rm, sm = em.run(self.called_bases, self.neighbors_arr)
         summary = [
             ['Spatial Duplicates (%ofTotal)', spatdup_rate],
-            ['Excess Concordant Neighbors (Cycle Avg) %ofTotal', excess_matching['All']],
-            ['Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['Total_NonN']],
-            ['A Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['A']],
-            ['C Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['C']],
-            ['G Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['G']],
-            ['T Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['T']],
-            ['Empty Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['E']],
-            ['Multicall Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['M']],
+            ["% of Valid DNBs with a Concordant Called Neighbor per Cycle : Real", rm],
+            ["% of Valid DNBs with a Concordant Called Neighbor per Cycle : Sim", sm],
+            ["% of Valid DNBs with a Concordant Called Neighbor per Cycle : Real-Sim", rm-sm],
+            ['%Excess Concordant Neighbors All DNB', excess_matching['Total_Raw_Including_Mixed_']],
+            ['%Excess Concord Neighbors Valid DNB', excess_matching['Total_Valid_Including_Mixed_']],
+            ['A %Excess Concord Neighbors All DNB', excess_matching['A_Raw_Including_Mixed_']],
+            ['C %Excess Concord Neighbors All DNB', excess_matching['C_Raw_Including_Mixed_']],
+            ['G %Excess Concord Neighbors All DNB', excess_matching['G_Raw_Including_Mixed_']],
+            ['T %Excess Concord Neighbors All DNB', excess_matching['T_Raw_Including_Mixed_']],
+            ['Empty %Excess Concord Neighbors All DNB', excess_matching['E_Raw_Including_Mixed_']],
+            ['>2 Call %Excess Concord Neighbors All DNB', excess_matching['M_Raw_Including_Mixed_']],
         ]
-        single_cycle_split_stats = [
-            ['Excess Concordant Neighbors (Cycle Avg) %ofTotal', excess_matching['All']],
-            ['A Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['A']],
-            ['C Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['C']],
-            ['G Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['G']],
-            ['T Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['T']],
-            ['Empty Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['E']],
-            ['Multicall Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['M']],
-            ['% Called A %ofTotal', base_comp['A']],
-            ['% Called C %ofTotal', base_comp['C']],
-            ['% Called G %ofTotal', base_comp['G']],
-            ['% Called T %ofTotal', base_comp['T']],
-            ['% Called Empty %ofTotal', base_comp['E']],
-            ['% Multicalled %ofTotal', base_comp['M']],
-            ['real %Valid', per_valid['real']],
-            ['Simulated %Valid', per_valid['sim']],
-            ['Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['Total_NonN']],
-            ['A Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['A_NonN']],
-            ['C Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['C_NonN']],
-            ['G Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['G_NonN']],
-            ['T Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['T_NonN']],
-            ['% Called A %ofValid', base_comp['A_NonN']],
-            ['% Called C %ofValid', base_comp['C_NonN']],
-            ['% Called G %ofValid', base_comp['G_NonN']],
-            ['% Called T %ofValid', base_comp['T_NonN']],
-            ['Mean Concord Neighbors ofValid', real_means['Total_NonN']],
-            ['Mean A Concord Neighbors ofValid', real_means['A_NonN']],
-            ['Mean C Concord Neighbors ofValid', real_means['C_NonN']],
-            ['Mean G Concord Neighbors ofValid', real_means['G_NonN']],
-            ['Mean T Concord Neighbors ofValid', real_means['T_NonN']],
-            ['Mean Simulated Concord Neighbors ofValid', simulated_means['Total_NonN']],
-            ['Mean Simulated A Concord Neighbors ofValid', simulated_means['A_NonN']],
-            ['Mean Simulated C Concord Neighbors ofValid', simulated_means['C_NonN']],
-            ['Mean Simulated G Concord Neighbors ofValid', simulated_means['G_NonN']],
-            ['Mean Simulated T Concord Neighbors ofValid', simulated_means['T_NonN']],
-            ['Mean Concord Neighbors ofTotal', real_means['All']],
-            ['Mean A Concord Neighbors ofTotal', real_means['A']],
-            ['Mean C Concord Neighbors ofTotal', real_means['C']],
-            ['Mean G Concord Neighbors ofTotal', real_means['G']],
-            ['Mean T Concord Neighbors ofTotal', real_means['T']],
-            ['Mean Empty Concord Neighbors ofTotal', real_means['E']],
-            ['Mean Multicall Concord Neighbors ofTotal', real_means['M']],
-            ['Mean Simulated Concord Neighbors ofTotal', simulated_means['All']],
-            ['Mean Simulated A Concord Neighbors ofTotal', simulated_means['A']],
-            ['Mean Simulated C Concord Neighbors ofTotal', simulated_means['C']],
-            ['Mean Simulated G Concord Neighbors ofTotal', simulated_means['G']],
-            ['Mean Simulated T Concord Neighbors ofTotal', simulated_means['T']],
-            ['Mean Simulated Empty Concord Neighbors ofTotal', simulated_means['E']],
-            ['Mean Simulated Multicall Concord Neighbors ofTotal', simulated_means['M']],
-            ]
+        single_cycle_split_stats = SingleCycleDictToResult.dict_summary_list(excess_matching, real_means,
+                                                                             simulated_means, base_comp, per_valid)
+            # ['Excess Concordant Neighbors (Cycle Avg) %ofTotal', excess_matching['All']],
+            # ['A %Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['A']],
+            # ['C %Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['C']],
+            # ['G %Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['G']],
+            # ['T %Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['T']],
+            # ['Empty Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['E']],
+            # ['>2 Call Excess Concord Neighbors (Cycle Avg) %ofTotal', excess_matching['M']],
+            # ['% Called A %ofTotal', base_comp['A']],
+            # ['% Called C %ofTotal', base_comp['C']],
+            # ['% Called G %ofTotal', base_comp['G']],
+            # ['% Called T %ofTotal', base_comp['T']],
+            # ['% Called Empty %ofTotal', base_comp['E']],
+            # ['% >2 Call %ofTotal', base_comp['M']],
+            # ['real %Valid', per_valid['real']],
+            # ['Simulated %Valid', per_valid['sim']],
+            # ['Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['Total_Valid']],
+            # ['A Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['A_Valid']],
+            # ['C Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['C_Valid']],
+            # ['G Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['G_Valid']],
+            # ['T Excess Concord Neighbors (Cycle Avg) %ofValid', excess_matching['T_Valid']],
+            # ['% Called A %ofValid', base_comp['A_Valid']],
+            # ['% Called C %ofValid', base_comp['C_Valid']],
+            # ['% Called G %ofValid', base_comp['G_Valid']],
+            # ['% Called T %ofValid', base_comp['T_Valid']],
+            # ['Mean Concord Neighbors ofValid', real_means['Total_Valid']],
+            # ['Mean A Concord Neighbors ofValid', real_means['A_Valid']],
+            # ['Mean C Concord Neighbors ofValid', real_means['C_Valid']],
+            # ['Mean G Concord Neighbors ofValid', real_means['G_Valid']],
+            # ['Mean T Concord Neighbors ofValid', real_means['T_Valid']],
+            # ['Mean Simulated Concord Neighbors ofValid', simulated_means['Total_Valid']],
+            # ['Mean Simulated A Concord Neighbors ofValid', simulated_means['A_Valid']],
+            # ['Mean Simulated C Concord Neighbors ofValid', simulated_means['C_Valid']],
+            # ['Mean Simulated G Concord Neighbors ofValid', simulated_means['G_Valid']],
+            # ['Mean Simulated T Concord Neighbors ofValid', simulated_means['T_Valid']],
+            # ['Mean Concord Neighbors ofTotal', real_means['All']],
+            # ['Mean A Concord Neighbors ofTotal', real_means['A']],
+            # ['Mean C Concord Neighbors ofTotal', real_means['C']],
+            # ['Mean G Concord Neighbors ofTotal', real_means['G']],
+            # ['Mean T Concord Neighbors ofTotal', real_means['T']],
+            # ['Mean Empty Concord Neighbors ofTotal', real_means['E']],
+            # ['Mean >2 Call Concord Neighbors ofTotal', real_means['M']],
+            # ['Mean Simulated Concord Neighbors ofTotal', simulated_means['All']],
+            # ['Mean Simulated A Concord Neighbors ofTotal', simulated_means['A']],
+            # ['Mean Simulated C Concord Neighbors ofTotal', simulated_means['C']],
+            # ['Mean Simulated G Concord Neighbors ofTotal', simulated_means['G']],
+            # ['Mean Simulated T Concord Neighbors ofTotal', simulated_means['T']],
+            #
+            # ['Mean Simulated Empty Concord Neighbors ofTotal', simulated_means['E']],
+            # ['Mean Simulated >2 Call Concord Neighbors ofTotal', simulated_means['M']],
+            # ]
         self.save_outputs(summary, results)
         time_diff = datetime.datetime.now() - start_time
         logger.info('%s Complete (%s)' % (self.fov, time_diff))

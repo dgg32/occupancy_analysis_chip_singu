@@ -132,8 +132,8 @@ class IntensityAnalysis(object):
                 rho['%s C%02d' % (base, self.start_cycle)] = rho[base][0]
                 rho[base] = np.polyfit(range(len(self.cycles)), rho[base], 1)[1]
             except:
-                rho['%s C%02d' % (base, self.start_cycle)] = 0
-                rho[base] = 0
+                rho['%s C%02d' % (base, self.start_cycle)] = rho[base][0]
+                rho[base] = rho[base][0]
         return rho
 
     def calculate_SNR(self, normalized_data, trim=0.02):
