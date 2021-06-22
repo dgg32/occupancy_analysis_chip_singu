@@ -280,7 +280,7 @@ class OccupancyAnalysis(object):
             self.familial_results, \
             self.singular_summary, \
             self.splits_summary, self.splits_results, \
-            self.cbi_quartile_results, self.snr1_quartile_results, self.snr2_quartile_results = \
+            self.cbi_quartile_results, self.snr1_quartile_results, self.snr2_quartile_results,self.dnb_count = \
                 lbl_analysis.complete_bypass()
         else:
             self.size_summary, self.size_results, \

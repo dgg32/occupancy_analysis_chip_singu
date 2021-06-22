@@ -44,6 +44,7 @@ class LabelAnalysis(object):
         self.label_arr = int_analysis.label_arr[:, blocks_bool]
         self.output_dp = int_analysis.output_dp
         self.prefix = int_analysis.prefix
+        self.num_DNBs = len(self.naCBI_data)
 
         # output histogram npy paths
         self.avgCBI_hist_npy = os.path.join(self.output_dp, self.center_str + '%s_avgCBI_Hist.npy' % self.prefix)
@@ -509,8 +510,7 @@ class LabelAnalysis(object):
 
     def run(self):
         logger.info('Initiating %s label analysis...' % self.fov)
-        num_DNBs = len(self.naCBI_data)
-        logger.info('num_DNBs: %s' % num_DNBs)
+        logger.info('num_DNBs: %s' % self.num_DNBs)
         logger.info('label_arr.shape: %s' % str(self.label_arr.shape))
 
         empty = self.naCBI_data < self.empty_fth
@@ -525,16 +525,16 @@ class LabelAnalysis(object):
         outlier = self.naCBI_data >= self.outlier_fth
 
         # empty, small, large
-        self.empty_PofT = 100. * np.sum(empty) / num_DNBs
-        arb15_empty_PofT = 100. * np.sum(arb15_empty) / num_DNBs
-        arb20_empty_PofT = 100. * np.sum(arb20_empty) / num_DNBs
-        arb25_empty_PofT = 100. * np.sum(arb25_empty) / num_DNBs
-        ne_025_PofT = 100. * np.sum(nonempty_025) / num_DNBs
-        ne_050_PofT = 100. * np.sum(nonempty_050) / num_DNBs
-        self.small_PofT = 100. * np.sum(small) / num_DNBs
-        med_PofT = 100. * np.sum(med) / num_DNBs
-        self.large_PofT = 100. * np.sum(large) / num_DNBs
-        self.outlier_PofT = 100. * np.sum(outlier) / num_DNBs
+        self.empty_PofT = 100. * np.sum(empty) / self.num_DNBs
+        arb15_empty_PofT = 100. * np.sum(arb15_empty) / self.num_DNBs
+        arb20_empty_PofT = 100. * np.sum(arb20_empty) / self.num_DNBs
+        arb25_empty_PofT = 100. * np.sum(arb25_empty) / self.num_DNBs
+        ne_025_PofT = 100. * np.sum(nonempty_025) / self.num_DNBs
+        ne_050_PofT = 100. * np.sum(nonempty_050) / self.num_DNBs
+        self.small_PofT = 100. * np.sum(small) / self.num_DNBs
+        med_PofT = 100. * np.sum(med) / self.num_DNBs
+        self.large_PofT = 100. * np.sum(large) / self.num_DNBs
+        self.outlier_PofT = 100. * np.sum(outlier) / self.num_DNBs
         size_summary = [
             ['Empty (%ofTotal)', self.empty_PofT],
             ['<0.20 (%ofTotal)', arb20_empty_PofT],
@@ -556,9 +556,9 @@ class LabelAnalysis(object):
         arb1 = self.naCBI_data < 0.25
         arb2 = np.logical_and(self.naCBI_data >= 0.25, self.naCBI_data < 0.50)
         arb3 = self.naCBI_data > 1.50
-        self.arb1_PofT = 100. * np.sum(arb1) / num_DNBs
-        self.arb2_PofT = 100. * np.sum(arb2) / num_DNBs
-        self.arb3_PofT = 100. * np.sum(arb3) / num_DNBs
+        self.arb1_PofT = 100. * np.sum(arb1) / self.num_DNBs
+        self.arb2_PofT = 100. * np.sum(arb2) / self.num_DNBs
+        self.arb3_PofT = 100. * np.sum(arb3) / self.num_DNBs
 
         # 0 percentile rankings - positive (non-outlier, non-empty) in single percent bins
         # 1 calls per DNB - # of intensities above empty threshold for majority of cycles
@@ -580,7 +580,7 @@ class LabelAnalysis(object):
                                 self.label_arr[label_dict['PercCBI']] <= 100)
         empty_alt = self.label_arr[label_dict['PercCBI']] <= 0
         outliers = self.label_arr[label_dict['PercCBI']] > 100
-        assert np.sum(cbi_q1 + cbi_q2 + cbi_q3 + cbi_q4 + empty_alt + outliers) == num_DNBs
+        assert np.sum(cbi_q1 + cbi_q2 + cbi_q3 + cbi_q4 + empty_alt + outliers) == self.num_DNBs
         valid_DNBs = non_empty_and_non_outlier = np.logical_and(self.label_arr[label_dict['PercCBI']] > 0,
                                                                 self.label_arr[label_dict['PercCBI']] <= 100)
         num_valid = np.sum(valid_DNBs)
@@ -592,7 +592,7 @@ class LabelAnalysis(object):
         c2 = self.label_arr[label_dict['Multicall']] == 2
         c3 = self.label_arr[label_dict['Multicall']] == 3
         c4 = self.label_arr[label_dict['Multicall']] == 4
-        assert np.sum(c0 + c1 + c2 + c3 + c4) == num_DNBs
+        assert np.sum(c0 + c1 + c2 + c3 + c4) == self.num_DNBs
         cS = np.logical_or.reduce((c0, c1))
         cM = np.logical_or.reduce((c2, c3, c4))
         num_cM = np.sum(cM)
@@ -606,13 +606,13 @@ class LabelAnalysis(object):
         vcM = np.logical_or.reduce((vc2, vc3, vc4))
         num_vcM = np.sum(vcM)
 
-        multicalls_PofT = 100. * np.sum(cM) / num_DNBs
+        multicalls_PofT = 100. * np.sum(cM) / self.num_DNBs
         valid_mc_PofV = 100. * np.sum(vcM) / num_valid
-        c0_PofT = 100. * np.sum(c0) / num_DNBs
-        c1_PofT = 100. * np.sum(c1) / num_DNBs
-        c2_PofT = 100. * np.sum(c2) / num_DNBs
-        c3_PofT = 100. * np.sum(c3) / num_DNBs
-        c4_PofT = 100. * np.sum(c4) / num_DNBs
+        c0_PofT = 100. * np.sum(c0) / self.num_DNBs
+        c1_PofT = 100. * np.sum(c1) / self.num_DNBs
+        c2_PofT = 100. * np.sum(c2) / self.num_DNBs
+        c3_PofT = 100. * np.sum(c3) / self.num_DNBs
+        c4_PofT = 100. * np.sum(c4) / self.num_DNBs
         vc0_PofV = 100. * np.sum(vc0) / num_valid
         vc1_PofV = 100. * np.sum(vc1) / num_valid
         vc2_PofV = 100. * np.sum(vc2) / num_valid
@@ -643,7 +643,7 @@ class LabelAnalysis(object):
         chs_8 = self.label_arr[label_dict['Chastity']] == 8
         chs_9 = self.label_arr[label_dict['Chastity']] == 9
         chs_10 = self.label_arr[label_dict['Chastity']] == 10
-        assert np.sum(chs_nan + chs_5 + chs_6 + chs_7 + chs_8 + chs_9 + chs_10) == num_DNBs
+        assert np.sum(chs_nan + chs_5 + chs_6 + chs_7 + chs_8 + chs_9 + chs_10) == self.num_DNBs
         low_chastity = np.logical_or.reduce((chs_nan, chs_5, chs_6))
         num_lc = np.sum(low_chastity)
         high_chastity = np.logical_or.reduce((chs_7, chs_8, chs_9, chs_10))
@@ -659,15 +659,15 @@ class LabelAnalysis(object):
         vlow_chastity = np.logical_or.reduce((vchs_nan, vchs_5, vchs_6))
         num_vlc = np.sum(vlow_chastity)
 
-        low_chastity_PofT = 100. * np.sum(low_chastity) / num_DNBs
+        low_chastity_PofT = 100. * np.sum(low_chastity) / self.num_DNBs
         valid_lc_PofV = 100. * np.sum(vlow_chastity) / num_valid
-        chastity_nan_PofT = 100. * np.sum(chs_nan) / num_DNBs
-        chastity_05_PofT = 100. * np.sum(chs_5) / num_DNBs
-        chastity_06_PofT = 100. * np.sum(chs_6) / num_DNBs
-        chastity_07_PofT = 100. * np.sum(chs_7) / num_DNBs
-        chastity_08_PofT = 100. * np.sum(chs_8) / num_DNBs
-        chastity_09_PofT = 100. * np.sum(chs_9) / num_DNBs
-        chastity_10_PofT = 100. * np.sum(chs_10) / num_DNBs
+        chastity_nan_PofT = 100. * np.sum(chs_nan) / self.num_DNBs
+        chastity_05_PofT = 100. * np.sum(chs_5) / self.num_DNBs
+        chastity_06_PofT = 100. * np.sum(chs_6) / self.num_DNBs
+        chastity_07_PofT = 100. * np.sum(chs_7) / self.num_DNBs
+        chastity_08_PofT = 100. * np.sum(chs_8) / self.num_DNBs
+        chastity_09_PofT = 100. * np.sum(chs_9) / self.num_DNBs
+        chastity_10_PofT = 100. * np.sum(chs_10) / self.num_DNBs
         vchastity_nan_PofV = 100. * np.sum(vchs_nan) / num_valid
         vchastity_05_PofV = 100. * np.sum(vchs_5) / num_valid
         vchastity_06_PofV = 100. * np.sum(vchs_6) / num_valid
@@ -709,9 +709,9 @@ class LabelAnalysis(object):
         SHI_1 = self.label_arr[label_dict['SHI']] == 1
         SHI_0 = self.label_arr[label_dict['SHI']] == 0
         # print(self.label_arr[label_dict['SHI']])
-        # print(num_DNBs)
+        # print(self.num_DNBs)
         assert np.sum(SHI_10 + SHI_9 + SHI_8 + SHI_7 + SHI_6 + SHI_5 + SHI_4 + SHI_3 + SHI_2 + SHI_1 + SHI_0) == \
-               num_DNBs
+               self.num_DNBs
         high_shi = np.logical_or.reduce((SHI_10, SHI_9, SHI_8, SHI_7, SHI_6, SHI_5, SHI_4, SHI_3))
 
         vSHI_10 = np.logical_and(self.label_arr[label_dict['SHI']] == 10, valid_DNBs)
@@ -730,20 +730,20 @@ class LabelAnalysis(object):
                       vSHI_0) == num_valid
         vhigh_shi = np.logical_or.reduce((vSHI_10, vSHI_9, vSHI_8, vSHI_7, vSHI_6, vSHI_5, vSHI_4, vSHI_3))
 
-        high_shi_PofT = 100. * np.sum(high_shi) / num_DNBs
+        high_shi_PofT = 100. * np.sum(high_shi) / self.num_DNBs
         valid_hs_PofV = 100. * np.sum(vhigh_shi) / num_valid
 
-        SHI_0_PofT = 100. * np.sum(SHI_0) / num_DNBs
-        SHI_1_PofT = 100. * np.sum(SHI_1) / num_DNBs
-        SHI_2_PofT = 100. * np.sum(SHI_2) / num_DNBs
-        SHI_3_PofT = 100. * np.sum(SHI_3) / num_DNBs
-        SHI_4_PofT = 100. * np.sum(SHI_4) / num_DNBs
-        SHI_5_PofT = 100. * np.sum(SHI_5) / num_DNBs
-        SHI_6_PofT = 100. * np.sum(SHI_6) / num_DNBs
-        SHI_7_PofT = 100. * np.sum(SHI_7) / num_DNBs
-        SHI_8_PofT = 100. * np.sum(SHI_8) / num_DNBs
-        SHI_9_PofT = 100. * np.sum(SHI_9) / num_DNBs
-        SHI_10_PofT = 100. * np.sum(SHI_10) / num_DNBs
+        SHI_0_PofT = 100. * np.sum(SHI_0) / self.num_DNBs
+        SHI_1_PofT = 100. * np.sum(SHI_1) / self.num_DNBs
+        SHI_2_PofT = 100. * np.sum(SHI_2) / self.num_DNBs
+        SHI_3_PofT = 100. * np.sum(SHI_3) / self.num_DNBs
+        SHI_4_PofT = 100. * np.sum(SHI_4) / self.num_DNBs
+        SHI_5_PofT = 100. * np.sum(SHI_5) / self.num_DNBs
+        SHI_6_PofT = 100. * np.sum(SHI_6) / self.num_DNBs
+        SHI_7_PofT = 100. * np.sum(SHI_7) / self.num_DNBs
+        SHI_8_PofT = 100. * np.sum(SHI_8) / self.num_DNBs
+        SHI_9_PofT = 100. * np.sum(SHI_9) / self.num_DNBs
+        SHI_10_PofT = 100. * np.sum(SHI_10) / self.num_DNBs
 
         vSHI_0_PofT = 100. * np.sum(vSHI_0) / num_valid
         vSHI_1_PofT = 100. * np.sum(vSHI_1) / num_valid
@@ -790,7 +790,7 @@ class LabelAnalysis(object):
         no_children = self.label_arr[label_dict['Children']] == 0
         single_child = self.label_arr[label_dict['Children']] == 1
         multi_children = self.label_arr[label_dict['Children']] > 1
-        assert np.sum(no_children + single_child + multi_children) == num_DNBs, self.label_arr[label_dict['Children']]
+        assert np.sum(no_children + single_child + multi_children) == self.num_DNBs, self.label_arr[label_dict['Children']]
         parents = np.logical_and(self.label_arr[label_dict['Children']] > 0, self.label_arr[label_dict['Parents']] == 0)
         vparents = np.logical_and(parents, valid_DNBs)
         empty_parents = np.logical_and(parents, self.label_arr[label_dict['PercCBI']] <= 0)
@@ -800,7 +800,7 @@ class LabelAnalysis(object):
         no_parents = self.label_arr[label_dict['Parents']] == 0
         single_parent = self.label_arr[label_dict['Parents']] == 1
         multi_parents = self.label_arr[label_dict['Parents']] > 1
-        assert np.sum(no_parents + single_parent + multi_parents) == num_DNBs
+        assert np.sum(no_parents + single_parent + multi_parents) == self.num_DNBs
         children = np.logical_and(self.label_arr[label_dict['Parents']] > 0,
                                   self.label_arr[label_dict['Children']] == 0)
         vchildren = np.logical_and(children, valid_DNBs)
@@ -813,11 +813,11 @@ class LabelAnalysis(object):
         empty_pc = np.logical_and(parent_and_child, self.label_arr[label_dict['PercCBI']] <= 0)
         c0_pc = np.logical_and(parent_and_child, self.label_arr[label_dict['Multicall']] == 0)
 
-        empty_parents_PofT = 100. * np.sum(empty_parents) / num_DNBs
-        c0_parents_PofT = 100. * np.sum(c0_parents) / num_DNBs
-        empty_children_PofT = 100. * np.sum(empty_children) / num_DNBs
-        c0_children_PofT = 100. * np.sum(c0_children) / num_DNBs
-        c0_pc_PofT = 100. * np.sum(c0_pc) / num_DNBs
+        empty_parents_PofT = 100. * np.sum(empty_parents) / self.num_DNBs
+        c0_parents_PofT = 100. * np.sum(c0_parents) / self.num_DNBs
+        empty_children_PofT = 100. * np.sum(empty_children) / self.num_DNBs
+        c0_children_PofT = 100. * np.sum(c0_children) / self.num_DNBs
+        c0_pc_PofT = 100. * np.sum(c0_pc) / self.num_DNBs
 
         empty_splits_results = [
             ['Empty Parents (%ofTotal)', empty_parents_PofT],
@@ -840,12 +840,12 @@ class LabelAnalysis(object):
         # singular is not split/mixed/empty/outlier
         self.singular = np.logical_and(self.non_split_and_non_mixed, non_empty_and_non_outlier)
 
-        mixed_PofT = 100. * num_mixed / num_DNBs
+        mixed_PofT = 100. * num_mixed / self.num_DNBs
         vmixed_PofV = 100. * num_vmixed / num_valid
 
         mixed_shi = np.logical_or(cM, high_shi)
         valid_mixed_shi = np.logical_and(valid_DNBs, mixed_shi)
-        mixed_shi_PofT = 100. * np.sum(mixed_shi) / num_DNBs
+        mixed_shi_PofT = 100. * np.sum(mixed_shi) / self.num_DNBs
         vmixed_shi_PofV = 100. * np.sum(valid_mixed_shi) / num_valid
         mixed_summary = [
             ['Mixed (%ofTotal)', mixed_PofT],
@@ -1015,19 +1015,19 @@ class LabelAnalysis(object):
         fmly8 = self.label_arr[label_dict['FamilySize']][self.label_arr[label_dict['FamilySize']] == 7]
         fmly9 = self.label_arr[label_dict['FamilySize']][self.label_arr[label_dict['FamilySize']] == 8]
         fmly9plus = self.label_arr[label_dict['FamilySize']][self.label_arr[label_dict['FamilySize']] > 8]
-        fmly2_PofT = 100. * np.sum(fmly2) / num_DNBs
+        fmly2_PofT = 100. * np.sum(fmly2) / self.num_DNBs
         if num_familial_DNBs != 0:
             fmly2_PofCl = 100. * np.sum(fmly2) / num_familial_DNBs
         else:
             fmly2_PofCl = 0
-        fmly3_PofT = 100. * np.sum(fmly3) / num_DNBs
-        fmly4_PofT = 100. * np.sum(fmly4) / num_DNBs
-        fmly5_PofT = 100. * np.sum(fmly5) / num_DNBs
-        fmly6_PofT = 100. * np.sum(fmly6) / num_DNBs
-        fmly7_PofT = 100. * np.sum(fmly7) / num_DNBs
-        fmly8_PofT = 100. * np.sum(fmly8) / num_DNBs
-        fmly9_PofT = 100. * np.sum(fmly9) / num_DNBs
-        fmly9plus_PofT = 100. * np.sum(fmly9plus) / num_DNBs
+        fmly3_PofT = 100. * np.sum(fmly3) / self.num_DNBs
+        fmly4_PofT = 100. * np.sum(fmly4) / self.num_DNBs
+        fmly5_PofT = 100. * np.sum(fmly5) / self.num_DNBs
+        fmly6_PofT = 100. * np.sum(fmly6) / self.num_DNBs
+        fmly7_PofT = 100. * np.sum(fmly7) / self.num_DNBs
+        fmly8_PofT = 100. * np.sum(fmly8) / self.num_DNBs
+        fmly9_PofT = 100. * np.sum(fmly9) / self.num_DNBs
+        fmly9plus_PofT = 100. * np.sum(fmly9plus) / self.num_DNBs
         familial_results = [
             ['Families Count', num_families],
             ['2n DNBs (%ofTotal)', fmly2_PofT],
@@ -1045,8 +1045,8 @@ class LabelAnalysis(object):
         non_mixed_seeds = np.logical_and(seeds, self.non_mixed)
         small_non_mixed_seeds = np.logical_and(small, non_mixed_seeds)
         seeds_and_singular = np.logical_or(non_mixed_seeds, self.singular)
-        seeds_and_singular_PofT = 100. * np.sum(seeds_and_singular) / num_DNBs
-        singular_PofT = 100. * np.sum(self.singular) / num_DNBs
+        seeds_and_singular_PofT = 100. * np.sum(seeds_and_singular) / self.num_DNBs
+        singular_PofT = 100. * np.sum(self.singular) / self.num_DNBs
         snm_seeds_and_sm_singular = np.logical_or(small_non_mixed_seeds, small_singular)
         # seeds and singular *should* be exclusive, so the sum of the two should equal the union
         assert np.sum(small_non_mixed_seeds) + np.sum(small_singular) == np.sum(snm_seeds_and_sm_singular), \
@@ -1076,21 +1076,21 @@ class LabelAnalysis(object):
                                                      self.label_arr[label_dict['MixedSplit']]))
         valid_snseed_split = np.logical_and(valid_nseed_split, self.label_arr[label_dict['HiddenSplit']] > 0)
 
-        seq_split_PofT = 100. * np.sum(seq_split) / num_DNBs
-        hns_split_PofT = 100. * np.sum(shady_nseed_splits) / num_DNBs
+        seq_split_PofT = 100. * np.sum(seq_split) / self.num_DNBs
+        hns_split_PofT = 100. * np.sum(shady_nseed_splits) / self.num_DNBs
         vseq_split_PofV = 100. * np.sum(valid_seq_split) / num_valid
         vhns_split_PofV = 100. * np.sum(valid_snseed_split) / num_valid
 
-        split_PofT = 100. * np.sum(split) / num_DNBs
+        split_PofT = 100. * np.sum(split) / self.num_DNBs
         vsplit_PofV = 100. * np.sum(valid_split) / num_valid
         # child splits
-        children_PofT = 100. * np.sum(children) / num_DNBs
+        children_PofT = 100. * np.sum(children) / self.num_DNBs
         vchildren_PofV = 100. * np.sum(vchildren) / num_valid
         # parents splits
-        parents_PofT = 100. * np.sum(parents) / num_DNBs
+        parents_PofT = 100. * np.sum(parents) / self.num_DNBs
         vparents_PofV = 100. * np.sum(vparents) / num_valid
         # child+parent splits
-        parent_and_child_PofT = 100. * np.sum(parent_and_child) / num_DNBs
+        parent_and_child_PofT = 100. * np.sum(parent_and_child) / self.num_DNBs
         vparent_and_child_PofV = 100. * np.sum(vparent_and_child) / num_valid
         splits_summary = [
             ['Seq Splits (%ofTotal)', seq_split_PofT],
@@ -1310,7 +1310,7 @@ class LabelAnalysis(object):
                familial_results, \
                singular_summary, \
                splits_summary, splits_results, \
-               qtrl_dict['cbi']['results'], qtrl_dict['snr1']['results'], qtrl_dict['snr2']['results'], num_DNBs
+               qtrl_dict['cbi']['results'], qtrl_dict['snr1']['results'], qtrl_dict['snr2']['results'], self.num_DNBs
 
     def complete_bypass(self):
         import pickle
@@ -1382,7 +1382,7 @@ class LabelAnalysis(object):
                familial_results, \
                singular_summary, \
                splits_summary, splits_results, \
-               cbi_quartile_results, snr1_quartile_results, snr2_quartile_results
+               cbi_quartile_results, snr1_quartile_results, snr2_quartile_results, self.num_DNBs
 
 def main(slide, lane, fov, start_cycle, occupancy_range, int_fp):
     inta = IntensityAnalysis(slide, lane, fov, start_cycle, occupancy_range, int_fp)
