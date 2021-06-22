@@ -8,7 +8,7 @@ np.set_printoptions(precision=4, suppress=True)  # for test only
 
 # import json
 # import pprint
-# import cPickle as pickle
+# import pickle
 
 ###### Document Decription
 '''  '''
@@ -429,7 +429,7 @@ class Cal(object):
         self.read_len = len(fq_list[1])-2
         seq_bool = np.tile(np.array([0, 1, 0, 0], dtype=bool), self.number)
         qual_bool = np.tile(np.array([0, 0, 0, 1], dtype=bool), self.number)
-        char_array = np.array(map(list, fq_list))
+        char_array = np.array(list(map(list, fq_list)))
         bases_arr = np.array(char_array[seq_bool.tolist()].tolist()).view(np.uint8)
         qual_arr = np.array(char_array[qual_bool.tolist()].tolist()).view(np.uint8) - 33
         self.basesDigit = {}
@@ -547,22 +547,18 @@ class Cal(object):
             insert_vect = [None]*self.number
         if strand:
             strand = '/' + strand
+        if idPrefix:
+            idPrefix += "_"
         if type(cycles) == list:
             # print(cycles)
             if len(cycles)==2:
-                if idPrefix:
-                    idPrefix += "_"
                 allBaseArr = np.empty((cycles[1]-cycles[0]+1, self.number), dtype=np.uint8)
                 allQualArr = np.empty((cycles[1]-cycles[0]+1, self.number), dtype=np.uint8)
                 cycles = range(cycles[0], cycles[1]+1)
             elif len(cycles)>2:
-                if idPrefix:
-                    idPrefix += "_"
                 allBaseArr = np.empty((len(cycles), self.number), dtype=np.uint8)
                 allQualArr = np.empty((len(cycles), self.number), dtype=np.uint8)
             else:
-                if idPrefix:
-                    idPrefix += "_"
                 allBaseArr = np.empty((1, self.number), dtype=np.uint8)
                 allQualArr = np.empty((1, self.number), dtype=np.uint8)
             for ptr, c in enumerate(cycles):
@@ -578,17 +574,15 @@ class Cal(object):
             # qualChar = allQualArr.view("S1").reshape(-1, len(self.cycleSet))
             qualChar = allQualArr.view("S1").T
             for i in range(len(baseChar)):
-                fp.write("@%s%06d/%s\n" % (idPrefix, i, strand))
+                fp.write( f"@{idPrefix}{i:06d}/{strand}\n".encode("utf-8") )
                 # fp.write(baseChar[i][adapter_filter[i, :][:len(baseChar[i])]==False].tostring().decode("utf8"))
-                fp.write(baseChar[i][:insert_vect[i]].tostring().decode("utf8"))
-                fp.write("\n+\n")
-                fp.write(qualChar[i][:insert_vect[i]].tostring().decode("utf8"))
+                fp.write(baseChar[i][:insert_vect[i]].tobytes())
+                fp.write("\n+\n".encode("utf-8"))
+                fp.write(qualChar[i][:insert_vect[i]].tobytes())
                 # fp.write(qualChar[i][adapter_filter[i, :][:len(baseChar[i])]==False].tostring().decode("utf8"))
-                fp.write("\n")
+                fp.write("\n".encode("utf-8"))
             return
         elif type(cycles) == int:
-            if idPrefix:
-                idPrefix += "_"
             allBaseArr = np.empty((cycles, self.number), dtype=np.uint8)
             allQualArr = np.empty((cycles, self.number), dtype=np.uint8)
             for ptr,c in enumerate(range(1, cycles+1)):
@@ -599,15 +593,13 @@ class Cal(object):
             # qualChar = allQualArr.view("S1").reshape(-1, len(self.cycleSet))
             qualChar = allQualArr.view("S1").T
             for i in range(len(baseChar)):
-                fp.write("@%s%06d/%s\n" % (idPrefix, i, strand))
-                fp.write(baseChar[i][:insert_vect[i]].tostring().decode("utf8"))
-                fp.write("\n+\n")
-                fp.write(qualChar[i][:insert_vect[i]].tostring().decode("utf8"))
-                fp.write("\n")
+                fp.write( f"@{idPrefix}{i:06d}/{strand}\n".encode("utf-8") )
+                fp.write(baseChar[i][:insert_vect[i]].tobytes())
+                fp.write("\n+\n".encode("utf-8"))
+                fp.write(qualChar[i][:insert_vect[i]].tobytes())
+                fp.write("\n".encode("utf-8"))
             return
         else:
-            if idPrefix:
-                idPrefix += "_"
             allBaseArr = np.empty((len(self.cycleSet), self.number), dtype=np.uint8)
             allQualArr = np.empty((len(self.cycleSet), self.number), dtype=np.uint8)
             for ptr,c in enumerate(sorted(list(self.cycleSet))):
@@ -620,10 +612,10 @@ class Cal(object):
             qualChar = allQualArr.view("S1").T
 
             for i in range(len(baseChar)):
-                fp.write("@%s%06d/%s\n" % (idPrefix, i, strand))
-                fp.write(baseChar[i].tostring().decode("utf8"))
+                fp.write( f"@{idPrefix}{i:06d}/{strand}\n" )
+                fp.write(baseChar[i].tobytes.decode("utf8"))
                 fp.write("\n+\n")
-                fp.write(qualChar[i].tostring().decode("utf8"))
+                fp.write(qualChar[i].tobytes.decode("utf8"))
                 fp.write("\n")
             return
 
@@ -662,7 +654,7 @@ class Cal(object):
                 with gzip.open(filename, 'wb') as fp:
                     self._dumpAsFq(fp, idPrefix=idPrefix, strand='', insert_vect_fp=insert_vect)
         else:
-            with open(filename, "w", 100000000) as fp:
+            with open(filename, "wt", 100000000) as fp:
                 self._dumpAsFq(fp, idPrefix=idPrefix, strand='', insert_vect_fp=insert_vect)
         return
 
@@ -866,10 +858,10 @@ class Cal(object):
             # for each cycle now (to calculate overall avg), and store for later
             eep_list = []
             for cycle_index in range(cycle_start, cycle_stop):
-                score_count_row = map(int,
+                score_count_row = list(map(int,
                                       [(self.qual[cycle_index] == score).sum() for
                                        score in
-                                       range(42)])
+                                       range(42)]))
                 eep = scores2discordance(score_count_row)
                 eep_list.append(eep)
             eep_avg = round(sum(eep_list) / len(eep_list), 4) if eep_list else 0.0

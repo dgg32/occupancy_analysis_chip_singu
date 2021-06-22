@@ -279,7 +279,7 @@ def main(args):
     zpc.run()
 
     stop = datetime.datetime.now()
-    print (stop-start)
+    print(stop-start)
     return 1
 
 if __name__ == '__main__':

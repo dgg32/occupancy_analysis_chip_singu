@@ -29,7 +29,7 @@ def prepare_json_dict(parameter_overrides):
     else:
         parameters = json.load(open(parameter_overrides, 'r'))
     # Remove blank value entries
-    for k, v in parameters.items():
+    for k, v in list(parameters.items()):
         if not v:
             logger.debug('Removing empty key: %s' % k)
             parameters.pop(k)
@@ -51,7 +51,7 @@ def output_table(output_fp, list_table, header=[], delimiter=','):
     import csv
     if header:
         list_table = [header] + list_table
-    with open(output_fp, 'wb') as f:
+    with open(output_fp, 'w') as f:
         writer = csv.writer(f, delimiter=delimiter)
         writer.writerows(list_table)
     return
@@ -201,16 +201,18 @@ def setup_logging(config_path='log_config.yaml',
     return
 
 def make_dir(dir_path):
-    for i in range(5):
-        if os.path.exists(dir_path): return
-        try:
-            os.makedirs(dir_path, 0o755)
-            #print "Making: %s" % dir_path
-            logger.info( "Making: %s" % dir_path)
-        except OSError:
-            #print "Unable to make: %s" % dir_path
-            logger.warning("Unable to make: %s" % dir_path)
-            time.sleep(5)
+    os.makedirs(dir_path,mode=0o755,exist_ok=True)
+    logger.info( "Making: %s" % dir_path)
+    # for i in range(5):
+    #     if os.path.exists(dir_path): return
+    #     try:
+    #         os.makedirs(dir_path, 0o755)
+    #         #print "Making: %s" % dir_path
+    #         logger.info( "Making: %s" % dir_path)
+    #     except OSError:
+    #         #print "Unable to make: %s" % dir_path
+    #         logger.warning("Unable to make: %s" % dir_path)
+    #         time.sleep(5)
     return
 
 def del_dir(dir_path):

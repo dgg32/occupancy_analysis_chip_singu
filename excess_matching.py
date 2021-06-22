@@ -46,17 +46,17 @@ for key in numeral_ind_dict.keys():
 def neighbor_to_matches(neighbor_arr, mixed_splits=True, split_type=''):
     out = np.zeros(neighbor_arr.shape[0])
     type_vals = np.unique(neighbor_arr[:, 0])
-    print(type_vals)
+    #print(type_vals)
     for i in direction_dict[split_type]:
         out += (neighbor_arr[:, 0] == neighbor_arr[:, i]).astype(int)
     if mixed_splits:
         type_vals = np.unique(neighbor_arr[:, 0])
-        print(type_vals)
+        #print(type_vals)
         for w in type_vals:
             if w in numeral_ind_dict.keys():
                 t_bool = neighbor_arr[:, 0] == w
                 to_check = numeral_ind_dict[w]
-                print(w, to_check)
+                #print(w, to_check)
                 for t in to_check:
                     for i in direction_dict[split_type]:
                         out[t_bool.ravel()] += (neighbor_arr[t_bool.ravel(), i] == t).astype(int)
@@ -87,9 +87,9 @@ def neighbor_to_single_counting(neighbor_arr):
 def get_match_vals(called_neighbor_group, sim_neighbor_group, mixed_splits, split_type):
     called_matches = neighbor_to_matches(called_neighbor_group, mixed_splits, split_type)
     sim_matches = neighbor_to_matches(sim_neighbor_group, mixed_splits, split_type)
-    print(sim_matches)
+    #print(sim_matches)
     s_mean = sim_matches.mean()
-    print(mixed_splits, split_type, s_mean)
+    #print(mixed_splits, split_type, s_mean)
     r_mean = called_matches.mean()
     if s_mean > 0:
         perc = 100*(float(r_mean - s_mean) / float(s_mean))
@@ -117,7 +117,7 @@ def generate_concordances(real_neighbor_arr, sim_neighbor_arr, base_list, tag, f
         base_sim_neighbor_groups = filter_neighbors_by_base(sim_neighbor_arr, l, filter_mixed,
                                                             include_mixed=count_mixed_splits)
         for split_type in direction_dict.keys():
-            print(b, count_mixed_splits)
+            #print(b, count_mixed_splits)
             excess_percentage['_'.join([b, tag, split_type])], \
             real_means['_'.join([b, tag, split_type])], \
             sim_means['_'.join([b, tag, split_type])], = get_match_vals(base_called_neighbor_groups,
@@ -155,7 +155,7 @@ def add_traditional_neighbor_metric(called_neighbor_group, sim_neighbor_group):
     sim_out = {}
     called_neighbor_group = called_neighbor_group[called_neighbor_group[:, 0] < 4, :]
     sim_neighbor_group = sim_neighbor_group[sim_neighbor_group[:, 0] < 4, :]
-    print(np.equal(called_neighbor_group[:, 1:], called_neighbor_group[:, 0].reshape(called_neighbor_group.shape[0], 1)))
+    #print(np.equal(called_neighbor_group[:, 1:], called_neighbor_group[:, 0].reshape(called_neighbor_group.shape[0], 1)))
     called_out['Total'] = 100.0*(np.equal(called_neighbor_group[:, 0].reshape(called_neighbor_group.shape[0], 1),
                                     called_neighbor_group[:, 1:]).sum(axis=1) > 0).astype(int).mean()
     sim_out['Total'] = 100.0*(np.equal(sim_neighbor_group[:, 0].reshape(sim_neighbor_group.shape[0], 1), sim_neighbor_group[:,

@@ -16,7 +16,7 @@ import os
 import traceback
 import Signal_phasing_from_npy as SignalPhasing
 import sys
-import cPickle as Pickle
+import pickle
 import multiprocessing as mp
 import scipy.stats as stats
 import glob
@@ -558,7 +558,7 @@ def crosstalk(intensities):
     clipped = np.all(intensities == 0, axis=1)
     init_cycle = 10
     intensities = intensities.astype(np.float32)
-    for i in xrange(3):
+    for i in range(3):
         # crosstalk using only matrix calculated from cycle
         # print('Calculate Crosstalk Matrix..............................................')
         # crosstalk matrix calculation for init_cycle
@@ -606,8 +606,8 @@ def single(data_path, out_path, fov, split_types, split_range, label_dir, insert
     except:
         logger.error('Occupancy Labels %s could not be found, removing fov from subsetting' % label_path)
         return [fov]
-    split_len = len((xrange(split_range[0], split_range[1])))
-    logger.info('QC calculation cycles: ' + str(list((xrange(split_range[0], split_range[1])))))
+    split_len = len((range(split_range[0], split_range[1])))
+    logger.info('QC calculation cycles: ' + str(list((range(split_range[0], split_range[1])))))
     cycles = os.listdir(os.path.join(data_path, 'finInts'))
     cycles.sort()
     fname_dnbs = os.path.join(data_path, 'finInts', 'S001', '{0}.QC.txt'.format(fov))
@@ -632,7 +632,7 @@ def single(data_path, out_path, fov, split_types, split_range, label_dir, insert
             raw_ints = np.empty((num_dnbs, 4, split_len), dtype=np.float16)
             mid_ints = np.empty((num_dnbs, 4, split_len), dtype=np.float16)
             j = 0
-            for i in xrange(split_range[0], split_range[1]):
+            for i in range(split_range[0], split_range[1]):
                 if os.path.exists(os.path.join(data_path, 'finInts', cycles[i],
                                                '{}.bin'.format(fov))):
                     fin_ints[:, :, j] = extract_intensities_np.main(
@@ -831,8 +831,8 @@ def main(data_path, out_path, fovs, split_types, split_range, label_dir, insert_
     for key in vals.keys():
         for fov in vals[key].keys():
             qc_out = os.path.join(out_path, fov + key + '_QC_Data.p')
-            with open(qc_out, 'w') as fo:
-                Pickle.dump(vals[key][fov], fo)
+            with open(qc_out, 'wb') as fo:
+                pickle.dump(vals[key][fov], fo)
     # print (fovs)
     return fovs
 

@@ -38,24 +38,39 @@ class V2Cal2Fastq(object):
         return
 
     def run(self):
-        from calReader import Cal
 
         start_time = datetime.datetime.now()
         logger.info('%s - Generating fastq file from cal file...' % self.fov)
-        if not os.path.exists(self.cal_fp):
-            return
         print(self.platform)
-        if (self.platform.upper() == 'V40') or ('DP' in self.cal_fp) or ('cap_integ' in self.cal_fp) or (self.platform.upper() == 'V0.2'):
-            v40 = True
+        if self.platform=='Lite':
+            from fovReaders_py3.calReaderLite import CalReaderLite
+            if not os.path.exists(self.cal_fp):
+                self.cal_fp = os.path.join(self.data_dp, 'Cal', f'{self.fov}.Cal' )
+            if not os.path.exists(self.cal_fp):
+                self.cal_fp = os.path.join(self.data_dp, 'calfile', f'{self.fov}.cal' )
+            if not os.path.exists(self.cal_fp):
+                return
+            cal_obj = CalReaderLite(self.cal_fp)
+            if (type(self.occupancy_cycle)==np.ndarray) | (type(self.occupancy_cycle)==list):
+                cycles = list(self.occupancy_cycle)
+            else:
+                cycles = [self.occupancy_cycle, self.occupancy_cycle+self.occu_range]
+            cal_obj.writeFqBlocks(self.fastq_fp, cycles=cycles, strand=None, blocks=self.blocks_vect) #no paired end
         else:
-            v40 = False
-        cal_obj = Cal()
-        cal_obj.load(self.cal_fp, center_bool=self.blocks_vect, V40=v40)
-        if (type(self.occupancy_cycle)==np.ndarray) | (type(self.occupancy_cycle)==list):
-            cal_obj.writefq(self.fastq_fp, idPrefix=self.fov, cycles=list(self.occupancy_cycle))
-        else:
-            cal_obj.writefq(self.fastq_fp, idPrefix=self.fov, cycles=[self.occupancy_cycle,
-                                                                  self.occupancy_cycle+self.occu_range])
+            if not os.path.exists(self.cal_fp):
+                return
+            from calReader import Cal
+            if (self.platform.upper() == 'V40') or ('DP' in self.cal_fp) or ('cap_integ' in self.cal_fp) or (self.platform.upper() == 'V0.2'):
+                v40 = True
+            else:
+                v40 = False
+            cal_obj = Cal()
+            cal_obj.load(self.cal_fp, center_bool=self.blocks_vect, V40=v40)
+            if (type(self.occupancy_cycle)==np.ndarray) | (type(self.occupancy_cycle)==list):
+                cal_obj.writefq(self.fastq_fp, idPrefix=self.fov, cycles=list(self.occupancy_cycle))
+            else:
+                cal_obj.writefq(self.fastq_fp, idPrefix=self.fov, cycles=[self.occupancy_cycle,
+                                                                    self.occupancy_cycle+self.occu_range])
 
         time_diff = datetime.datetime.now() - start_time
         logger.info('%s - Complete (%s)' % (self.fov, time_diff))

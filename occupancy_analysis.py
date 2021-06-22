@@ -150,9 +150,9 @@ class OccupancyAnalysis(object):
             blocks_fp = None
             int_fp, fastq_fp = self.run_nanocall_conversion(self.slide, self.lane, self.fov,
                                                             self.start_cycle, self.occupancy_range, self.temp_dp)
-        else:
+        else: # "v2"('zebracall') and "Lite" platforms here
             int_fp, posinfo_fp, norm_paras_fp, background_fp = self.run_int2npy(
-                self.data_dp, self.fov, self.start_cycle, self.occupancy_range, self.temp_dp)
+                self.data_dp, self.fov, self.start_cycle, self.occupancy_range, self.temp_dp, basecaller=platform)
             coords_fp, neighbors_fp, blocks_fp = self.run_pos2neighbors(self.data_dp, self.temp_dp, self.fov,
                                                                         self.blocks, v1=False)
             fastq_fp = self.run_v2cal2fastq(self.temp_dp, self.fov, blocks_fp)
@@ -203,10 +203,10 @@ class OccupancyAnalysis(object):
             int_fp, fastq_fp = ncc.run()
         return int_fp, fastq_fp
 
-    def run_int2npy(self, data_dp, fov, start_cycle, occupancy_range, temp_dp):
+    def run_int2npy(self, data_dp, fov, start_cycle, occupancy_range, temp_dp, basecaller='v2'): #v2 is zebracall
         from occuint2npy import Int2npy
         i2n = Int2npy(data_dp, fov, start_cycle, occupancy_range, self.read_len, output_dp=temp_dp,
-                      log_dp=self.log_dp, log_overrides=self.log_overrides)
+                      basecaller=basecaller,log_dp=self.log_dp, log_overrides=self.log_overrides)
         if self.bypass['int2npy']:
             int_fp, posinfo_fp, norm_paras_fp, background_fp = i2n.complete_bypass()
         else:
@@ -260,7 +260,7 @@ class OccupancyAnalysis(object):
         self.children_cbi_dist_npy = nbr_analysis.children_cbi_dist_npy
         # neighbor_analysis can only be bypassed if int_analysis was since the latter recreates the label array
         if self.bypass['neighbor_analysis'] and self.cbi_bypassed:
-            self.neighbors_summary, self.neighbors_results = nbr_analysis.complete_bypass()
+            self.neighbors_summary, self.neighbors_results, self.single_cycle_split = nbr_analysis.complete_bypass()
         else:
             self.neighbors_summary, self.neighbors_results, self.single_cycle_split = nbr_analysis.run()
         return

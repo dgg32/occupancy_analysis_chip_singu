@@ -22,7 +22,7 @@ import sys
 from intensity_analysis import IntensityAnalysis
 from intensity_analysis import label_dict
 
-import cPickle as pickle
+import pickle
 import traceback
 
 import datetime
@@ -176,6 +176,7 @@ class NeighborAnalysis(object):
 
         self.na_summary_fp = os.path.join(self.output_dp, '%s_Neighbor_Summary.p' % self.prefix)
         self.na_results_fp = os.path.join(self.output_dp, '%s_Neighbor_Results.p' % self.prefix)
+        self.na_single_cycle_split_stats_fp = os.path.join(self.output_dp, '%s_Neighbor_Single_Cycle_Split_Stats.p' % self.prefix)
 
         self.split_rates_fp = os.path.join(self.output_dp, '%s_Split_Rates.npy' % self.prefix)
 
@@ -367,7 +368,7 @@ class NeighborAnalysis(object):
         ACGT_dist = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
 
         sequence_strings = []
-        with gzip.open(self.fastq_fp, 'r') as fq:
+        with gzip.open(self.fastq_fp,  'rt', encoding='utf-8') as fq:
             for i, line in enumerate(fq):
                 if (i + 1) % 4 == 1:
                     idx = int(line.split('_')[-1].split('/')[0])
@@ -579,7 +580,7 @@ class NeighborAnalysis(object):
 
         def count_neighbor_types(dnb_array, label, index_mod=0, debug=False):
             if not index_mod:
-                dnb_array = np.asarray(map(DNB.get_idx, dnb_array))
+                dnb_array = np.asarray(list(map(DNB.get_idx, dnb_array)))
             else:
                 dnb_array = np.asarray(dnb_array) - 1
             # create array of CBI values from dnb_array
@@ -668,7 +669,8 @@ class NeighborAnalysis(object):
                             nb = [val for val in nb if val is not None]
                             adjacent.append(nb)
                 # Currently adjacent is a list of lists with double counting of the DNBs
-                map(count_neighbor_types, adjacent, [label]*len(adjacent))
+                [count_neighbor_types(dnb_array,label) 
+                                    for dnb_array,label in zip(adjacent, [label]*len(adjacent))]
                 adjacent = merge_dnb_lists(adjacent)
                 stop = datetime.datetime.now()
                 time_diff = stop - start
@@ -784,7 +786,8 @@ class NeighborAnalysis(object):
                 nb_only = np.vectorize(lambda t: t if t in group else 0)
                 group_neighbors = nb_only(group_neighbors)
                 adjacent = [[val for val in gn if val] for gn in group_neighbors if any(gn[1:])]
-                map(count_neighbor_types, adjacent, [label]*len(adjacent), [1]*len(adjacent))
+                [count_neighbor_types(dnb_array,label,index_mod) 
+                            for dnb_array,label,index_mod in zip(adjacent, [label]*len(adjacent), [1]*len(adjacent))]
                 # Currently adjacent is a list of lists with double counting of the DNBs
                 adjacent = merge_index_lists(adjacent)
                 stop = datetime.datetime.now()
@@ -915,7 +918,7 @@ class NeighborAnalysis(object):
         idx = list(set(unpack([horiz, vert, diag, multi])))
         ht = {}
 
-        with gzip.open(self.fastq_fp, 'r') as fq:
+        with gzip.open(self.fastq_fp,'rt', encoding='utf-8') as fq:
             contents = fq.readlines()
             for i in idx:
                 line = contents[4 * i + 1]
@@ -972,7 +975,7 @@ class NeighborAnalysis(object):
             CBI_arr = np.array(CBI_arr)
             np.save(save_path, CBI_arr)
         else:
-            CBI_arr = np.load(save_path)
+            CBI_arr = np.load(save_path,allow_pickle=True)
         return CBI_arr
 
     def calculate_single_split_CBI_ratio(self, CBI_arr, direction):
@@ -1823,7 +1826,7 @@ class NeighborAnalysis(object):
         d_split = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
         m_split = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
 
-        with gzip.open(self.fastq_fp, 'r') as fq:
+        with gzip.open(self.fastq_fp,'rt', encoding='utf-8') as fq:
             contents = fq.readlines()
             for i in horiz:
                 line = contents[4 * i + 1]
@@ -2075,22 +2078,24 @@ class NeighborAnalysis(object):
         mirages = np.sum(mirages, 2) == 10
         return np.sum(mirages[:,1:], 0)
 
-    def save_outputs(self, summary, results):
+    def save_outputs(self, summary, results,single_cycle_split_stats):
         #np.save(self.na_summary_fp, summary)
-        with open(self.na_summary_fp, 'w') as f:
+        with open(self.na_summary_fp, 'wb') as f:
             pickle.dump(summary, f)
         #np.save(self.na_results_fp, results)
-        with open(self.na_results_fp, 'w') as f:
+        with open(self.na_results_fp, 'wb') as f:
             pickle.dump(results, f)
+        with open(self.na_single_cycle_split_stats_fp,'wb') as f:
+            pickle.dump(single_cycle_split_stats, f)
         return
 
     def save_possible_split_groups(self, possible_split_groups):
-        with open(self.possible_split_groups_fp, 'w') as f:
+        with open(self.possible_split_groups_fp, 'wb') as f:
             pickle.dump(possible_split_groups, f)
         return
 
     def save_ACGT_dist(self, ACGT_dist):
-        with open(self.ACGT_dist_fp, 'w') as f:
+        with open(self.ACGT_dist_fp, 'wb') as f:
             pickle.dump(ACGT_dist, f)
         return
 
@@ -2099,12 +2104,12 @@ class NeighborAnalysis(object):
         return
 
     def load_possible_split_groups(self):
-        with open(self.possible_split_groups_fp, 'r') as p:
+        with open(self.possible_split_groups_fp, 'rb') as p:
             possible_split_groups = pickle.load(p)
         return possible_split_groups
 
     def load_ACGT_dist(self):
-        with open(self.ACGT_dist_fp, 'r') as p:
+        with open(self.ACGT_dist_fp, 'rb') as p:
             ACGT_dist = pickle.load(p)
         return ACGT_dist
 
@@ -2131,24 +2136,24 @@ class NeighborAnalysis(object):
         return horiz_rate, vert_rate, diag_rate, multi_rate, spatdup_rate
 
     def save_splits_lists(self, horizontal_splits, vertical_splits, diagonal_splits, multiple_splits):
-        with open(self.horiz_splits_fp, 'w') as f:
+        with open(self.horiz_splits_fp, 'wb') as f:
             pickle.dump(horizontal_splits, f)
-        with open(self.vert_splits_fp, 'w') as f:
+        with open(self.vert_splits_fp, 'wb') as f:
             pickle.dump(vertical_splits, f)
-        with open(self.diag_splits_fp, 'w') as f:
+        with open(self.diag_splits_fp, 'wb') as f:
             pickle.dump(diagonal_splits, f)
-        with open(self.multi_splits_fp, 'w') as f:
+        with open(self.multi_splits_fp, 'wb') as f:
             pickle.dump(multiple_splits, f)
         return
 
     def load_splits_lists(self):
-        with open(self.horiz_splits_fp, 'r') as p:
+        with open(self.horiz_splits_fp, 'rb') as p:
             horizontal_splits = pickle.load(p)
-        with open(self.vert_splits_fp, 'r') as p:
+        with open(self.vert_splits_fp, 'rb') as p:
             vertical_splits = pickle.load(p)
-        with open(self.diag_splits_fp, 'r') as p:
+        with open(self.diag_splits_fp, 'rb') as p:
             diagonal_splits = pickle.load(p)
-        with open(self.multi_splits_fp, 'r') as p:
+        with open(self.multi_splits_fp, 'rb') as p:
             multiple_splits = pickle.load(p)
         return horizontal_splits, vertical_splits, diagonal_splits, multiple_splits
 
@@ -2421,24 +2426,25 @@ class NeighborAnalysis(object):
             # ['Mean Simulated Empty Concord Neighbors ofTotal', simulated_means['E']],
             # ['Mean Simulated >2 Call Concord Neighbors ofTotal', simulated_means['M']],
             # ]
-        self.save_outputs(summary, results)
+        self.save_outputs(summary, results,single_cycle_split_stats)
         time_diff = datetime.datetime.now() - start_time
         logger.info('%s Complete (%s)' % (self.fov, time_diff))
         return summary, results, single_cycle_split_stats
 
     def complete_bypass(self):
         try:
-            with open(self.na_summary_fp, 'r') as p:
+            with open(self.na_summary_fp, 'rb') as p:
                 summary = pickle.load(p)
-            with open(self.na_results_fp, 'r') as p:
+            with open(self.na_results_fp, 'rb') as p:
                 results = pickle.load(p)
-
+            with open(self.na_single_cycle_split_stats_fp ,'rb') as p:
+                single_cycle_split_stats = pickle.load(p)
             logger.info('%s - Bypass successful.' % self.fov)
         except:
             logger.warning(traceback.format_exc())
             logger.warning('%s - Could not bypass Neighbor Analysis!' % self.fov)
             summary, results = self.run()
-        return summary, results
+        return summary, results, single_cycle_split_stats
 
 
 def main(slide, lane, fov, start_cycle, occupancy_range, int_fp, posinfo_fp, fastq_fp):

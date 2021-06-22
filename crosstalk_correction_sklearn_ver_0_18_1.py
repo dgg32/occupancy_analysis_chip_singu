@@ -22,7 +22,7 @@ def find_threshold(intensities,nbins):
         smooth_win += 1
     maxima     = np.zeros((4))
     thresh     = np.zeros((4))
-    for i in xrange(4):#number of channels (4)   
+    for i in range(4):#number of channels (4)   
         x = intensities[:,i] #dnbs per channel
         #remove outliers for better resolution of histogram bins
         # filt_outliers_low, filt_outliers_high = np.nanpercentile(x,[,99.5])
@@ -97,8 +97,8 @@ def subpixel_normalize(data):
     low  = np.percentile(data[:,int_col,:],75,axis=0)
     pct_filter = (data[:,int_col,:] >= low)
     times_called = pct_filter.sum(axis=1)==1
-    for cycle in xrange(data.shape[2]):
-        for i in xrange(len(int_col)):
+    for cycle in range(data.shape[2]):
+        for i in range(len(int_col)):
             norm = np.zeros(len(mag),dtype=float)
             xbin = np.digitize(data[:,x_coord_col[i],cycle]%1,xbins)-1
             ybin = np.digitize(data[:,y_coord_col[i],cycle]%1,ybins)-1
@@ -284,7 +284,7 @@ def crosstalk(intensities, mode = 'gmm', num_clstr=3, fit_intercept=True,
 def apply_crosstalk_correction(intensities,crosstalk_matrix,clipped):    
     corr_intensities      = np.empty((intensities.shape),dtype = np.float)
     inv_crosstalk_matrix  = np.linalg.inv(crosstalk_matrix )
-    for cycle in xrange(intensities.shape[2]):
+    for cycle in range(intensities.shape[2]):
         corr_intensities[~clipped[:,cycle],:,cycle] = np.dot( inv_crosstalk_matrix, intensities[~clipped[:,cycle],:,cycle].T ).T
     return corr_intensities
 
@@ -295,14 +295,14 @@ def crosstalk_correction_cascade(intensities,crosstalk_matrix):
     cross_mat_second = np.tile( np.linalg.inv(crosstalk_matrix)[:,:,np.newaxis],
                                (1,1,4))
     ch_filt = np.eye(4)
-    for ch in xrange(4):
+    for ch in range(4):
         cross_mat_first[ch,:,ch] = ch_filt[ch,:]
         cross_mat_second[np.arange(4)!=ch,:,ch] = ch_filt[np.arange(4)!=ch,:]
         
     ch_max     = normalize_intensities(intensities).argmax(axis=1)
     corr_intensities      = np.empty((intensities.shape),dtype = np.float)
-    for cycle in xrange(intensities.shape[2]):
-        for ch in xrange(4):
+    for cycle in range(intensities.shape[2]):
+        for ch in range(4):
             corr_intensities[ch_max[:,cycle]==ch,:,cycle] = np.dot( 
                                  cross_mat_first[:,:,ch], 
                                  intensities[ch_max[:,cycle]==ch,:,cycle].T ).T

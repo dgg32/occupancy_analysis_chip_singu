@@ -112,7 +112,7 @@ def main(pos_idx_path, coords_fp, neighbors_fp, blocks_fp, diagonals, block_list
 
         logger.debug('pos_idx.shape: %s' % str(pos_idx.shape))
     else:
-        block_list = xrange(len(np.unique(pos_idx[:, 1])))
+        block_list = range(len(np.unique(pos_idx[:, 1])))
 
     try:
         np.save(coords_fp, pos_idx[:,4:6].T)

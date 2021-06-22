@@ -69,7 +69,7 @@ class IntensitiesGMM(object):
     def bin_generator(self, xmin, xmax, bin_count=100):
         temp_max = xmax - xmin
         factor = temp_max / float(bin_count)
-        return map(lambda x: (x * factor) + xmin, range(bin_count + 1))
+        return [ (x * factor) + xmin for x in  range(bin_count + 1) ]
 
     def get_gmm_attributes(self, gmm, x):
         weights = []
@@ -359,7 +359,7 @@ class IntensitiesGMM(object):
 
                 n_comp = 3
                 gmm = GaussianMixture(n_components=n_comp, covariance_type='full')
-                gmm = gmm.fit(X=np.expand_dims(non_outliers, 1))
+                gmm = gmm.fit(X=non_outliers.reshape(-1,1))
                 gmm_x = np.linspace(min(non_outliers), max(non_outliers), 1000)
 
                 weights, means, covs, separate = self.get_gmm_attributes(gmm, gmm_x)
@@ -368,7 +368,7 @@ class IntensitiesGMM(object):
                 if any([w / sum(weights[1:]) < 0.2 for w in weights[1:]]):
                     n_comp = 2
                     gmm = GaussianMixture(n_components=n_comp, covariance_type='full', tol=0.0001)
-                    gmm = gmm.fit(X=np.expand_dims(non_outliers, 1))
+                    gmm = gmm.fit(X=non_outliers.reshape(-1,1))
 
                     weights, means, covs, separate = self.get_gmm_attributes(gmm, gmm_x)
 
@@ -620,7 +620,7 @@ def single_channel_gmm(cyndex, channel, channel_intensities, ax, ax2):
 
     n_comp = 3
     gmm = GaussianMixture(n_components=n_comp, covariance_type='full')
-    gmm = gmm.fit(X=np.expand_dims(non_outliers, 1))
+    gmm = gmm.fit(X=non_outliers.reshape(-1,1))
     gmm_x = np.linspace(min(non_outliers), max(non_outliers), 1000)
 
     weights, means, covs, separate = get_gmm_attributes(gmm, gmm_x)
@@ -629,7 +629,7 @@ def single_channel_gmm(cyndex, channel, channel_intensities, ax, ax2):
     if any([w / sum(weights[1:]) < 0.2 for w in weights[1:]]):
         n_comp = 2
         gmm = GaussianMixture(n_components=n_comp, covariance_type='full', tol=0.0001)
-        gmm = gmm.fit(X=np.expand_dims(non_outliers, 1))
+        gmm = gmm.fit(X=non_outliers.reshape(-1,1))
 
         weights, means, covs, separate = get_gmm_attributes(gmm, gmm_x)
 

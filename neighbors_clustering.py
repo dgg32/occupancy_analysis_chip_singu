@@ -46,8 +46,7 @@ class NeighborClustering(object):
         # print('blocks', self.blocks)
         self.inner = False if (type(blocks)!=type(None)) else True
 
-        if not os.path.exists(self.output_dp):
-            os.makedirs(self.output_dp)
+        os.makedirs(self.output_dp,exist_ok=True)
         if not os.path.exists(posinfo_fp) or not os.path.exists(neighbors_fp):
             int_fp, posinfo_fp, neighbors_fp = self.output_data(data_dp)
 
@@ -73,7 +72,7 @@ class NeighborClustering(object):
 
     def subset_data(self, dnb_pos):
         if self.inner:
-            edge_blocks = range(10) + range(10, 90, 10) + range(19, 99, 10) + range(90, 100)
+            edge_blocks = np.hstack((np.arange(10), np.arange(10, 90, 10), np.arange(19, 99, 10), np.arange(90, 100)))
             block_list = np.array(list(set(range(100)) - set(edge_blocks)))
             # print('blcok_list', block_list)
             block_bool = np.in1d(dnb_pos[:, 0], block_list)

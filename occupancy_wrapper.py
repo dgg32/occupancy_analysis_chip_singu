@@ -38,9 +38,10 @@ usage = '''
 
 def parse_arguments(arguments):
     import argparse
-    ArgParser = argparse.ArgumentParser(usage=usage, version=occupancy_version)
+    ArgParser = argparse.ArgumentParser(usage=usage)#, version=occupancy_version) #no version argument for argparse version3.8; add_arguement action instead
+    ArgParser.add_argument('--version', action='version', version=occupancy_version)
     ArgParser.add_argument("-p", "--platform", action="store", dest="platform", default="v2",
-                           help="Data platform. Options: v1, v2, BB")
+                           help="Data platform. Options: v1, v2, BB, Lite")
     ArgParser.add_argument("-s", "--slide", action="store", dest="slide", default="FLOWSLIDE",
                            help="Flowslide/Flowcell string ID. Example: CL100090543")
     ArgParser.add_argument("-l", "--lane", action="store", dest="lane", default="L01",
@@ -165,7 +166,7 @@ def generate_final_paths(grouped_reports):
 
 def calculate_averages(metrics, data):
     # print(data)
-    data = zip(*data) # transpose
+    data = list(zip(*data)) # transpose
     metric_count = len(data)
     ignored_metrics = ['Most Frequent 10-mer', 'Failed Cycles', 'Used Cycles']
     ignored_metrics = [metric for metric in ignored_metrics if metric in metrics]
@@ -181,7 +182,7 @@ def calculate_averages(metrics, data):
                 convert=True
         if convert:
             data[i] = tuple(val_list)
-    print(data)
+    # print(data)
     data = np.asarray(data, dtype=np.float32)
     # print(data)
     avg_data = np.nanmean(data, 1).tolist()
@@ -216,7 +217,7 @@ def generate_trimmed_summary(summary_report_path):
 
 def consolidate_reports(report_lists):
     # print(report_lists)
-    grouped_reports = zip(*report_lists)[:-5]
+    grouped_reports = list(zip(*report_lists))[:-5]
     final_report_fps = generate_final_paths(grouped_reports)
     for g, report_group in enumerate(grouped_reports):
         final_report_fp = final_report_fps[g]
@@ -225,7 +226,7 @@ def consolidate_reports(report_lists):
         metrics, data = [], []
         for r, report_fp in enumerate(report_group):
             with open(report_fp, 'r') as report_f:
-                sp = '\n' if final_report_fp.endswith('Cluster_Mixed_Summary.csv') else '\r\n'
+                sp = '\n' if final_report_fp.endswith('Cluster_Mixed_Summary.csv') else '\n'
                 report_table = [line.split(',') for line in report_f.read().replace('NA', '0').split(sp) if line]
 
             if r == 0:
@@ -242,11 +243,11 @@ def consolidate_reports(report_lists):
         data = [y for x, y in sorted(zip(fovs, data))]
         if final_report_fp.endswith('Quartiles.csv'):
             avg_data = calculate_quartiles_averages(data)
-            data_table = zip(metrics, *avg_data)
+            data_table = list(zip(metrics, *avg_data))
             output_table(final_report_fp, data_table, header=['', 'Q1', 'Q2', 'Q3', 'Q4'])
         else:
             avg_data = calculate_averages(metrics, data)
-            data = zip(metrics, avg_data, *data)
+            data = list(zip(metrics, avg_data, *data))
             fovs = sorted(fovs)
             output_table(final_report_fp, data, header=['', 'AVG'] + fovs)
     return final_report_fps
@@ -254,7 +255,7 @@ def consolidate_reports(report_lists):
 
 def consolidate_split_base_comp_reports(report_lists):
     # splits_order = ['All Split', 'Horizontal', 'Vertical', 'Diagonal', 'Multi']
-    fov_reports = zip(*report_lists)[-1]
+    fov_reports = list(zip(*report_lists))[-1]
     fov_dp, report_fn = os.path.split(fov_reports[0])
     output_dp = os.path.dirname(fov_dp)
     comp_strings = report_fn.split('_Occupancy_Analysis_')
@@ -280,7 +281,7 @@ def consolidate_split_base_comp_reports(report_lists):
 def consolidate_fov_plots(report_lists, output_dp, mode='All'):
     make_dir(os.path.join(output_dp, 'npy'))
 
-    grouped_reports = zip(*report_lists)[-5:-1]
+    grouped_reports = list(zip(*report_lists))[-5:-1]
     fovs = []
     parent_child_reports = []
     parent_child_fp = ''
@@ -544,8 +545,8 @@ def get_parent_report_names(f):
     # if 'Blocks_Center2x2' in f:
     #     prefix += '_Blocks_Center2x2'
     slide_dp = os.path.join(slide_dp, occupancy_fn)
-    if not os.path.isdir(slide_dp):
-        os.makedirs(slide_dp)
+    # if not os.path.isdir(slide_dp):
+    os.makedirs(slide_dp,exist_ok=True)
 
     return slide_dp, occupancy_fn, prefix
 
@@ -662,7 +663,7 @@ def main(arguments):
     else:
         occupancy_parameters = parse_arguments(arguments)
     for k, v in occupancy_parameters.items():
-        print k, v
+        print(k, v)
     occupancy_parameters, consolidate_lanes = populate_default_parameters(occupancy_parameters)
 
     bypass = dict(occupancy_parameters['bypass']) if ('bypass' in occupancy_parameters) else {}

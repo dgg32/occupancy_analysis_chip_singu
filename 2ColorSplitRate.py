@@ -57,8 +57,8 @@ def get_split_rates(input_list):
     for a in input_list:
         data_folder = a[0]
         temp_folder = a[1]
-        if not os.path.isdir(temp_folder):
-            os.makedirs(temp_folder)
+        # if not os.path.isdir(temp_folder):
+        os.makedirs(temp_folder,exist_ok=True)
         slide = '_'.join(os.path.basename(os.path.dirname(data_folder)).split('_')[1:3])
         fovs = get_fovs(data_folder)
         for fov in fovs:

@@ -67,16 +67,18 @@ def setup_logging(default_path='log_config.yaml',
     return
 
 def make_dir(dir_path):
-    for i in range(5):
-        if os.path.exists(dir_path): return
-        try:
-            os.makedirs(dir_path, 0755)
-            # print "Making: %s" % dir_path
-            logging.info( "Making: %s" % dir_path)
-        except OSError:
-            # print "Unable to make: %s" % dir_path
-            logging.warning("Unable to make: %s" % dir_path)
-            time.sleep(5)
+    os.makedirs(dir_path,mode=0o755,exist_ok=True)
+    logger.info( "Making: %s" % dir_path)
+    # for i in range(5):
+    #     if os.path.exists(dir_path): return
+    #     try:
+    #         os.makedirs(dir_path, 0755)
+    #         # print "Making: %s" % dir_path
+    #         logging.info( "Making: %s" % dir_path)
+    #     except OSError:
+    #         # print "Unable to make: %s" % dir_path
+    #         logging.warning("Unable to make: %s" % dir_path)
+    #         time.sleep(5)
     return
 
 

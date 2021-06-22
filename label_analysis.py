@@ -459,51 +459,51 @@ class LabelAnalysis(object):
                      singular_summary,
                      splits_summary, splits_results,
                      cbi_quartile_results, snr1_quartile_results, snr2_quartile_results):
-        import cPickle as pickle
+        import pickle
         
-        with open(self.size_results_fp, 'w') as f:
+        with open(self.size_results_fp, 'wb') as f:
             pickle.dump(size_results, f)
-        with open(self.size_summary_fp, 'w') as f:
+        with open(self.size_summary_fp, 'wb') as f:
             pickle.dump(size_summary, f)
             
-        with open(self.multicall_results_fp, 'w') as f:
+        with open(self.multicall_results_fp, 'wb') as f:
             pickle.dump(multicall_results, f)
-        with open(self.multicall_summary_fp, 'w') as f:
+        with open(self.multicall_summary_fp, 'wb') as f:
             pickle.dump(multicall_summary, f)
         
-        with open(self.chastity_results_fp, 'w') as f:
+        with open(self.chastity_results_fp, 'wb') as f:
             pickle.dump(chastity_results, f)
-        with open(self.chastity_summary_fp, 'w') as f:
+        with open(self.chastity_summary_fp, 'wb') as f:
             pickle.dump(chastity_summary, f)
 
-        with open(self.SHI_summary_fp, 'w') as f:
+        with open(self.SHI_summary_fp, 'wb') as f:
             pickle.dump(SHI_summary, f)
-        with open(self.SHI_results_fp, 'w') as f:
+        with open(self.SHI_results_fp, 'wb') as f:
             pickle.dump(SHI_results, f)
 
-        with open(self.mixed_summary_fp, 'w') as f:
+        with open(self.mixed_summary_fp, 'wb') as f:
             pickle.dump(mixed_summary, f)
             
-        with open(self.empty_splits_results_fp, 'w') as f:
+        with open(self.empty_splits_results_fp, 'wb') as f:
             pickle.dump(empty_splits_results, f)
-        with open(self.mixed_splits_results_fp, 'w') as f:
+        with open(self.mixed_splits_results_fp, 'wb') as f:
             pickle.dump(mixed_splits_results, f)
             
-        with open(self.familial_results_fp, 'w') as f:
+        with open(self.familial_results_fp, 'wb') as f:
             pickle.dump(familial_results, f)
-        with open(self.singular_summary_fp, 'w') as f:
+        with open(self.singular_summary_fp, 'wb') as f:
             pickle.dump(singular_summary, f)
             
-        with open(self.splits_results_fp, 'w') as f:
+        with open(self.splits_results_fp, 'wb') as f:
             pickle.dump(splits_results, f)
-        with open(self.splits_summary_fp, 'w') as f:
+        with open(self.splits_summary_fp, 'wb') as f:
             pickle.dump(splits_summary, f)
             
-        with open(self.cbi_quartile_results_fp, 'w') as f:
+        with open(self.cbi_quartile_results_fp, 'wb') as f:
             pickle.dump(cbi_quartile_results, f)
-        with open(self.snr1_quartile_results_fp, 'w') as f:
+        with open(self.snr1_quartile_results_fp, 'wb') as f:
             pickle.dump(snr1_quartile_results, f)
-        with open(self.snr2_quartile_results_fp, 'w') as f:
+        with open(self.snr2_quartile_results_fp, 'wb') as f:
             pickle.dump(snr2_quartile_results, f)
         return
 
@@ -1313,51 +1313,51 @@ class LabelAnalysis(object):
                qtrl_dict['cbi']['results'], qtrl_dict['snr1']['results'], qtrl_dict['snr2']['results'], num_DNBs
 
     def complete_bypass(self):
-        import cPickle as pickle
+        import pickle
 
         try:
-            with open(self.size_results_fp, 'r') as f:
+            with open(self.size_results_fp, 'rb') as f:
                 size_results = pickle.load(f)
-            with open(self.size_summary_fp, 'r') as f:
+            with open(self.size_summary_fp, 'rb') as f:
                 size_summary = pickle.load(f)
 
-            with open(self.multicall_results_fp, 'r') as f:
+            with open(self.multicall_results_fp, 'rb') as f:
                 multicall_results = pickle.load(f)
-            with open(self.multicall_summary_fp, 'r') as f:
+            with open(self.multicall_summary_fp, 'rb') as f:
                 multicall_summary = pickle.load(f)
 
-            with open(self.chastity_results_fp, 'r') as f:
+            with open(self.chastity_results_fp, 'rb') as f:
                 chastity_results = pickle.load(f)
-            with open(self.chastity_summary_fp, 'r') as f:
+            with open(self.chastity_summary_fp, 'rb') as f:
                 chastity_summary = pickle.load(f)
 
-            with open(self.SHI_summary_fp, 'r') as f:
+            with open(self.SHI_summary_fp, 'rb') as f:
                 SHI_summary = pickle.load(f)
-            with open(self.SHI_results_fp, 'r') as f:
+            with open(self.SHI_results_fp, 'rb') as f:
                 SHI_results = pickle.load(f)
-            with open(self.mixed_summary_fp, 'r') as f:
+            with open(self.mixed_summary_fp, 'rb') as f:
                 mixed_summary = pickle.load(f)
 
-            with open(self.empty_splits_results_fp, 'r') as f:
+            with open(self.empty_splits_results_fp, 'rb') as f:
                 empty_splits_results = pickle.load(f)
-            with open(self.mixed_splits_results_fp, 'r') as f:
+            with open(self.mixed_splits_results_fp, 'rb') as f:
                 mixed_splits_results = pickle.load(f)
 
-            with open(self.familial_results_fp, 'r') as f:
+            with open(self.familial_results_fp, 'rb') as f:
                 familial_results = pickle.load(f)
-            with open(self.singular_summary_fp, 'r') as f:
+            with open(self.singular_summary_fp, 'rb') as f:
                 singular_summary = pickle.load(f)
 
-            with open(self.splits_results_fp, 'r') as f:
+            with open(self.splits_results_fp, 'rb') as f:
                 splits_results = pickle.load(f)
-            with open(self.splits_summary_fp, 'r') as f:
+            with open(self.splits_summary_fp, 'rb') as f:
                 splits_summary = pickle.load(f)
 
-            with open(self.cbi_quartile_results_fp, 'r') as f:
+            with open(self.cbi_quartile_results_fp, 'rb') as f:
                 cbi_quartile_results = pickle.load(f)
-            with open(self.snr1_quartile_results_fp, 'r') as f:
+            with open(self.snr1_quartile_results_fp, 'rb') as f:
                 snr1_quartile_results = pickle.load(f)
-            with open(self.snr2_quartile_results_fp, 'r') as f:
+            with open(self.snr2_quartile_results_fp, 'rb') as f:
                 snr2_quartile_results = pickle.load(f)
 
             logger.info('Bypass successful.')

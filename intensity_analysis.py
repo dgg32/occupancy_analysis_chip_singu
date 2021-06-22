@@ -100,33 +100,40 @@ class IntensityAnalysis(object):
 
         fin_ints = np.load(self.int_fp)
         norm_paras = np.load(self.norm_paras_fp)
-        raw_ints = np.zeros_like(fin_ints)
-        ctc_ints = np.zeros_like(fin_ints)
-        cal_obj = Cal()
-        if (self.platform.upper() == 'V40') or ('DP' in self.cal_fp) or ('cap_integ' in self.cal_fp) or (self.platform.upper() == 'V0.2'):
-            v40 = True
-        else:
-            v40 = False
-        cal_obj.load(self.cal_fp, V40=v40)
         background = np.load(self.background_fp)
-
-        if label_mask is None:
-            label_mask = np.ones(len(fin_ints), dtype=bool)
-
-        qc = CalQCStats(fin_ints[label_mask, :, :], raw_ints[label_mask, :, :],
-                        ctc_ints[label_mask, :, :], norm_paras, cal_obj, label_mask,
-                        background, cycle_range=self.cycles+1)
-        try:
-            logger.info('Calculating RHO')
-            rho = qc.get_rho_phi()
-        except Exception as e:
-            tb = str(traceback.format_exc())
-            logger.error('RHO Calc Failure : ' + tb)
+        if np.all(background==0) and np.all(norm_paras==0):
+            logger.error('RHO Calc Failure : no background or normalization params')
             logger.error('Filling RHO With Zeros')
             zero_list = np.zeros(fin_ints.shape[2])
             rho = {'A': zero_list, 'C': zero_list, 'G': zero_list, 'T': zero_list}
+        
+        else:
+            raw_ints = np.zeros_like(fin_ints)
+            ctc_ints = np.zeros_like(fin_ints)
+            cal_obj = Cal()
+            if (self.platform.upper() == 'V40') or ('DP' in self.cal_fp) or ('cap_integ' in self.cal_fp) or (self.platform.upper() == 'V0.2'):
+                v40 = True
+            else:
+                v40 = False
+            cal_obj.load(self.cal_fp, V40=v40)
+            
+            if label_mask is None:
+                label_mask = np.ones(len(fin_ints), dtype=bool)
 
-        rho['avg'] = np.mean(rho.values(), axis=0)
+            qc = CalQCStats(fin_ints[label_mask, :, :], raw_ints[label_mask, :, :],
+                            ctc_ints[label_mask, :, :], norm_paras, cal_obj, label_mask,
+                            background, cycle_range=self.cycles+1)
+            try:
+                logger.info('Calculating RHO')
+                rho = qc.get_rho_phi()
+            except Exception as e:
+                tb = str(traceback.format_exc())
+                logger.error('RHO Calc Failure : ' + tb)
+                logger.error('Filling RHO With Zeros')
+                zero_list = np.zeros(fin_ints.shape[2])
+                rho = {'A': zero_list, 'C': zero_list, 'G': zero_list, 'T': zero_list}
+
+        rho['avg'] = np.mean(np.array(list(rho.values())), axis=0)
         for base in ['A', 'C', 'G', 'T', 'avg']:
             try:
                 rho['%s C%02d' % (base, self.start_cycle)] = rho[base][0]
@@ -371,15 +378,15 @@ class IntensityAnalysis(object):
         return
 
     def save_outputs(self, thresholds_summary, snr_results, rho_results):
-        import cPickle as pickle
+        import pickle
         #np.save(self.thresholds_summary_fp, np.asarray(thresholds_summary))
-        with open(self.thresholds_summary_fp, 'w') as f:
+        with open(self.thresholds_summary_fp, 'wb') as f:
             pickle.dump(thresholds_summary, f)
         #np.save(self.snr_results_fp, np.asarray(snr_results))
-        with open(self.snr_results_fp, 'w') as f:
+        with open(self.snr_results_fp, 'wb') as f:
             pickle.dump(snr_results, f)
 
-        with open(self.rho_results_fp, 'w') as f:
+        with open(self.rho_results_fp, 'wb') as f:
             pickle.dump(rho_results, f)
         return
 
@@ -436,9 +443,9 @@ class IntensityAnalysis(object):
         SHI_data = self.calculate_SHI(non_neg_sorted_data)
         del non_neg_sorted_data
 
+        SNR1_values, SNR1_labels, SNR2_values, SNR2_labels = self.calculate_DNB_SNR(sorted_data)
         # Average CBI per DNB for the first 10 cycles
         aCBI_data = np.mean(sorted_data[:, -1, :], 1) # use non_neg_sorted data?
-        SNR1_values, SNR1_labels, SNR2_values, SNR2_labels = self.calculate_DNB_SNR(sorted_data)
         del sorted_data
         self.naCBI_data, outlier_perc, norm_factor, \
         self.empty_fth, self.small_fth, self.large_fth, self.outlier_fth = self.normalize(aCBI_data)
@@ -574,18 +581,18 @@ class IntensityAnalysis(object):
         return empty_fth, small_fth, large_fth, outlier_fth
 
     def complete_bypass(self):
-        import cPickle as pickle
+        import pickle
         # bypass run (to run mirage_analysis directly)
         try:
             self.naCBI_data = np.load(self.naCBI_fp, mmap_mode='r')
             self.called_signals = np.load(self.calls_fp, mmap_mode='r')
             self.label_arr = np.load(self.labels_fp)
             self.empty_fth, self.small_fth, self.large_fth, self.outlier_fth = self.load_final_thresholds()
-            with open(self.snr_results_fp, 'r') as p:
+            with open(self.snr_results_fp, 'rb') as p:
                 snr_results = pickle.load(p)
-            with open(self.thresholds_summary_fp, 'r') as p:
+            with open(self.thresholds_summary_fp, 'rb') as p:
                 thresholds_summary = pickle.load(p)
-            with open(self.rho_results_fp, 'r') as p:
+            with open(self.rho_results_fp, 'rb') as p:
                 rho_results = pickle.load(p)
 
             logger.info('%s - Bypass successful.' % self.fov)
@@ -621,7 +628,7 @@ def get_max_multicalls(mc_array, major_count):
 
 def main(args):
     slide, lane, fov, cycles, cal_fp, int_fp, norm_paras_fp, background_fp, blocks_fp = args
-    cycles = map(int, cycles.strip('[]').split(',')) #could use argparse for better parsing
+    cycles = list(map(int, cycles.strip('[]').split(','))) #could use argparse for better parsing
     ca = IntensityAnalysis(slide, lane, fov, cycles, cal_fp, 
                            int_fp, norm_paras_fp, background_fp, blocks_fp)
     rho_results, snr_results, thresholds_summary, cbi_bypassed = ca.run()
