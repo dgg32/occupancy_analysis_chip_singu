@@ -82,6 +82,7 @@ class OccupancyAnalysis(object):
             self.bypass['nanocall_conversion'] = self.bypass.pop('nanocall_conversion', False)
         else:
             self.bypass['int2npy'] = self.bypass.pop('int2npy', False)
+            self.bypass['cal2fastq'] = self.bypass.pop('cal2fastq',False)
         self.bypass['intensity_analysis'] = self.bypass.pop('intensity_analysis', False)
         self.bypass['neighbor_analysis'] = self.bypass.pop('neighbor_analysis', False)
         self.bypass['label_analysis'] = self.bypass.pop('label_analysis', False)
@@ -216,14 +217,21 @@ class OccupancyAnalysis(object):
         return int_fp, posinfo_fp, norm_paras_fp, background_fp
 
     def run_v2cal2fastq(self, data_dp, fov, blocks_fp):
-        try:
-            fastq_fp = glob.glob(os.path.join(data_dp, '%s*.fq.gz' % fov))[0]
-        except:
+        if self.bypass['cal2fastq']:
             from v2cal2fastq import V2Cal2Fastq
             c2f = V2Cal2Fastq(self.data_dp, fov, self.cycles+1, self.occupancy_range, blocks_fp,
                               output_dp=self.temp_dp, log_dp=self.log_dp, log_overrides=self.log_overrides,
                               platform=self.platform)
-            fastq_fp = c2f.run()
+            c2f.complete_bypass()
+        else:
+            try:
+                fastq_fp = glob.glob(os.path.join(data_dp, '%s*.fq.gz' % fov))[0]
+            except:
+                from v2cal2fastq import V2Cal2Fastq
+                c2f = V2Cal2Fastq(self.data_dp, fov, self.cycles+1, self.occupancy_range, blocks_fp,
+                                output_dp=self.temp_dp, log_dp=self.log_dp, log_overrides=self.log_overrides,
+                                platform=self.platform)
+                fastq_fp = c2f.run()
         return fastq_fp
 
     def run_intensity_analysis(self, slide, lane, fov,
