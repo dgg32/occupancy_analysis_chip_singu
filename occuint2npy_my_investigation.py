@@ -161,20 +161,17 @@ class Int2npy(object):
             #get good DNBs
             for i,cycle in enumerate(cycles):
                 cycle_ints = intReader.readInt(cycles=[cycle,cycle]) #read one cycle at a time
-                #print ("cycle", cycle, cycle_ints)
                 #assume drop cycles will be set to all max value or all 0s
                 if (~np.all(cycle_ints==self.max_val)) and (~np.all(cycle_ints==0)): 
                     logger.debug('cycle_ints.shape: %s' % str(cycle_ints.shape))
                     intensities.append(cycle_ints)
                     self.good_cycles.append(cycle-1) # convert to 0 indexing
-                    print ("self.max_val", self.max_val, np.finfo(np.float32).max)
-                    print ("my cycle", cycle, np.extract(cycle_ints[0] != self.max_val, cycle_ints))
                 else:
                     logger.debug('Missing Data Cycle {0:03d} (1 indexing)'.format(cycle))
                     continue
                 if len(self.good_cycles)==self.cycle_range:
                     break
-            print ("self.good_cycles", self.good_cycles)
+
             norm_paras_fp = os.path.join(self.data_dp, 'NInt', f'{self.fov}.NInt')
             if os.path.exists(norm_paras_fp):
                 intReader = intReaderLite.IntReaderLite(norm_paras_fp)
@@ -186,6 +183,7 @@ class Int2npy(object):
                         norm_paras[2*ch+1,i] = chunk.NorUp
                 #add dummy normalization for "second" normalization assuming that Lite only performs/reports one normalization
                 norm_paras[8:,:] = np.tile(np.array([0,1,0,1,0,1,0,1]).reshape(-1,1),(1,norm_paras.shape[1]))
+            print ("norm_paras_fp with anthony", norm_paras.shape[1])
 
             
             #create posiIndex file

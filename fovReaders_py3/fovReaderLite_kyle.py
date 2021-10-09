@@ -1,7 +1,7 @@
-from . import utilities as util
+import utilities as util
 import numpy as np
 import os, sys
-# import ipdb
+import ipdb
 
 
 class FileHeader(object):
@@ -40,7 +40,10 @@ class FileHeader(object):
         self._clearChunkEntries()
         self._AllocGranulatiry = 64 * 1024 #All chunk sizes are 64 kB for current version
         self.size = self._AllocGranulatiry
+        self.debug = False
         if filePath is not None:
+            if self.debug:
+                print(filePath)
             self.load(filePath)
         return
 
@@ -77,17 +80,11 @@ class FileHeader(object):
 
     def _guessVersion(self):
         ft = self.fileTag
-        # #Slide ID requires two 00's between prefix and slide number
-        # prefix = ft.SlideId.split("00")[0]
-        # prefix_v_dict = { "V3" : "V2"}
-        # self.version = prefix_v_dict.get(prefix, None)
-        version_dict = {16916769: 'FP21', 4431025: 'DP40', 2277081: 'DP84', 
-                        5861241: 'FP1', 8485569: 'FP2', 1600225: 'DP8',
-                        1108785: 'V1', 1408077: 'V3', 2600169: 'P1', 
-                        985005: 'S1', 1439109: 'S2', 908209: 'N1', 573111: 'CL1'}
-        self.version = version_dict.get(ft.SpotNum, '') #get flowcell based on spotNum; if no match then default to
-        if not self.version:
-            print('Spot Number does not match flowcells on record.')
+        #Slide ID requires two 00's between prefix and slide number
+        prefix = ft.SlideId.split("00")[0]
+        prefix = prefix.split("-")[0]
+        prefix_v_dict = { "V3" : "V2", "V2" : "S2", "S2" : "S2"}
+        self.version = prefix_v_dict.get(prefix, prefix)
         return
 
     def _clearChunkEntries(self):
@@ -108,35 +105,34 @@ class FileHeader(object):
 
     def createAndViewHeader(self, path, size=0, exists=False):
         ft = self.fileTag
-        #print ("fovReaderLite.py createAndViewHeader path", path, "ft", ft, "size", self.size, "tagNames", self.tagNames, "fileTagDtype", self.fileTagDtype)
         if exists:
             with open(path, 'rb', self.size) as fh:
                 for tag in self.tagNames:
                     data = np.fromfile(fh, **self.fileTagDtype[tag])
+                    if tag == "ChannelNum" and self.debug:
+                        print(tag, data)
                     if tag == "SlideId":
                         end = np.where(data == 0)[0][0]
-                        try:
-                            ft.SlideId = "".join(data[:end].view('S1').astype('U1'))
-                        except UnicodeDecodeError:
-                            from binascii import b2a_uu
-                            ft.SlideId = b2a_uu(data[:end].view('S1')).decode('utf-8')
+                        ft.SlideId = "".join(data[:end].view('S1'))
                     else:
                         ft[tag] = data[0]
                 self.calculateChunkMetrics()
 
-                fh.seek(576)#End of FileTag Header region)
+                #fh.seek(64)#End of FileTag Header region)
+                fh.seek(544)#End of FileTag Header region)
+                #fh.seek(576)#End of FileTag Header region)
                 for chunk in range(self.chunkEntries.num):
                     flag = np.fromfile(fh, count=1, dtype=np.bool)[0]
                     nor = np.fromfile(fh, count=2, dtype=np.float32)
                     #There is 7 leftover bytes delimiting each Chunk Entry
-                    _ = np.fromfile(fh, count=7, dtype=np.uint8)
+                    leftovers = np.fromfile(fh, count=7, dtype=np.uint8)
                     self._addChunkEntry(chunk, flag, nor[1], nor[0])
-                    #print ("flag", flag, "nor", nor)
                 
         else:
             #TODO Create a custom header
             pass
-        # ipdb.set_trace()
+        self._guessVersion()
+        sequencer_md = util.sequencerVersion(self.version)
         return
 
     def calculateChunkMetrics(self):
@@ -144,7 +140,7 @@ class FileHeader(object):
         rawChunkSize = ft.SpotNum * ft.ElementSize
         appendSize =  (self._AllocGranulatiry - (rawChunkSize % self._AllocGranulatiry))
         self.chunkEntries.chunk_size = rawChunkSize + appendSize
-        self.chunkEntries.num = ft.CycleNum.astype(np.int16) * ft.ChannelNum.astype(np.int16)
+        self.chunkEntries.num = ft.CycleNum * ft.ChannelNum.astype(np.uint16)
         return
 
     def load(self, filePath):
@@ -219,16 +215,13 @@ class FovReaderLite(object):
     def _parse_cycle_parameter(self, cycles):
         start_cycle = 1
         if isinstance(cycles, (list, tuple, np.ndarray)):
-            #if cycles is a list containing all good cycles then return list
-            if len(cycles)>2: 
-                return cycles
             start_cycle, end_cycle = cycles[:2]
             end_cycle += 1
         elif not cycles:
             end_cycle = self.header.fileTag.CycleNum + 1
         else:
             end_cycle = cycles + 1
-        return  list(range(start_cycle, end_cycle))
+        return  start_cycle, end_cycle
 
     ###########################################################################
     #File Reading                                                             #
@@ -239,12 +232,11 @@ class FovReaderLite(object):
             Data has shape:(cycle x channel x dnbs)
         '''
         ft = self.header.fileTag
-        cycles = self._parse_cycle_parameter(cycles)
+        start_cycle, end_cycle = self._parse_cycle_parameter(cycles)
 
-        data = np.zeros((len(cycles), ft.ChannelNum, ft.SpotNum), dtype=dtype)
-        #print ("data", data)
+        data = np.zeros((end_cycle - start_cycle, ft.ChannelNum, ft.SpotNum), dtype=dtype)
         with open(self.filePath, 'rb', self.buffSize) as self.fileObj:
-            for cycle_i, cycle in enumerate(cycles):
+            for cycle_i, cycle in enumerate(range(start_cycle, end_cycle)):
                 self._readDataCycle(cycle, data[cycle_i], dtype=dtype)
         return data
 
@@ -262,14 +254,14 @@ class FovReaderLite(object):
 
         idx = self._getChunkId(cycle, channel)
         chunk_flg = self._getChunkFlag(idx)
-        #print ("chunk_flg.Flag", idx, chunk_flg.Flag, cycle, channel, self.filePath)
-        if chunk_flg.Flag:
+        #if chunk_flg.Flag:
+        if True:
             offset = self._getChunkOffset(idx)
             self.fileObj.seek(offset, 0)
             data[:] = np.fromfile(self.fileObj, dtype=data.dtype, count=data.size)
         else:
+            ipdb.set_trace()
             self._chunkError(data, idx)
-        print ("_readDataChannel", data)
         return data
 
     ###########################################################################
@@ -277,7 +269,7 @@ class FovReaderLite(object):
     ###########################################################################
     def _dumpData(self, fp, frmt_str, frmt_generator):
         for d_frmt in frmt_generator:
-            fp.write(frmt_str.format(**d_frmt).encode('utf-8'))
+            fp.write(frmt_str.format(**d_frmt))
         return
 
     ###########################################################################
@@ -292,17 +284,19 @@ class FovReaderLite(object):
         return inner_blocks
 
     def _generateBlockFilter(self, blocks=[]):
-        if not blocks:
-            return False
         sequencer_md = util.sequencerVersion(self.header.version)
         block_ids = sequencer_md.block_ids
         block_filter = np.zeros(len(block_ids), dtype=bool)
-        # if len(blocks) == 0:
-        #     block_filter[:] = True
-        # else:
-        for block in blocks:
-            block_filter[block_ids == block] = True
+        if len(blocks) == 0:
+            block_filter[:] = True
+        else:
+            for block in blocks:
+                block_filter[block_ids == block] = True
         return block_filter
+
+    def _generate_dnb_pos(self):
+        sequencer_md = util.sequencerVersion(self.header.version)
+        return np.stack([sequencer_md.block_ids, sequencer_md.row_ids, sequencer_md.col_ids], axis=-1)
 
     def load_sequencer_version(self):
         sequencer_md = util.sequencerVersion(self.header.version)

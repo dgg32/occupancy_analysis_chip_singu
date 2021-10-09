@@ -169,6 +169,7 @@ class OccupancyAnalysis(object):
 
     def run_pos2neighbors(self, data_dp, temp_dp, fov, blocks, v1=True):
         import pos2neighbor
+    
 
         # use/store from temp
         coords_fp = os.path.join(temp_dp, '%s_coords.npy' % fov)
@@ -203,8 +204,15 @@ class OccupancyAnalysis(object):
         else:
             int_fp, fastq_fp = ncc.run()
         return int_fp, fastq_fp
-
+    
+    #get coordi
     def run_int2npy(self, data_dp, fov, start_cycle, occupancy_range, temp_dp, basecaller='v2'): #v2 is zebracall
+        ## from i2n.run
+        ##np.save(self.int_fp, intensities)
+        ##np.save(self.norm_paras_fp, norm_paras)
+        ##np.save(self.background_fp, background)
+
+
         from occuint2npy import Int2npy
         i2n = Int2npy(data_dp, fov, start_cycle, occupancy_range, self.read_len, output_dp=temp_dp,
                       basecaller=basecaller,log_dp=self.log_dp, log_overrides=self.log_overrides)
@@ -238,7 +246,7 @@ class OccupancyAnalysis(object):
                                int_fp, norm_paras_fp, background_fp, blocks_fp, temp_dp,
                                bypass):
         from intensity_analysis import IntensityAnalysis
-        cal_fp = os.path.join(self.data_dp, 'calFile', '%s.cal' % fov)
+        cal_fp = os.path.join(self.data_dp, 'Cal', '%s.Cal' % fov)
         self.int_analysis = IntensityAnalysis(slide, lane, fov, self.cycles,
                                               cal_fp, int_fp, norm_paras_fp, background_fp, blocks_fp,
                                               temp_dp, bypass,

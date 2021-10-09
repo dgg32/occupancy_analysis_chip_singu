@@ -43,6 +43,7 @@ class IntensitiesGMM(object):
         return amp * np.exp(-(x - x0) ** 2. / (2. * sigma ** 2.))
 
     def std_range(self, include, arr):
+        #logger.debug("std:range; include:", include)
         return np.std(arr[include]), np.max(arr[include]) - np.min(arr[include])
 
     def add_subplot_axes(self, ax, rect=[.3, .3, .5, .5], facecolor='w'):
@@ -280,8 +281,8 @@ class IntensitiesGMM(object):
 
         logger.info('Modeling complete.')
         include = [val for val in range(len(data[0][0])) if val not in exclude]
-        assert include, 'No cycles remaining!'
-
+        #assert include, 'No cycles remaining!'
+        logger.warning("include:", include, "exclude:", exclude)
         empty = np.sum(empty_th[include]) / (len(include) * 4)
         small = np.sum(small_th[include]) / (len(include) * 4)
         large = np.sum(large_th[include]) / (len(include) * 4)
@@ -347,16 +348,21 @@ class IntensitiesGMM(object):
             for channel in range(4):
                 logger.info('Cycle (Index) %01d Channel %s' % (cyndex, channel))
                 ch = data[:, channel, cyndex]
+                #print ("ch", ch)
                 base = BASE_LIST[channel]
                 channel_pass = not (np.max(ch) <= 0 or np.max(ch) == np.min(ch))
                 if not channel_pass:
                     logger.warning('Bad channel data!')
 
-                q1 = np.percentile(ch, 75 + 25 * 0.25)
-                q3 = np.percentile(ch, 75 + 25 * 0.75)
+                #q1 = np.percentile(ch, 75 + 25 * 0.25)
+                #q3 = np.percentile(ch, 75 + 25 * 0.75)
+                q1 = np.nanpercentile(ch, 75 + 25 * 0.25)
+                q3 = np.nanpercentile(ch, 75 + 25 * 0.75)
+                #print ("q1", q1, "q3", q3)
                 temp_outlier_th = q3 + 3 * (q3 - q1)
                 non_outliers = ch[np.where(ch < temp_outlier_th)[0]]
-
+                #print ("temp_outlier_th", temp_outlier_th, "non_outliers", non_outliers)
+                #print ("non_outliers.reshape(-1,1)", non_outliers.reshape(-1,1), ch)
                 n_comp = 3
                 gmm = GaussianMixture(n_components=n_comp, covariance_type='full')
                 gmm = gmm.fit(X=non_outliers.reshape(-1,1))
@@ -532,14 +538,18 @@ class IntensitiesGMM(object):
             plt.close()
 
         logger.info('Modeling complete.')
+        ####experiment
+        #exclude = []
         include = [val for val in range(len(data[0][0])) if val not in exclude]
-        assert include, 'No cycles remaining!'
+        #assert include, 'No cycles remaining!'
+        #logger.warning("include:", include, "exclude", exclude)
 
         empty = np.sum(three_sigma[include]) / (len(include) * 4)
         small = np.sum(small_th[include]) / (len(include) * 4)
         large = np.sum(large_th[include]) / (len(include) * 4)
         outlier = np.sum(outlier_th[include]) / (len(include) * 4)
 
+        print ("include!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", include, "exclude", exclude)
         th_std, th_range = self.std_range(include, three_sigma)
         small_std, small_range = self.std_range(include, small_th)
         large_std, large_range = self.std_range(include, large_th)

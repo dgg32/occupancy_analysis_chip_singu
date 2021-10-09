@@ -1,0 +1,43 @@
+{
+    "data_dp_old": "/prod/hustor-02/zebra/ZebraV2.1/BasecallLite_1.1.0.108/workspace/V300104178/L02",
+    "data_dp": "/hwfssz8/MGI_BCC/USER/huangsixing/Javier/V350003488_lite1.1/L01",
+    "platform": "Lite",
+    "slide": "V350003488",
+    "lane": "L01",
+    "fov_list_old": ["C001R006","C002R012","C003R024","C004R036","C005R048","C006R060"],
+    "fov_list": ["C001R006","C002R012","C003R024","C004R036","C005R048","C006R060"],
+    "blocks": [],
+    "cycle_start": 1,
+    "cycle_range_old": 30,
+    "cycle_range_explanation": "The range is how many cycle to process. For example in total 11 cycles and and start is 3, then range < 8",
+    "cycle_range": 9,
+    "cycle_list": [],
+    "occupancy_version": "",
+    "output_dp": "/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01",
+    "temp_dp": "/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp",
+    "emails": [],
+    "consolidate_lanes": true,
+    "bypass": {
+        "int2npy": false,
+
+        "intensity_analysis": false,
+        "calculate_thresholds": false,
+
+        "neighbor_analysis": false,
+        "get_possible_split_groups": false,
+        "calculate_split_percentage": false,
+        "plot_multicalls": false,
+        "plot_nonCBI": false,
+        "plot_chastity": false,
+        "plot_cbi_rank": false,
+        "plot_cbi_thresholds": false,
+        "plot_splits": false,
+
+        "label_analysis": false,
+        "plot_cbi_KDEs": true,
+        "plot_cbi_hist": false
+    },
+    "log_overrides": {
+            "INFO": "DEBUG"
+    }
+}

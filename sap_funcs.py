@@ -11,7 +11,8 @@ int_extensions = {
     'v1': 'bin',
     'v2': 'int',
     'BB': 'csv',
-    'v40': 'int'
+    'v40': 'int',
+    'Lite': 'FInt'
 }
 
 def chmod_paths(path_list):

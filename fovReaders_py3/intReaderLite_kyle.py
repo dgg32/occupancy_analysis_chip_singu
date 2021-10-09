@@ -1,7 +1,7 @@
-from .fovReaderLite import FovReaderLite
+from fovReaderLite import FovReaderLite
 import utilities as util
 import numpy as np
-#import ipdb
+import ipdb
 
 class IntReaderLite(FovReaderLite):
 
@@ -9,8 +9,7 @@ class IntReaderLite(FovReaderLite):
         super(IntReaderLite, self).__init__(filePath)
         self.filePath = filePath
         int_type = filePath.split(".")[-1]
-        #self.dtype = {"RInt" : np.float16, "FInt" : np.float32}.get(int_type, np.float16)
-        self.dtype = {"RInt" : np.float16}.get(int_type, np.float16)
+        self.dtype = {"RInt" : np.float16, "FInt" : np.float32}.get(int_type, np.float16)
         return
 
     def readInt(self, cycles=None):
@@ -21,7 +20,6 @@ class IntReaderLite(FovReaderLite):
             Return:
                 data (dnb, channel, cycles): Intensity values
         '''
-        print ("self.dtype", self.dtype)
         data = self._readData(cycles, dtype=self.dtype).transpose((2, 1, 0))
         return data
 

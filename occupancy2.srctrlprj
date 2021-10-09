@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<config>
+    <source_groups>
+        <source_group_fb20011c-c776-48de-ba08-08e0eec1f963>
+            <name>Python Source Group</name>
+            <python_environment_path>/home/sih13/anaconda3/bin/python</python_environment_path>
+            <source_extensions>
+                <source_extension>.py</source_extension>
+            </source_extensions>
+            <source_paths>
+                <source_path>occupancy_wrapper.py</source_path>
+            </source_paths>
+            <status>enabled</status>
+            <type>Python Source Group</type>
+        </source_group_fb20011c-c776-48de-ba08-08e0eec1f963>
+    </source_groups>
+    <version>8</version>
+</config>

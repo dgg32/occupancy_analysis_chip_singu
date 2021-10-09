@@ -91,7 +91,7 @@ class Int2npy(object):
             int_fp = os.path.join(self.data_dp, 'FInt', '%s.FInt' % self.fov)
             intReader = intReaderLite.IntReaderLite(int_fp)
             for i,cycle in enumerate(cycles):
-                cycle_ints = intReader.readInt(cycles=[cycle,cycle]) #read one cycle at a time
+                cycle_ints = intReader.readInt([cycle,cycle]) #read one cycle at a time
                 if (~np.all(cycle_ints==self.max_val)) and (~np.all(cycle_ints==0)): #assume drop cycles will be set to all max value or all 0s
                     self.good_cycles.append(cycle-1) # convert to 0 indexing
         self.good_cycles = np.array(self.good_cycles)
@@ -107,12 +107,23 @@ class Int2npy(object):
             ['Used Cycles',list(cycles_range[mask]+1)]
         ]
 
+
+
+
     def run(self):
+        ##goal
+        ##np.save(self.int_fp, intensities)
+        ##np.save(self.norm_paras_fp, norm_paras)
+        ##np.save(self.background_fp, background)
+
+
         start_time = datetime.datetime.now()
         logger.info('%s - Consolidating intensities in npy format...' % self.fov)
         #intensities = np.empty((num_dnbs, 4, len(cycles)), dtype=np.float)
 
+        
         cycles = range(self.start_cycle, self.start_cycle + self.read_len)
+        logger.debug(f'Sixing; {self.start_cycle}, {self.read_len}, {cycles}')
 
         intensities = []
         norm_paras = np.zeros((16, len(cycles)))
@@ -158,37 +169,24 @@ class Int2npy(object):
             int_fp = os.path.join(self.data_dp, 'FInt', '%s.FInt' % self.fov)
             intReader = intReaderLite.IntReaderLite(int_fp)
 
-            #get good DNBs
+            logger.debug(f'Sixing; {cycles}, range: {self.cycle_range}')
             for i,cycle in enumerate(cycles):
-                cycle_ints = intReader.readInt(cycles=[cycle,cycle]) #read one cycle at a time
-                #print ("cycle", cycle, cycle_ints)
+                cycle_ints = intReader.readInt([cycle,cycle]) #read one cycle at a time
                 #assume drop cycles will be set to all max value or all 0s
                 if (~np.all(cycle_ints==self.max_val)) and (~np.all(cycle_ints==0)): 
                     logger.debug('cycle_ints.shape: %s' % str(cycle_ints.shape))
                     intensities.append(cycle_ints)
                     self.good_cycles.append(cycle-1) # convert to 0 indexing
-                    print ("self.max_val", self.max_val, np.finfo(np.float32).max)
-                    print ("my cycle", cycle, np.extract(cycle_ints[0] != self.max_val, cycle_ints))
                 else:
                     logger.debug('Missing Data Cycle {0:03d} (1 indexing)'.format(cycle))
                     continue
                 if len(self.good_cycles)==self.cycle_range:
                     break
-            print ("self.good_cycles", self.good_cycles)
-            norm_paras_fp = os.path.join(self.data_dp, 'NInt', f'{self.fov}.NInt')
-            if os.path.exists(norm_paras_fp):
-                intReader = intReaderLite.IntReaderLite(norm_paras_fp)
-                channels = intReader.header.fileTag.ChannelNum
-                for i,cycle in enumerate(self.good_cycles):
-                    for ch in range(channels):
-                        chunk = intReader.header.chunkEntries[cycle * channels + ch]
-                        norm_paras[2*ch,i] = chunk.NorLow
-                        norm_paras[2*ch+1,i] = chunk.NorUp
-                #add dummy normalization for "second" normalization assuming that Lite only performs/reports one normalization
-                norm_paras[8:,:] = np.tile(np.array([0,1,0,1,0,1,0,1]).reshape(-1,1),(1,norm_paras.shape[1]))
-
-            
             #create posiIndex file
+
+            ####Sixing; the amount of good_cycles depends on cycle_range 
+            logger.debug(f'Sixing; self.good_cycles: {self.good_cycles}')
+
             pos_list = self.get_coords_Lite(self.good_cycles[0]+1)
             output_table(self.posinfo_fp, pos_list, delimiter='\t')
             logger.debug('posinfo_fp created.')

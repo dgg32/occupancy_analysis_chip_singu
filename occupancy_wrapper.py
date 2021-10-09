@@ -15,12 +15,17 @@ import glob
 import multiprocessing as mp
 CPU_COUNT = mp.cpu_count()
 import time
-
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
+#import heartrate
+
+#trace(files=files.path_contains('my_app', 'my_library'))
+#heartrate.trace(browser=True, files=heartrate.files.all)
 
 ###### Version and Date
 occupancy_version = 'v4.4.0A'
@@ -127,10 +132,16 @@ def ints2fov_list(data_dp, platform):
     from sap_funcs import int_extensions
 
     ### PLATFORM DEPENDENCY ###
-    int_files = glob.glob(os.path.join(data_dp, 'finInts/S002/*.%s' % int_extensions[platform]))
-    if not bool(int_files):
-        int_files = glob.glob(os.path.join(data_dp, 'finInts/S001/*.%s' % int_extensions[platform]))
-    return [os.path.basename(f)[:-4] for f in int_files]
+    if platform == "Lite":
+        int_files = glob.glob(os.path.join(data_dp, 'FInt/*.%s' % int_extensions[platform]))
+    else:
+
+        int_files = glob.glob(os.path.join(data_dp, 'finInts/S002/*.%s' % int_extensions[platform]))
+        if not bool(int_files):
+            int_files = glob.glob(os.path.join(data_dp, 'finInts/S001/*.%s' % int_extensions[platform]))
+    print (data_dp, int_files, [Path(f).stem for f in int_files])
+    #return [os.path.basename(f)[:-4] for f in int_files]
+    return [Path(f).stem for f in int_files]
 
 @traceback_msg
 def fov_occupancy(fov, occupancy_parameters):

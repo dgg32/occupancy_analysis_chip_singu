@@ -94,19 +94,7 @@ class IntensityAnalysis(object):
         logger.debug('%s - block bool DNB count: %s' % (self.fov, np.sum(block_bool)))
         return block_bool
 
-    def lite_cal_obj(self):
-        from fovReaders_py3.calReaderLite import CalReaderLite
-        class cal_obj(object):
-            def __init__(self,cal_fp,end_cycle):
-                calReader = CalReaderLite(cal_fp)
-                bases, _ = calReader._decodeCal(cycles=end_cycle, ascii_fmt=True)
-                self.basesDigit = {cycle+1:(bases[:,cycle]).astype('S1').view('uint8') for cycle in range(end_cycle)}
-                # self.basesDigit
-        return cal_obj(self.cal_fp,self.end_cycle)
-
     def calculate_RHO(self, label_mask=None):
-        
-
         from intensity_index_multi import CalQCStats
         from calReader import Cal
 
@@ -122,18 +110,12 @@ class IntensityAnalysis(object):
         else:
             raw_ints = np.zeros_like(fin_ints)
             ctc_ints = np.zeros_like(fin_ints)
-            if self.platform=="Lite":
-                
-                cal_obj = self.lite_cal_obj()
-            
+            cal_obj = Cal()
+            if (self.platform.upper() == 'V40') or ('DP' in self.cal_fp) or ('cap_integ' in self.cal_fp) or (self.platform.upper() == 'V0.2'):
+                v40 = True
             else:
-                from calReader import Cal
-                cal_obj = Cal()
-                if (self.platform.upper() == 'V40') or ('DP' in self.cal_fp) or ('cap_integ' in self.cal_fp) or (self.platform.upper() == 'V0.2'):
-                    v40 = True
-                else:
-                    v40 = False
-                cal_obj.load(self.cal_fp, V40=v40)
+                v40 = False
+            cal_obj.load(self.cal_fp, V40=v40)
             
             if label_mask is None:
                 label_mask = np.ones(len(fin_ints), dtype=bool)

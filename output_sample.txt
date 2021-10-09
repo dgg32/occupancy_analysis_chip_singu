@@ -1,0 +1,503 @@
+starting occupancy (['/hwfssz8/MGI_BCC/USER/huangsixing/occupancy_analysis/occupancy_javier.json'])
+data_dp_old /prod/hustor-02/zebra/ZebraV2.1/BasecallLite_1.1.0.108/workspace/V300104178/L02
+data_dp /hwfssz8/MGI_BCC/USER/huangsixing/Javier/V350003488_lite1.1/L01
+platform Lite
+slide V350003488
+lane L01
+fov_list_old ['C001R006', 'C002R012', 'C003R024', 'C004R036', 'C005R048', 'C006R060']
+fov_list ['C001R006', 'C002R012', 'C003R024', 'C004R036', 'C005R048', 'C006R060']
+cycle_start 1
+cycle_range_old 30
+cycle_range_explanation The range is how many cycle to process. For example in total 11 cycles and and start is 3, then range < 8
+cycle_range 9
+output_dp /hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01
+temp_dp /hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp
+consolidate_lanes True
+bypass {'int2npy': False, 'intensity_analysis': False, 'calculate_thresholds': False, 'neighbor_analysis': False, 'get_possible_split_groups': False, 'calculate_split_percentage': False, 'plot_multicalls': False, 'plot_nonCBI': False, 'plot_chastity': False, 'plot_cbi_rank': False, 'plot_cbi_thresholds': False, 'plot_splits': False, 'label_analysis': False, 'plot_cbi_KDEs': True, 'plot_cbi_hist': False}
+log_overrides {'INFO': 'DEBUG'}
+2021-09-27 15:56:34,905 - occuint2npy - INFO - C003R024 - Int2npy initialized.
+2021-09-27 15:56:34,906 - occuint2npy - INFO - Numpy version: 1.20.1
+2021-09-27 15:56:34,906 - occuint2npy - INFO - C006R060 - Int2npy initialized.
+2021-09-27 15:56:34,908 - occuint2npy - INFO - C001R006 - Int2npy initialized.
+2021-09-27 15:56:34,909 - occuint2npy - INFO - C005R048 - Int2npy initialized.
+2021-09-27 15:56:34,916 - occuint2npy - INFO - Numpy version: 1.20.1
+2021-09-27 15:56:34,916 - occuint2npy - DEBUG - {'data_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/Javier/V350003488_lite1.1/L01', 'fov': 'C003R024', 'start_cycle': 1, 'cycle_range': 9, 'read_len': 20, 'good_cycles': [], 'output_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C003R024', 'int_type': 'finInts', 'basecaller': 'Lite', 'max_val': 65504, 'posinfo_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C003R024/C003R024.posiIndex.txt', 'int_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C003R024/C003R024_finInts.npy', 'background_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C003R024/C003R024_background.npy', 'norm_paras_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C003R024/C003R024_normParas.npy'}
+2021-09-27 15:56:34,916 - occuint2npy - INFO - Numpy version: 1.20.1
+2021-09-27 15:56:34,919 - occuint2npy - INFO - C002R012 - Int2npy initialized.
+2021-09-27 15:56:34,920 - occuint2npy - INFO - Numpy version: 1.20.1
+2021-09-27 15:56:34,920 - occuint2npy - DEBUG - {'data_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/Javier/V350003488_lite1.1/L01', 'fov': 'C001R006', 'start_cycle': 1, 'cycle_range': 9, 'read_len': 20, 'good_cycles': [], 'output_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C001R006', 'int_type': 'finInts', 'basecaller': 'Lite', 'max_val': 65504, 'posinfo_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C001R006/C001R006.posiIndex.txt', 'int_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C001R006/C001R006_finInts.npy', 'background_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C001R006/C001R006_background.npy', 'norm_paras_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C001R006/C001R006_normParas.npy'}
+2021-09-27 15:56:34,920 - occuint2npy - DEBUG - {'data_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/Javier/V350003488_lite1.1/L01', 'fov': 'C006R060', 'start_cycle': 1, 'cycle_range': 9, 'read_len': 20, 'good_cycles': [], 'output_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C006R060', 'int_type': 'finInts', 'basecaller': 'Lite', 'max_val': 65504, 'posinfo_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C006R060/C006R060.posiIndex.txt', 'int_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C006R060/C006R060_finInts.npy', 'background_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C006R060/C006R060_background.npy', 'norm_paras_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C006R060/C006R060_normParas.npy'}
+2021-09-27 15:56:34,920 - occuint2npy - INFO - C003R024 - Consolidating intensities in npy format...
+2021-09-27 15:56:34,920 - occuint2npy - INFO - Numpy version: 1.20.1
+2021-09-27 15:56:34,920 - occuint2npy - DEBUG - {'data_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/Javier/V350003488_lite1.1/L01', 'fov': 'C005R048', 'start_cycle': 1, 'cycle_range': 9, 'read_len': 20, 'good_cycles': [], 'output_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C005R048', 'int_type': 'finInts', 'basecaller': 'Lite', 'max_val': 65504, 'posinfo_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C005R048/C005R048.posiIndex.txt', 'int_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C005R048/C005R048_finInts.npy', 'background_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C005R048/C005R048_background.npy', 'norm_paras_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C005R048/C005R048_normParas.npy'}
+2021-09-27 15:56:34,920 - occuint2npy - INFO - C001R006 - Consolidating intensities in npy format...
+2021-09-27 15:56:34,920 - occuint2npy - DEBUG - {'data_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/Javier/V350003488_lite1.1/L01', 'fov': 'C002R012', 'start_cycle': 1, 'cycle_range': 9, 'read_len': 20, 'good_cycles': [], 'output_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C002R012', 'int_type': 'finInts', 'basecaller': 'Lite', 'max_val': 65504, 'posinfo_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C002R012/C002R012.posiIndex.txt', 'int_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C002R012/C002R012_finInts.npy', 'background_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C002R012/C002R012_background.npy', 'norm_paras_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C002R012/C002R012_normParas.npy'}
+2021-09-27 15:56:34,920 - occuint2npy - INFO - C006R060 - Consolidating intensities in npy format...
+2021-09-27 15:56:34,920 - occuint2npy - DEBUG - Reading Lite intensities
+2021-09-27 15:56:34,920 - occuint2npy - INFO - C005R048 - Consolidating intensities in npy format...
+2021-09-27 15:56:34,920 - occuint2npy - INFO - C002R012 - Consolidating intensities in npy format...
+2021-09-27 15:56:34,920 - occuint2npy - DEBUG - Reading Lite intensities
+2021-09-27 15:56:34,921 - occuint2npy - DEBUG - Reading Lite intensities
+2021-09-27 15:56:34,921 - occuint2npy - DEBUG - Reading Lite intensities
+2021-09-27 15:56:34,921 - occuint2npy - DEBUG - Reading Lite intensities
+2021-09-27 15:56:34,934 - occuint2npy - INFO - C004R036 - Int2npy initialized.
+2021-09-27 15:56:34,934 - occuint2npy - INFO - Numpy version: 1.20.1
+2021-09-27 15:56:34,934 - occuint2npy - DEBUG - {'data_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/Javier/V350003488_lite1.1/L01', 'fov': 'C004R036', 'start_cycle': 1, 'cycle_range': 9, 'read_len': 20, 'good_cycles': [], 'output_dp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C004R036', 'int_type': 'finInts', 'basecaller': 'Lite', 'max_val': 65504, 'posinfo_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C004R036/C004R036.posiIndex.txt', 'int_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C004R036/C004R036_finInts.npy', 'background_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C004R036/C004R036_background.npy', 'norm_paras_fp': '/hwfssz8/MGI_BCC/USER/huangsixing/occupancy/javier/lite/L01/tmp/C004R036/C004R036_normParas.npy'}
+2021-09-27 15:56:34,934 - occuint2npy - INFO - C004R036 - Consolidating intensities in npy format...
+2021-09-27 15:56:34,935 - occuint2npy - DEBUG - Reading Lite intensities
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:34,978 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:34,978 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:34,978 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:34,978 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:34,989 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:34,989 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 1 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,053 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 1 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,053 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 1 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,054 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 1 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,054 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 1 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,061 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 1 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,085 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 2 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,112 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 2 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,112 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 2 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,112 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 2 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,113 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 2 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,118 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 2 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,141 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 3 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,172 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 3 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,172 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 3 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,172 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 3 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,172 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 3 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,176 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 3 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,197 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 4 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,231 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 4 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,231 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 4 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,231 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 4 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,232 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 4 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,235 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 4 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,254 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 5 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,289 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 5 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,289 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 5 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,290 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 5 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,291 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 5 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,293 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 5 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,309 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 6 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6499e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,348 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 6 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,348 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 6 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,349 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 6 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6549e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,350 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 6 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,352 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 6 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,365 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 7 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6498e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6502e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6549e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,405 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 7 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6551e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6552e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,406 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 7 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,408 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 7 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6544e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6546e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6548e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,408 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 7 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6497e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6504e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,410 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 7 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,420 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 8 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,463 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 8 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,466 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 8 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,467 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 8 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,468 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 8 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,471 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 8 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+_readDataChannel [2.6531e+36 2.6531e+36 2.6531e+36 ... 2.6531e+36 2.6531e+36 2.6531e+36]
+2021-09-27 15:56:35,477 - occuint2npy - DEBUG - cycle_ints.shape: (1408077, 4, 1)
+self.max_val 65504 3.4028235e+38
+my cycle 9 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+self.good_cycles [0, 1, 2, 3, 4, 5, 6, 7, 8]
+_readDataChannel [13913234806279142359 13913218665795183438 13913202529605093554 ...
+  4973605265600431144  4973605321435013961  4973605377269596780]
+_readDataChannel [13871509113096822283 13871476179291674832 13871443236894779850 ...
+  4973647523783641059  4973647562438354685  4973647596798101016]
+_readDataChannel [13909019003822561980 13909004237727036968 13908989475926479252 ...
+  4973584306160021576  4973584344814735202  4973584383469448828]
+_readDataChannel [13878770494043292596 13878735601733061148 13878700709421910083 ...
+  4973664707947796695  4973664746602510327  4973664789552191255]
+2021-09-27 15:56:35,611 - occuint2npy - INFO - C001R006 - Positional information extracted.
+self.max_val 65504 3.4028235e+38
+my cycle 9 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+self.good_cycles [0, 1, 2, 3, 4, 5, 6, 7, 8]
+_readDataChannel [13945337852868283364 13945330375332261941 13945322902091207815 ...
+  4973466357768149522  4973466405012797749  4973466452257445975]
+_readDataChannel [13924044818057529953 13924028943860964882 13924013065368909557 ...
+  4973508044720709098  4973508070490520836  4973508100555299868]
+_readDataChannel [13943559521660511952 13943552340477231909 13943545159293951868 ...
+  4973447644595635621  4973447683250349245  4973447726200030165]
+_readDataChannel [13928179763459660641 13928160878492201256 13928141984933106847 ...
+  4973528991276216247  4973529034225897176  4973529081470545402]
+2021-09-27 15:56:35,612 - occuint2npy - INFO - C005R048 - Positional information extracted.
+self.max_val 65504 3.4028235e+38
+my cycle 9 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+self.good_cycles [0, 1, 2, 3, 4, 5, 6, 7, 8]
+_readDataChannel [13928507276194370363 13928491728414799973 13928476176340262288 ...
+  4973542709401769984  4973542756646418210  4973542808186033733]
+_readDataChannel [13904077905939959418 13904044370838118455 13904010831440542000 ...
+  4973584928930273489  4973584954700085222  4973584989059831548]
+_readDataChannel [13924366322131747160 13924352273295761131 13924338228754742397 ...
+  4973526405705909094  4973526457245524607  4973526504490172823]
+_readDataChannel [13908931103018037985 13908912913835490586 13908894733240967364 ...
+  4973603315685272842  4973603362929921066  4973603405879601994]
+2021-09-27 15:56:35,614 - occuint2npy - INFO - C003R024 - Positional information extracted.
+self.max_val 65504 3.4028235e+38
+my cycle 9 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+self.good_cycles [0, 1, 2, 3, 4, 5, 6, 7, 8]
+_readDataChannel [13937601139299311216 13937586274419540865 13937571413834737812 ...
+  4973506077625702604  4973506120575383533  4973506163525064462]
+_readDataChannel [13914419542943863478 13914400477586727848 13914381412228939251 ...
+  4973555014483058187  4973555061727706403  4973555104677387324]
+_readDataChannel [13933172426722974002 13933159623427503162 13933146824426999619 ...
+  4973491178384147706  4973491229923763217  4973491277168411431]
+_readDataChannel [13917985611337800465 13917968238198911215 13917950860763272277 ...
+  4973564961627319992  4973564995987066328  4973565026051845367]
+2021-09-27 15:56:35,614 - occuint2npy - INFO - C004R036 - Positional information extracted.
+self.max_val 65504 3.4028235e+38
+my cycle 9 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+self.good_cycles [0, 1, 2, 3, 4, 5, 6, 7, 8]
+_readDataChannel [13920150794549444295 13920134946122236993 13920119101989923103 ...
+  4973575531541845070  4973575583081460591  4973575630326108817]
+_readDataChannel [13886335344499880401 13886299047734416966 13886262750967837604 ...
+  4973618863466879305  4973618897826625636  4973618932186371966]
+_readDataChannel [13915737754308671050 13915724792099411275 13915711829890151501 ...
+  4973560533516042372  4973560585055657883  4973560636595273394]
+_readDataChannel [13894335318087091463 13894296994097990508 13894258674401913064 ...
+  4973636378343516560  4973636421293197488  4973636464242878417]
+2021-09-27 15:56:35,631 - occuint2npy - INFO - C002R012 - Positional information extracted.
+self.max_val 65504 3.4028235e+38
+my cycle 9 [2.6531e+36 2.6531e+36 2.6531e+36 2.6531e+36]
+self.good_cycles [0, 1, 2, 3, 4, 5, 6, 7, 8]
+_readDataChannel [13948738779771918602 13948730310098452483 13948721840424986365 ...
+  4973443920858995495  4973443968103643719  4973444015348291944]
+_readDataChannel [13929437574699669244 13929423160791860471 13929408742588685936 ...
+  4973485350113517574  4973485371588362014  4973485405948108343]
+_readDataChannel [13946281929630881562 13946275238073872957 13946268555106798945 ...
+  4973422458907412342  4973422493267158670  4973422527626904997]
+_readDataChannel [13933750499251218699 13933733061687794405 13933715624122614083 ...
+  4973503483465445859  4973503522120159492  4973503560774873125]
+2021-09-27 15:56:35,659 - occuint2npy - INFO - C006R060 - Positional information extracted.
+2021-09-27 15:56:36,783 - occuint2npy - DEBUG - (0, 0.0, 0.0, 0.0, 8.241806030273438, -14.76913833618164)
+2021-09-27 15:56:36,783 - occuint2npy - DEBUG - (0, 0.0, 0.0, 0.0, 8.145319938659668, -12.749895095825195)
+2021-09-27 15:56:36,784 - occuint2npy - DEBUG - (0, 0.0, 0.0, 0.0, 6.952617168426514, -9.358725547790527)
+2021-09-27 15:56:36,792 - occuint2npy - DEBUG - (0, 0.0, 0.0, 0.0, 8.36227798461914, -16.97406768798828)
+2021-09-27 15:56:36,806 - occuint2npy - DEBUG - (0, 0.0, 0.0, 0.0, 7.929538249969482, -10.894383430480957)
+2021-09-27 15:56:36,899 - occuint2npy - DEBUG - (0, 0.0, 0.0, 0.0, 8.334238052368164, -18.48438262939453)
+2021-09-27 15:56:41,976 - occuint2npy - DEBUG - posinfo_fp created.
+2021-09-27 15:56:41,979 - occuint2npy - DEBUG - posinfo_fp created.
+2021-09-27 15:56:42,039 - occuint2npy - DEBUG - posinfo_fp created.
+2021-09-27 15:56:42,090 - occuint2npy - DEBUG - posinfo_fp created.
+2021-09-27 15:56:42,261 - occuint2npy - DEBUG - posinfo_fp created.
+2021-09-27 15:56:42,323 - occuint2npy - DEBUG - posinfo_fp created.
+2021-09-27 15:56:42,613 - occuint2npy - DEBUG - C004R036 - intensities.shape: (1408077, 4, 9)
+2021-09-27 15:56:42,653 - occuint2npy - DEBUG - C001R006 - intensities.shape: (1408077, 4, 9)
+2021-09-27 15:56:42,680 - occuint2npy - DEBUG - C005R048 - intensities.shape: (1408077, 4, 9)
+2021-09-27 15:56:42,734 - occuint2npy - DEBUG - C003R024 - intensities.shape: (1408077, 4, 9)
+2021-09-27 15:56:42,901 - occuint2npy - DEBUG - C002R012 - intensities.shape: (1408077, 4, 9)
+2021-09-27 15:56:42,959 - occuint2npy - DEBUG - C006R060 - intensities.shape: (1408077, 4, 9)
