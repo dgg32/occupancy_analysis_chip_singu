@@ -123,8 +123,13 @@ class CalReaderLite(FovReaderLite):
     def _decodeCal(self, cycles=None, ascii_fmt=False):
         cal = self.readCal(cycles)
         score, base = self._decode(cal)
+        #print ("(((((((((((((((((((((((((((((((((((((((((((((( ", base, score)
+        #base[np.where(score == "!")] = "N"
         if ascii_fmt:
             base, score = self.int_to_ascii(base, score)
+        
+        #print ("(((((((((((((((((((((((((((((((((((((((((((((( ", base, score)
+            
         return base, score
 
     def readCal(self, cycles=None, cal_idx=0):
@@ -174,11 +179,18 @@ class CalReaderLite(FovReaderLite):
 
     def memFq(self, cycles=None, strand=None, dnb_subset=False, esr_filter=False, qscore_filter=None):
         base, score = self._decodeCal(cycles, False)
+        
+        
         dnbs = self._generateDnbFilter(score, strand, dnb_subset, esr_filter, qscore_filter)
 
         base, score = self.int_to_ascii(base, score)
+        #print ("!!!!!!!!!!!!!!!!!base", base, type(base))
+        #print ("score", score, type(score))
+        base[np.where(score == "!")] = "N"
+
         base  = np.ascontiguousarray(base).view("U{}".format(base.shape[1]))
         score = np.ascontiguousarray(score).view("U{}".format(score.shape[1]))
+
         return base, score, dnbs
 
     ###########################################################################

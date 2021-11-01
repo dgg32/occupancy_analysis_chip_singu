@@ -30,7 +30,7 @@ class OccupancyAnalysis(object):
         'bin2npy': True
     }
     def __init__(self, platform='', data_dp='Data', slide='FLOWSLIDE', lane='L0X', fov='', blocks=[], cycle_start=1,
-                 cycle_range=10, read_len=20, fastq_fp=None, temp_dp='Temp', output_dp='Output', parameter_overrides={},
+                 cycle_range=10, read_len=5, fastq_fp=None, temp_dp='Temp', output_dp='Output', parameter_overrides={},
                  log_dp='', log_overrides={}):
         from sap_funcs import make_dir
 
@@ -156,6 +156,7 @@ class OccupancyAnalysis(object):
                 self.data_dp, self.fov, self.start_cycle, self.occupancy_range, self.temp_dp, basecaller=platform)
             coords_fp, neighbors_fp, blocks_fp = self.run_pos2neighbors(self.data_dp, self.temp_dp, self.fov,
                                                                         self.blocks, v1=False)
+            print ("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             fastq_fp = self.run_v2cal2fastq(self.temp_dp, self.fov, blocks_fp)
         return int_fp, posinfo_fp, coords_fp, neighbors_fp, blocks_fp, fastq_fp, norm_paras_fp, background_fp
 
@@ -409,6 +410,8 @@ class OccupancyAnalysis(object):
                                                                                  self.fov, self.cycles.min()+1,
                                                                                  self.cycles.max()+1))
 
+
+########Sixing: dissect this ############
         self.run_intensity_analysis(self.slide, self.lane, self.fov, int_fp,
                                     norm_paras_fp, background_fp, blocks_fp, self.temp_dp,
                                     self.intensity_analysis_bypass)

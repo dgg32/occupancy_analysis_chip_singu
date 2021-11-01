@@ -12,18 +12,20 @@ import datetime
 
 class Int2npy(object):
 
-    def __init__(self, data_dp, fov, start_cycle, cycle_range=10, read_len=20, output_dp='', int_type='finInts',basecaller='v2',
+    def __init__(self, data_dp, fov, start_cycle, cycle_range=10, read_len=50, output_dp='', int_type='finInts',basecaller='v2',
                  log_dp='', log_overrides={}):
         self.data_dp = data_dp
         self.fov = fov
         self.start_cycle = int(start_cycle)
         self.cycle_range = cycle_range
-        self.read_len = int(read_len) if int(read_len)>=cycle_range else int(read_len)+10#max cycle length (read_len+start_cycle) to search for good cycles
+        #self.read_len = int(read_len) if int(read_len)>=cycle_range else int(read_len)+10#max cycle length (read_len+start_cycle) to search for good cycles
+        self.read_len = 8
         self.good_cycles = []
         self.output_dp = output_dp if output_dp else data_dp
         self.int_type = int_type
         self.basecaller = basecaller
-        self.max_val = 65504 #maximum value for a float16
+        #self.max_val = 65504 #maximum value for a float16
+        self.max_val = np.finfo(np.float16).max
 
         self.posinfo_fp = os.path.join(self.output_dp, '%s.posiIndex.txt' % self.fov)
         self.int_fp = os.path.join(self.output_dp, '%s_%s.npy' % (self.fov, int_type))
@@ -159,16 +161,24 @@ class Int2npy(object):
             intReader = intReaderLite.IntReaderLite(int_fp)
 
             #get good DNBs
+            #print ("!!!!!!!!!!!!!!!!!!cycles", cycles)
             for i,cycle in enumerate(cycles):
                 cycle_ints = intReader.readInt(cycles=[cycle,cycle]) #read one cycle at a time
                 #print ("cycle", cycle, cycle_ints)
                 #assume drop cycles will be set to all max value or all 0s
-                if (~np.all(cycle_ints==self.max_val)) and (~np.all(cycle_ints==0)): 
+                #print ("occuint2npy:", cycle_ints, "cycle_ints[0][0][0] == self.max_val", cycle_ints[0][0][0] == self.max_val)
+                #if (~np.all(cycle_ints==self.max_val)) and (~np.all(cycle_ints==0)):
+                if (~np.all(cycle_ints>=self.max_val - 100)) and (~np.all(cycle_ints==0)):
                     logger.debug('cycle_ints.shape: %s' % str(cycle_ints.shape))
+                    #cycle_ints[cycle_ints == self.max_val] = 0
+                    unique, counts = np.unique(cycle_ints, return_counts=True)
+                #    print ("!!!!!!!!!!!!!!!!cycle", cycle, np.asarray((unique, counts)).T)
+                    #if np.all(cycle_ints<self.max_val - 100):
                     intensities.append(cycle_ints)
                     self.good_cycles.append(cycle-1) # convert to 0 indexing
-                    print ("self.max_val", self.max_val, np.finfo(np.float32).max)
-                    print ("my cycle", cycle, np.extract(cycle_ints[0] != self.max_val, cycle_ints))
+                #        print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!111occuint2npy", cycle_ints)
+                        #print ("self.max_val", self.max_val, ~np.all(cycle_ints==self.max_val), ~np.all(cycle_ints==0))
+                        #print ("my cycle", cycle, cycle_ints[cycle_ints != 0])
                 else:
                     logger.debug('Missing Data Cycle {0:03d} (1 indexing)'.format(cycle))
                     continue
@@ -204,15 +214,18 @@ class Int2npy(object):
         # # swap axes so that order is: num_dnbs, num_channels, num_cycles ##not needed with concatenate
         # intensities = np.swapaxes(intensities, 0, 1)
         # intensities = np.swapaxes(intensities, 1, 2)
+        #print ("!!!!!!!!!!!!!!!!!!!!!!!!intensities\n", intensities.shape, "\nintensities\n", intensities)
+        #a[~np.all(np.all(a == 1, axis=2), axis=1)]
+        #intensities = intensities[~np.all(np.all(intensities >= self.max_val - 100, axis=2), axis=1)]
         logger.debug('%s - intensities.shape: %s' % (self.fov, str(intensities.shape)))
 
         # convert max values?
-        """
-        dnb, channel, cycle = np.where(int_data == int_data.max())
-        intensities[dnb, :, cycle] = 0
-        """
-        print ("intensities", intensities)
-        print ("norm_paras", norm_paras)
+        
+        #dnb, channel, cycle = np.where(intensities == intensities.max())
+        #intensities[dnb, :, cycle] = 0
+        
+        #print ("background", background)
+        #print ("norm_paras", norm_paras)
         np.save(self.int_fp, intensities)
         np.save(self.norm_paras_fp, norm_paras)
         np.save(self.background_fp, background)

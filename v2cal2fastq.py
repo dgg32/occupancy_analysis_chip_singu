@@ -55,7 +55,9 @@ class V2Cal2Fastq(object):
                 cycles = list(self.occupancy_cycle)
             else:
                 cycles = [self.occupancy_cycle, self.occupancy_cycle+self.occu_range]
-            cal_obj.writeFqBlocks(self.fastq_fp, cycles=cycles, strand=None, blocks=self.blocks_vect) #no paired end
+            cal_obj.writeFqBlocks(self.fastq_fp, cycles=cycles, strand=None, blocks=self.blocks_vect)
+            #cal_obj.writeFqBlocks(self.fastq_fp, cycles=cycles, strand=None, blocks=self.blocks_vect, qscore_filter=10) #no paired end
+            #cal_obj.writeFqBlocks(self.fastq_fp, cycles=cycles, strand=None, blocks=self.blocks_vect, esr_filter=True) #no paired end
         else:
             if not os.path.exists(self.cal_fp):
                 return

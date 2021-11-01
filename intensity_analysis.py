@@ -99,7 +99,11 @@ class IntensityAnalysis(object):
         class cal_obj(object):
             def __init__(self,cal_fp,end_cycle):
                 calReader = CalReaderLite(cal_fp)
-                bases, _ = calReader._decodeCal(cycles=end_cycle, ascii_fmt=True)
+                bases, score = calReader._decodeCal(cycles=end_cycle, ascii_fmt=True)
+                print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!RHO", bases, score)
+                bases[np.where(score == "!")] = "N"
+
+                #mask = ~np.all(np.all(score == "!", axis=2), axis=1)
                 self.basesDigit = {cycle+1:(bases[:,cycle]).astype('S1').view('uint8') for cycle in range(end_cycle)}
                 # self.basesDigit
         return cal_obj(self.cal_fp,self.end_cycle)
@@ -570,6 +574,8 @@ class IntensityAnalysis(object):
             ['RHO G C%02d' % self.start_cycle, rho['G C%02d' % self.start_cycle]],
             ['RHO T C%02d' % self.start_cycle, rho['T C%02d' % self.start_cycle]]
         ]
+
+        print ("((((((((((((((((((((((((((((((((((((((((((((((((((RHO", rho_results)
 
         self.save_outputs(thresholds_summary, snr_results, rho_results)
         time_diff = datetime.datetime.now() - start_time

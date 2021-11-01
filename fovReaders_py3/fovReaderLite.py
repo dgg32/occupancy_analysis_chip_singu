@@ -262,14 +262,16 @@ class FovReaderLite(object):
 
         idx = self._getChunkId(cycle, channel)
         chunk_flg = self._getChunkFlag(idx)
-        #print ("chunk_flg.Flag", idx, chunk_flg.Flag, cycle, channel, self.filePath)
+        print ("chunk_flg.Flag", idx, chunk_flg.Flag, cycle, channel, self.filePath)
         if chunk_flg.Flag:
             offset = self._getChunkOffset(idx)
             self.fileObj.seek(offset, 0)
             data[:] = np.fromfile(self.fileObj, dtype=data.dtype, count=data.size)
+            #data[:] = np.fromfile(self.fileObj, dtype=np.uint16, count=data.size)
+            
         else:
             self._chunkError(data, idx)
-        print ("_readDataChannel", data)
+        print ("fovReaderLite.py _readDataChannel", data)
         return data
 
     ###########################################################################

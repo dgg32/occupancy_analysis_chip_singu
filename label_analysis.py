@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import os
 import matplotlib as mpl
+import time
 
 mpl.use('Agg')
 
@@ -1316,6 +1317,7 @@ class LabelAnalysis(object):
         import pickle
 
         try:
+            time.sleep(10)
             with open(self.size_results_fp, 'rb') as f:
                 size_results = pickle.load(f)
             with open(self.size_summary_fp, 'rb') as f:
