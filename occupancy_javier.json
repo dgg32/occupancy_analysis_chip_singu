@@ -1,9 +1,9 @@
 {
     "data_dp_old": "/prod/hustor-02/zebra/ZebraV2.1/BasecallLite_1.1.0.108/workspace/V300104178/L02",
-    "data_dp": "/hwfssz8/MGI_BCC/USER/huangsixing/Javier/V350003488_lite1.1/L02",
+    "data_dp": "/hwfssz8/MGI_BCC/USER/javier/V2000/V300112409a/L03",
     "platform": "Lite",
     "slide": "V350003488",
-    "lane": "L01",
+    "lane": "L03",
     "fov_list_old": ["C001R006","C002R012","C003R024","C004R036","C005R048","C006R060"],
     "fov_list": ["C001R006","C003R024"],
     "blocks": [],
