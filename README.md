@@ -23,7 +23,7 @@ git clone https://github.com/dgg32/occupancy_analysis_chip_singu
 3. Modify the SGE settings in your nextflow.config so that occu can run on your local SGE
 4. Run occu within the nextflow folder:
 ```console
-nextflow run main.nf --image [path to occu.sif] --data [path to slide folder]  --output [path to an empty output folder] --slide [slide name] --start [start cycle] --range [cycle range] -profile sge
+nextflow run main.nf --image [path to occu.sif] --data [path to slide folder]  --output [path to an empty output folder] --slide [slide name] --start [start cycle] --range [cycle range] --platform [basecaller] -profile sge
 ```
 ## Authors
 

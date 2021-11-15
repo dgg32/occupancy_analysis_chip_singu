@@ -1,6 +1,7 @@
 println "Occupancy Analysis Pipeline     "
 println "================================="
 println "Image            : ${params.image}"
+println "Platform            : ${params.platform}"
 //println "Script            : ${params.script}"
 println "Data              : ${params.data}"
 println "Slide             : ${params.slide}"
@@ -26,6 +27,6 @@ process occupancy_analysis {
 
     script:
     """
-    /share/app/singularity/3.8.1/bin/singularity exec -B $HOME  ${params.image} python /app/occupancy_chip_wrapper.py -d ${params.data} -l ${lane} -o ${params.output} -s ${params.slide} -c ${params.start} -r ${params.range}
+    /share/app/singularity/3.8.1/bin/singularity exec -B $HOME  ${params.image} python /app/occupancy_chip_wrapper.py -d ${params.data} -l ${lane} -o ${params.output} -s ${params.slide} -c ${params.start} -r ${params.range} -p ${params.platform}
     """
 }
