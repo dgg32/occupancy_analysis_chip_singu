@@ -117,6 +117,12 @@ class CalQCStats(object):
                 self.normrho[i][j] = norm_rho
                 self.origrho[i][j] = np.nan_to_num(origrho)
                 self.rho_mean[base].append(np.nan_to_num(np.nanmean(origrho)))
+        print ("self.norm_paras", self.norm_paras)
+        print ("cycle_base_filter", cycle_base_filter)
+        print ("self.normphi", self.normphi)
+        print ("self.origrho", self.origrho)
+        
+        print ("intensity_index_multi self.rho_mean", self.rho_mean)
         return self.rho_mean
 
     def bic(self):

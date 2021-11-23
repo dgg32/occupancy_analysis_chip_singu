@@ -339,10 +339,8 @@ class Cal(object):
                 tmpArr.dtype = np.int32
                 self.number = tmpArr[0]
 
-                tmpArr_2 = uintArray[self.INT_LEN: self.INT_LEN + 2]
-                tmpArr_2.dtype = np.int16
-                self.totalCycle = tmpArr_2[0]
-                idx = self.HEADER
+                self.totalCycle = tmpArr[1]
+                idx = 8
                 # print(self.totalCycle)
 
                 ## each cycle
@@ -414,9 +412,6 @@ class Cal(object):
                 self.cycleSet.add(cycleId)
                 self.qual[cycleId] = qualArr
                 self.basesDigit[cycleId] = basesDigit
-                print ("qualArr", qualArr)
-                print ("basesDigit", basesDigit)
-
                 ## view as Byte string
                 self.bases[cycleId] = basesDigit.view("S1")
             try:

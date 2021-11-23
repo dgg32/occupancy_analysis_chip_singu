@@ -664,9 +664,10 @@ def consolidate_lane_reports(slide_dp, occupancy_fn, prefix):
 
 
 def main(arguments):
+    
     print('starting occupancy (%s)' % arguments)
     start_time = datetime.datetime.now()
-
+    
     # single argument indicates json file path
     if len(arguments) == 1 and os.path.isfile(arguments[0]):
         occupancy_json_fp = arguments[0]
@@ -684,7 +685,7 @@ def main(arguments):
     make_dir(occupancy_parameters['output_dp'])
     log_dp = os.path.join(occupancy_parameters['output_dp'], 'Logs')
     make_dir(log_dp)
-
+    
     local_log_fn = os.path.join(log_dp, 'dev_info.log')
     local_error_log_fn = os.path.join(log_dp, 'dev_errors.log')
     remote_log_fn = os.path.join(log_dp, 'info.log')
@@ -700,10 +701,10 @@ def main(arguments):
     logger.info('Python Version: %s' % sys.version)
 
     fov_list = occupancy_parameters.pop('fov_list', [])
-
+    print ("occupancy_parameters['data_dp']", occupancy_parameters['data_dp'])
     if not fov_list:
         fov_list = ints2fov_list(occupancy_parameters['data_dp'], occupancy_parameters['platform'])
-
+    print ("!!!!!!!!!!!!!!!!", fov_list)
     pool = mp.Pool(processes=len(fov_list), maxtasksperchild=1)
     logger.info('Launching fov occupancy subprocess pool...')
     parameters_list = [(fov, occupancy_parameters) for fov in fov_list]

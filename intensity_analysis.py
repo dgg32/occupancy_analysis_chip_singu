@@ -139,6 +139,8 @@ class IntensityAnalysis(object):
                     v40 = False
                 cal_obj.load(self.cal_fp, V40=v40)
             
+            print ("cal_obj.basesDigit", cal_obj.basesDigit)
+            print ("cal_obj.bases", cal_obj.bases)
             if label_mask is None:
                 label_mask = np.ones(len(fin_ints), dtype=bool)
 
@@ -154,7 +156,7 @@ class IntensityAnalysis(object):
                 logger.error('Filling RHO With Zeros')
                 zero_list = np.zeros(fin_ints.shape[2])
                 rho = {'A': zero_list, 'C': zero_list, 'G': zero_list, 'T': zero_list}
-
+        print ("intensity_analysis.py, rho", rho)
         rho['avg'] = np.mean(np.array(list(rho.values())), axis=0)
         for base in ['A', 'C', 'G', 'T', 'avg']:
             try:

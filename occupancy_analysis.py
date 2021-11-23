@@ -156,7 +156,7 @@ class OccupancyAnalysis(object):
                 self.data_dp, self.fov, self.start_cycle, self.occupancy_range, self.temp_dp, basecaller=platform)
             coords_fp, neighbors_fp, blocks_fp = self.run_pos2neighbors(self.data_dp, self.temp_dp, self.fov,
                                                                         self.blocks, v1=False)
-            print ("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            #print ("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", int_fp)
             fastq_fp = self.run_v2cal2fastq(self.temp_dp, self.fov, blocks_fp)
         return int_fp, posinfo_fp, coords_fp, neighbors_fp, blocks_fp, fastq_fp, norm_paras_fp, background_fp
 
@@ -248,6 +248,9 @@ class OccupancyAnalysis(object):
                                bypass):
         from intensity_analysis import IntensityAnalysis
         cal_fp = os.path.join(self.data_dp, 'Cal', '%s.Cal' % fov)
+
+        if self.platform == "v2":
+            cal_fp = os.path.join(self.data_dp, 'calFile', '%s.cal' % fov)
         self.int_analysis = IntensityAnalysis(slide, lane, fov, self.cycles,
                                               cal_fp, int_fp, norm_paras_fp, background_fp, blocks_fp,
                                               temp_dp, bypass,
@@ -399,6 +402,7 @@ class OccupancyAnalysis(object):
                     fastq_fp, norm_paras_fp, background_fp) = self.process_data(self.platform)
         # if report name wasn't specified in parameter_overrides and is empty
         # print('cycles', self.cycles)
+        print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!norm_paras_fp", norm_paras_fp)
         if not self.report_name:
             if 'Center2x2' in self.output_dp:
                 self.report_name = ('%s_%s_%s_Occupancy_Analysis_C%02d-C%02d_Center2x2' % (self.slide, self.lane,
