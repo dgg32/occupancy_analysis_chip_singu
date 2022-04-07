@@ -1,8 +1,7 @@
 println "Occupancy Analysis Pipeline     "
 println "================================="
 println "Image            : ${params.image}"
-println "Platform            : ${params.platform}"
-//println "Script            : ${params.script}"
+println "Platform          : ${params.platform}"
 println "Data              : ${params.data}"
 println "Slide             : ${params.slide}"
 println "Cycle start       : ${params.start}"
@@ -11,12 +10,20 @@ println "Output            : ${params.output}"
 
 
 ch = Channel.of( 'L01', 'L02', 'L03', 'L04' )
-
+params.collect_dir = '/hwfssz8/MGI_CG_SZ/DATA/occu'
 
 process occupancy_analysis {
+    publishDir params.collect_dir, mode: 'copy' 
 
     input:
     each lane from ch
+    
+
+    output:
+    val params.slide into occu_out
+
+    //path("${params.output}/*_Summary.xlsx") into summary_ch
+
 
     //python /hwfssz8/MGI_BCC/USER/huangsixing/occupancy_analysis/occupancy_chip_wrapper.py -d ${params.data} -l ${lane} -o ${params.output} -s ${params.slide} -c ${params.start} -r ${params.range}
 
@@ -28,5 +35,27 @@ process occupancy_analysis {
     script:
     """
     /share/app/singularity/3.8.1/bin/singularity exec -B $HOME  ${params.image} python /app/occupancy_chip_wrapper.py -d ${params.data} -l ${lane} -o ${params.output} -s ${params.slide} -c ${params.start} -r ${params.range} -p ${params.platform}
+
+    """
+
+    ///share/app/singularity/3.8.1/bin/singularity exec -B $HOME  ${params.image} python /app/occupancy_chip_wrapper.py -d ${params.data} -l ${lane} -o ${params.output} -s ${params.slide} -c ${params.start} -r ${params.range} -p ${params.platform}
+
+    // """
+    // python /hwfssz8/MGI_CG_SZ/USER/huangsixing/nextflow/occupancy_analysis_chip_singu/test.py ${params.output}
+    // """
+
+}
+
+process copy_files {
+    input:
+    val slide from occu_out.distinct()
+
+    output:
+    val slide into copy_out
+
+    shell:
+    """
+    mkdir -p ${params.collect_dir}/\$(whoami)/${slide}
+    cp ${params.output}/${slide}/Lite/*_Summary.xlsx ${params.collect_dir}/\$(whoami)/${slide}/
     """
 }
