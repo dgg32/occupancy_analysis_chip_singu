@@ -10,6 +10,7 @@ println "Output            : ${params.output}"
 
 
 ch = Channel.of( 'L01', 'L02', 'L03', 'L04' )
+//ch = Channel.of( 'L01')
 params.collect_dir = '/hwfssz8/MGI_CG_SZ/DATA/occu'
 
 process occupancy_analysis {
@@ -38,17 +39,20 @@ process occupancy_analysis {
 
     """
 
+
+
     ///share/app/singularity/3.8.1/bin/singularity exec -B $HOME  ${params.image} python /app/occupancy_chip_wrapper.py -d ${params.data} -l ${lane} -o ${params.output} -s ${params.slide} -c ${params.start} -r ${params.range} -p ${params.platform}
 
-    // """
-    // python /hwfssz8/MGI_CG_SZ/USER/huangsixing/nextflow/occupancy_analysis_chip_singu/test.py ${params.output}
-    // """
+    //"""
+    //python /hwfssz8/MGI_CG_SZ/USER/huangsixing/nextflow/occupancy_analysis_chip_singu/test.py ${params.output}/${params.slide}/Lite/
+    //"""
 
 }
 
 process copy_files {
+    errorStrategy 'ignore'
     input:
-    val slide from occu_out.distinct()
+    val slide from occu_out
 
     output:
     val slide into copy_out
@@ -56,6 +60,6 @@ process copy_files {
     shell:
     """
     mkdir -p ${params.collect_dir}/\$(whoami)/${slide}
-    cp ${params.output}/${slide}/Lite/*_Summary.xlsx ${params.collect_dir}/\$(whoami)/${slide}/
+    cp ${params.output}/${slide}/Lite/*_Summary.xlsx ${params.collect_dir}/\$(whoami)/${slide}/ & cp ${params.output}/${slide}/v2/*_Summary.xlsx ${params.collect_dir}/\$(whoami)/${slide}/
     """
 }
